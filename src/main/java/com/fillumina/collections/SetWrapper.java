@@ -21,7 +21,7 @@ public class SetWrapper<T> implements Set<T> {
     public SetWrapper() {
         delegate = new SmallSet<>();
     }
-    
+
     public SetWrapper(T... array) {
         if (array.length > CUT) {
             delegate = KeyOnlyMap.createSet(array); 
@@ -49,7 +49,7 @@ public class SetWrapper<T> implements Set<T> {
     @Override
     public boolean add(T e) {
         if (size() > CUT) {
-            Set<T> set = KeyOnlyMap.createSet(CUT);
+            Set<T> set = KeyOnlyMap.createSet(CUT + 2);
             set.addAll(this);
             delegate = set;
         }

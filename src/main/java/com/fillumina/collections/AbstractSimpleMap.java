@@ -35,6 +35,7 @@ import java.util.function.Consumer;
  * <li>clone constructors
  * <li>Can be copied to other implementations of the same class very quickly
  * <li>Has a {@link #forEach(java.util.function.Consumer) } for entries
+ * <li>Its keySet() can add elements (with null value)
  * </ul>
  *
  * @param <K> map key

@@ -9,9 +9,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,55 @@ public class MultiMap<T> {
             }
         }
 
+        /** Clone the entire structure to map changing its leave values. */
+        public Map<?,?> toMap() {
+            return (Map<?, ?>) replaceMap(
+                    (Function<T, Object>) Function.identity());
+        }
+
+        /** Clone the entire structure to map changing its leave values. */
+        public Map<?,?> toMap(Function<T,Object> transformer) {
+            return (Map<?, ?>) replaceMap(transformer);
+        }
+
+        private Object replaceMap(Function<T,Object> transformer) {
+            Set<Object> newValue = null;
+            if (value != null) {
+                newValue = value.stream()
+                        .map(t -> transformer.apply(t))
+                        .collect(Collectors.toSet());
+            }
+            Map<String,?> m = new HashMap<>();
+            if (children == null) {
+                return newValue;
+            } else {
+                Map<?,?> newChildren = children.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                e -> e.getKey(),
+                                e -> e.getValue().replaceMap(transformer)));
+                return newChildren;
+            }
+        }
+        
+        /** Clone the entire structure changing its leave values only. */
+        public <R> Tree<R> replaceTree(Function<T,R> transformer) {
+            Set<R> newValue = null;
+            if (value != null) {
+                newValue = value.stream()
+                        .map(t -> transformer.apply(t))
+                        .collect(Collectors.toSet());
+            }
+            Map<Object,Tree<R>> m = new HashMap<>();
+            if (children == null) {
+                return new Tree<>(newValue, null, keyList);
+            } else {
+                Map<Object,Tree<R>> newChildren = children.entrySet().stream()
+                        .collect(Collectors.toMap(Entry::getKey,
+                                e -> e.getValue().replaceTree(transformer)));
+                return new Tree<>(null, newChildren, keyList);
+            }
+        }
+        
         public Set<Tree<T>> getBranchLevel(int index) {
             if (index == 0) {
                 return Set.of(this);
@@ -150,12 +201,29 @@ public class MultiMap<T> {
             return keyList;
         }
 
+        public String getKeyListAsString() {
+            return getKeyListAsString(":");
+        }
+
+        public String getKeyListAsString(String delimiter) {
+            if (keyList == null || keyList.isEmpty()) {
+                return null;
+            }
+            return keyList.stream()
+                    .map(o -> Objects.toString(o))
+                    .collect(Collectors.joining(delimiter));
+        }
+        
         public Map<Object, Tree<T>> getChildren() {
             return children;
         }
 
         public Set<T> getValue() {
             return value;
+        }
+        
+        public T getOnlyValue() {
+            return value.iterator().next();
         }
     }
 
