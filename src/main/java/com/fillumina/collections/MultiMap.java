@@ -108,16 +108,24 @@ public class MultiMap<T> {
             return null;
         }
         
-        public Set<T> getLeaves() {
-            Set<T> set = new HashSet<>();
-            visitLeaves(set::add);
-            return set;
+        public Map<List<Object>, T> getLeaveMap() {
+            Map<List<Object>,T> map = new HashMap<>();
+            visitLeave(t -> map.put(t.getKeyList(), t.getOnlyValue()));
+            return map;
+        }
+
+        public void visitLeave(Consumer<Tree<T>> leafConsumer) {
+            if (children != null) {
+                children.values().forEach(t -> t.visitLeave(leafConsumer));
+            } else {
+                leafConsumer.accept(this);
+            }
         }
         
-        public void visitLeaves(Consumer<T> leafConsumer) {
+        public void visitValues(Consumer<T> leafConsumer) {
             if (children != null) {
                 for (Tree<T> child : children.values()) {
-                    child.visitLeaves(leafConsumer);
+                    child.visitValues(leafConsumer);
                 }
             }
             if (value != null && !value.isEmpty()) {
