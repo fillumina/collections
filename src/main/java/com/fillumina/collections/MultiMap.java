@@ -35,6 +35,9 @@ public class MultiMap<T> {
 
         public Tree(Set<T> value, Map<Object, Tree<T>> children,
                 List<Object> keyList) {
+            if (value != null && value.size() > 1) {
+                throw new AssertionError();
+            }
             this.value = value;
             this.children = children;
             this.keyList = keyList;
@@ -55,19 +58,24 @@ public class MultiMap<T> {
         }
 
         private Object replaceMap(Function<T,Object> transformer) {
+            Set<Object> newValue = null;
             if (value != null) {
-                if (value.size() == 1) {
-                    return value.iterator().next();
-                } 
-                return value.stream()
+                newValue = value.stream()
                         .map(t -> transformer.apply(t))
                         .collect(Collectors.toSet());
             }
-            Map<?,?> remappedChildren = children.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            e -> e.getKey(),
-                            e -> e.getValue().replaceMap(transformer)));
-            return remappedChildren;
+            if (children == null) {
+                if (newValue.size() == 1) {
+                    return newValue.iterator().next();
+                }
+                return newValue;
+            } else {
+                Map<?,?> newChildren = children.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                e -> e.getKey(),
+                                e -> e.getValue().replaceMap(transformer)));
+                return newChildren;
+            }
         }
         
         /** Clone the entire structure changing its leave values only. */

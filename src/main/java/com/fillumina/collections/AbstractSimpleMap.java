@@ -88,7 +88,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         /**
          * Copy constructor.
          */
-        public SimpleMap(SimpleMap<K, V> map) {
+        public SimpleMap(AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
 
@@ -108,6 +108,56 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         @Override
         public SimpleMap<K, V> clone() {
             return new SimpleMap<K, V>(this);
+        }
+    }
+
+    /**
+     * Full {@link java.util.Map} conform implementation. Useful for its very
+     * fast {@link #clone() } operation.
+     */
+    public static class EntryMap<K, V>
+            extends AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
+
+        public EntryMap() {
+            super();
+        }
+
+        public EntryMap(int initialSize) {
+            super(initialSize);
+        }
+
+        public EntryMap(Map<K, V> map) {
+            super(map);
+        }
+
+        /**
+         * Copy constructor.
+         */
+        public EntryMap(AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
+            super(map);
+        }
+
+        @Override
+        public Entry<K, V> putEntry(Entry<K, V> entry) {
+            return super.putEntry(entry);
+        }
+        
+        @Override
+        protected SimpleEntry<K, V> createEntry(K k, V v) {
+            return new SimpleEntry<>(k, v);
+        }
+
+        @Override
+        protected EntryMap<K, V> createMap(int size) {
+            return new EntryMap<>(size);
+        }
+
+        /**
+         * Very fast cloning of the map.
+         */
+        @Override
+        public EntryMap<K, V> clone() {
+            return new EntryMap<K, V>(this);
         }
     }
 
