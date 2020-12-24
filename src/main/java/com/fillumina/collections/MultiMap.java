@@ -18,10 +18,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Multi map simulates a DB table allowing for many keys, indexes and
- * searches. It provides a way to easily navigate complex structures.
- * <p>
- * Tip: key positions can be used or ignored. They will be recorded anyway.
+ * Multi map simulates a DB allowing for many keys, indexes and complex
+ * searches. It provides a way to easily navigate and manipulate complex 
+ * structures.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -80,7 +79,11 @@ public class MultiMap<T> {
             }
         }
         
-        /** Compress the tree to the given level and than convert to map. */
+        /** 
+         * Compress the tree to the given level and than convert to map. 
+         * {@code flatToLevel(0)} returns a similar map than {@link toMap()} 
+         * but keys are of type {@code List<Object>} instead of {@code String}.
+         */
         public Map<?,?> flatToLevel(int level) {
             return (Map<?,?>) mapAtLevel(List.of(), level);
         }
@@ -89,7 +92,7 @@ public class MultiMap<T> {
             if (level > 0) {
                 Map<Object,Object> map = new HashMap<>();
                 List<Object> listOfKeys = createList(klist, null);
-                int pos = listOfKeys.size() - 1;
+                int pos = klist.size();
                 children.forEach((k,c) -> {
                     listOfKeys.set(pos, k);
                     map.putAll((Map<?,?>)
@@ -115,15 +118,15 @@ public class MultiMap<T> {
             return l;
         }
         
-        public Map<List<Object>, T> getLeaveMap() {
+        public Map<List<Object>, T> getLeavesMap() {
             Map<List<Object>,T> map = new HashMap<>();
-            visitLeave(t -> map.put(t.getKeyList(), t.getValue()));
+            visitLeaves(t -> map.put(t.getKeyList(), t.getValue()));
             return map;
         }
 
-        public void visitLeave(Consumer<Tree<T>> leafConsumer) {
+        public void visitLeaves(Consumer<Tree<T>> leafConsumer) {
             if (children != null) {
-                children.values().forEach(t -> t.visitLeave(leafConsumer));
+                children.values().forEach(t -> t.visitLeaves(leafConsumer));
             } else {
                 leafConsumer.accept(this);
             }
@@ -151,10 +154,10 @@ public class MultiMap<T> {
         }
         
         /** Removes leaves and branches passing the predicate test */
-        public boolean pruneLeaves(Predicate<T> predicate) {
+        public boolean pruneLeaves(Predicate<T> predicateOnValue) {
             if (isLeaf()) {
                 if (value != null) {
-                    return predicate.test(value);
+                    return predicateOnValue.test(value);
                 } else {
                     return true;
                 }
@@ -163,7 +166,7 @@ public class MultiMap<T> {
                         children.entrySet().iterator();
                 while(it.hasNext()) {
                     Entry<Object,Tree<T>> e = it.next();
-                    if (e.getValue().pruneLeaves(predicate)) {
+                    if (e.getValue().pruneLeaves(predicateOnValue)) {
                         it.remove();
                     }
                 }
@@ -172,18 +175,18 @@ public class MultiMap<T> {
         }
         
         /** Removes branches passing the predicate test */
-        public void pruneBranches(Predicate<Object> predicate) {
+        public void pruneBranches(Predicate<Object> predicateOnKey) {
             if (!isLeaf()) {
                 Iterator<Entry<Object,Tree<T>>> it = 
                         children.entrySet().iterator();
                 while(it.hasNext()) {
                     Entry<Object,Tree<T>> e = it.next();
                     Object key = e.getKey();
-                    if (predicate.test(key)) {
+                    if (predicateOnKey.test(key)) {
                         it.remove();
                     } else {
                         final Tree<T> t = e.getValue();
-                        t.pruneBranches(predicate);
+                        t.pruneBranches(predicateOnKey);
                     }
                 }
             }
