@@ -55,21 +55,19 @@ public class MultiMap<T> {
         }
 
         private Object replaceMap(Function<T,Object> transformer) {
-            Set<Object> newValue = null;
             if (value != null) {
-                newValue = value.stream()
+                if (value.size() == 1) {
+                    return value.iterator().next();
+                } 
+                return value.stream()
                         .map(t -> transformer.apply(t))
                         .collect(Collectors.toSet());
             }
-            if (children == null) {
-                return newValue;
-            } else {
-                Map<?,?> newChildren = children.entrySet().stream()
-                        .collect(Collectors.toMap(
-                                e -> e.getKey(),
-                                e -> e.getValue().replaceMap(transformer)));
-                return newChildren;
-            }
+            Map<?,?> remappedChildren = children.entrySet().stream()
+                    .collect(Collectors.toMap(
+                            e -> e.getKey(),
+                            e -> e.getValue().replaceMap(transformer)));
+            return remappedChildren;
         }
         
         /** Clone the entire structure changing its leave values only. */
@@ -92,15 +90,17 @@ public class MultiMap<T> {
         }
         
         /** Compress the tree to the given level and than convert to map. */
-        public Map<?,?> compressToLevel(int level) {
+        public Map<?,?> flatToLevel(int level) {
             return (Map<?,?>) mapAtLevel(List.of(), level);
         }
 
         private Object mapAtLevel(List<Object> klist, int level) {
             if (level > 0) {
                 Map<Object,Object> map = new HashMap<>();
+                List<Object> listOfKeys = createList(klist, null);
+                int pos = listOfKeys.size() - 1;
                 children.forEach((k,c) -> {
-                    List<Object> listOfKeys = createList(klist, k);
+                    listOfKeys.set(pos, k);
                     map.putAll((Map<?,?>)
                             c.mapAtLevel(listOfKeys, level - 1));
                 });
