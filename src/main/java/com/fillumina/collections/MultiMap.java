@@ -31,13 +31,10 @@ public class MultiMap<T> {
         private Tree<T> parent;
         private final List<Object> keyList;
         private final Map<Object, Tree<T>> children;
-        private final Set<T> value;
+        private final T value;
 
-        public Tree(Set<T> value, Map<Object, Tree<T>> children,
+        public Tree(T value, Map<Object, Tree<T>> children,
                 List<Object> keyList) {
-            if (value != null && value.size() > 1) {
-                throw new AssertionError();
-            }
             this.value = value;
             this.children = children;
             this.keyList = keyList;
@@ -58,17 +55,8 @@ public class MultiMap<T> {
         }
 
         private Object replaceMap(Function<T,Object> transformer) {
-            Set<Object> newValue = null;
-            if (value != null) {
-                newValue = value.stream()
-                        .map(t -> transformer.apply(t))
-                        .collect(Collectors.toSet());
-            }
             if (children == null) {
-                if (newValue.size() == 1) {
-                    return newValue.iterator().next();
-                }
-                return newValue;
+                return value;
             } else {
                 Map<?,?> newChildren = children.entrySet().stream()
                         .collect(Collectors.toMap(
@@ -80,15 +68,10 @@ public class MultiMap<T> {
         
         /** Clone the entire structure changing its leave values only. */
         public <R> Tree<R> replaceTree(Function<T,R> transformer) {
-            Set<R> newValue = null;
-            if (value != null) {
-                newValue = value.stream()
-                        .map(t -> transformer.apply(t))
-                        .collect(Collectors.toSet());
-            }
             Map<Object,Tree<R>> m = new HashMap<>();
             if (children == null) {
-                return new Tree<>(newValue, null, keyList);
+                return new Tree<>(transformer.apply(value), 
+                        null, keyList);
             } else {
                 Map<Object,Tree<R>> newChildren = children.entrySet().stream()
                         .collect(Collectors.toMap(Entry::getKey,
@@ -134,7 +117,7 @@ public class MultiMap<T> {
         
         public Map<List<Object>, T> getLeaveMap() {
             Map<List<Object>,T> map = new HashMap<>();
-            visitLeave(t -> map.put(t.getKeyList(), t.getOnlyValue()));
+            visitLeave(t -> map.put(t.getKeyList(), t.getValue()));
             return map;
         }
 
@@ -152,29 +135,26 @@ public class MultiMap<T> {
                     child.visitValues(leafConsumer);
                 }
             }
-            if (value != null && !value.isEmpty()) {
-                for (T t : value) {
-                    leafConsumer.accept(t);
-                }
+            if (value != null) {
+                leafConsumer.accept(value);
             }
         }
         
         @Override
         public Tree<T> clone() {
-            Set<T> v = value == null ? null : new HashSet<>(value);
             Map<Object,Tree<T>> m = new HashMap<>();
             if (children == null) {
-                return new Tree<>(v, null, keyList);
+                return new Tree<>(value, null, keyList);
             }
             children.forEach((o,t) -> m.put(o, t.clone()));
-            return new Tree<>(v, m, keyList);
+            return new Tree<>(value, m, keyList);
         }
         
         /** Removes leaves and branches passing the predicate test */
         public boolean pruneLeaves(Predicate<T> predicate) {
             if (isLeaf()) {
                 if (value != null) {
-                    return value.stream().allMatch(predicate);
+                    return predicate.test(value);
                 } else {
                     return true;
                 }
@@ -250,12 +230,8 @@ public class MultiMap<T> {
             return children;
         }
 
-        public Set<T> getValue() {
+        public T getValue() {
             return value;
-        }
-        
-        public T getOnlyValue() {
-            return value.iterator().next();
         }
     }
 
@@ -437,7 +413,14 @@ public class MultiMap<T> {
             Set<T> set = currSelection.stream()
                     .map(c -> c.value)
                     .collect(Collectors.toSet());
-            return new Tree<>(set, null, keyList);
+            
+            T value = currentSelection.iterator().next().value;
+            
+            if (set.size() > 1) {
+                throw new AssertionError();
+            }
+            
+            return new Tree<>(value, null, keyList);
         }
     }
 
