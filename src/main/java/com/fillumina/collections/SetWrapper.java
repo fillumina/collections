@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class SetWrapper<T> implements Set<T> {
-    private static final int CUT = 7;
+    private static final int CUT_OFF = 7;
     
     private Set<T> delegate;
 
@@ -23,7 +23,7 @@ public class SetWrapper<T> implements Set<T> {
     }
 
     public SetWrapper(T... array) {
-        if (array.length > CUT) {
+        if (array.length > CUT_OFF) {
             delegate = KeyOnlyMap.createSet(array); 
         } else {
             delegate = new SmallSet<>(array);
@@ -31,7 +31,7 @@ public class SetWrapper<T> implements Set<T> {
     }
     
     public SetWrapper(Collection<T> coll) {
-        if (coll.size() > CUT) {
+        if (coll.size() > CUT_OFF) {
             delegate = KeyOnlyMap.createSet(coll); 
         } else {
             delegate = new SmallSet<>(coll);
@@ -48,8 +48,8 @@ public class SetWrapper<T> implements Set<T> {
      */
     @Override
     public boolean add(T e) {
-        if (size() > CUT) {
-            Set<T> set = KeyOnlyMap.createSet(CUT + 2);
+        if (size() > CUT_OFF) {
+            Set<T> set = KeyOnlyMap.createSet(CUT_OFF + 2);
             set.addAll(this);
             delegate = set;
         }

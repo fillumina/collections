@@ -43,7 +43,7 @@ public class MultiMap<T> {
             }
         }
 
-        /** Clone the entire structure to map changing its leave values. */
+        /** Clone the entire structure to map. */
         public Map<?,?> toMap() {
             return (Map<?, ?>) replaceMap(
                     (Function<T, Object>) Function.identity());
@@ -61,7 +61,6 @@ public class MultiMap<T> {
                         .map(t -> transformer.apply(t))
                         .collect(Collectors.toSet());
             }
-            Map<String,?> m = new HashMap<>();
             if (children == null) {
                 return newValue;
             } else {
@@ -92,20 +91,37 @@ public class MultiMap<T> {
             }
         }
         
-        public Set<Tree<T>> getBranchLevel(int index) {
-            if (index == 0) {
-                return Set.of(this);
-            } else if (index == 1) {
-                return new HashSet<>(children.values());
-            } else if (children != null) {
-                Set<Tree<T>> set = new HashSet<>();
-                for (Tree<T> child : children.values()) {
-                    Set<Tree<T>> childSet = child.getBranchLevel(index - 1);
-                    set.addAll(childSet);
-                }
-                return set;
+        /** Compress the tree to the given level and than convert to map. */
+        public Map<?,?> compressToLevel(int level) {
+            return (Map<?,?>) mapAtLevel(List.of(), level);
+        }
+
+        private Object mapAtLevel(List<Object> klist, int level) {
+            if (level > 0) {
+                Map<Object,Object> map = new HashMap<>();
+                children.forEach((k,c) -> {
+                    List<Object> listOfKeys = createList(klist, k);
+                    map.putAll((Map<?,?>)
+                            c.mapAtLevel(listOfKeys, level - 1));
+                });
+                return map;
             }
-            return null;
+            if (children == null) {
+                return value;
+            } else {
+                Map<?,?> newChildren = children.entrySet().stream()
+                        .collect(Collectors.toMap(
+                                e -> createList(klist, e.getKey()),
+                                e -> e.getValue().toMap()));
+                return newChildren;
+            }
+        }
+        
+        private List<Object> createList(List<Object> list, Object elem) {
+            List<Object> l = new ArrayList<>(list.size() + 1);
+            l.addAll(list);
+            l.add(elem);
+            return l;
         }
         
         public Map<List<Object>, T> getLeaveMap() {

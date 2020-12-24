@@ -389,7 +389,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         return state.size == 0;
     }
 
-    public E putEntry(E entry) {
+    protected E putEntry(E entry) {
         readOnlyCheck();
         resizeCheck();
         return innerPutEntry(entry);
