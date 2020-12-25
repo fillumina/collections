@@ -453,10 +453,6 @@ public class MultiMap<T> {
             }
             return new Tree<>(null, map, null);
         } else {
-            Set<T> set = currentSelection.stream()
-                    .map(c -> c.value)
-                    .collect(Collectors.toSet());
-
             T value = currentSelection.iterator().next().value;
 
             if (currentSelection.size() > 1) {
