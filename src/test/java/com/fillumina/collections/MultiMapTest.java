@@ -26,6 +26,10 @@ public class MultiMapTest {
     private static MultiMap<String> MMAP;
     private static Tree<String> TREE;
     
+    public static void main(String[] args) {
+        init();
+    }
+    
     @BeforeAll
     public static void init() {
         MMAP = new MultiMap<>();
@@ -277,8 +281,10 @@ public class MultiMapTest {
 
         assertEquals(Set.of("one", "two"), mmap.get('a'));
         assertEquals(Set.of("three", "four"), mmap.get('b'));
-        assertEquals(Set.of("one", "three"), mmap.get(1));
-        assertEquals(Set.of("two", "four"), mmap.get(2));
+        
+        // use null as placeholder (key position is important)
+        assertEquals(Set.of("one", "three"), mmap.get(null, 1));
+        assertEquals(Set.of("two", "four"), mmap.get(null, 2));
     }
     
     @Test
