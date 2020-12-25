@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import com.fillumina.collections.MultiMap.Tree;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,20 +23,21 @@ public class MultiMapTest {
     private static final Set<Integer> B_SET = Set.of(1, 2, 3);
     private static final Set<Character> C_SET = Set.of('a', 'b');
 
+    private static MultiMap<String> MMAP;
     private static Tree<String> TREE;
     
     @BeforeAll
     public static void init() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MMAP = new MultiMap<>();
         for (String a : A_SET) {
             for (Integer b : B_SET) {
                 for (Character c : C_SET) {
                     String value = "" + a + ":" + b + ":" + c;
-                    mmap.add(value, a, b, c);
+                    MMAP.add(value, a, b, c);
                 }
             }
         }
-        TREE = mmap.treeFromIndexes(0, 1, 2);
+        TREE = MMAP.treeFromIndexes(0, 1, 2);
     }
     
     @Test
@@ -75,49 +77,82 @@ public class MultiMapTest {
 
     @Test
     public void shouldCreateTree() {
-        checkTree(TREE);
+        checkTree(TREE, 0, 1, 2);
+    }
+    
+    @Test
+    public void shouldCreateTreeWithDifferentIndexOrder() {
+        Tree<String> otherTree = 
+                MMAP.treeFromIndexes(1, 2, 0);
+        checkTree(otherTree, 1, 2, 0);
+    }
+    
+    @Test
+    public void shouldCreateTreeWithAnotherDifferentIndexOrder() {
+        Tree<String> otherTree = 
+                MMAP.treeFromIndexes(2, 0, 1);
+        checkTree(otherTree, 2, 0, 1);
     }
     
     @Test
     public void shouldCloneTree() {
         final Tree<String> clone = TREE.clone();
         assertFalse(clone == TREE);
-        checkTree(clone);
+        checkTree(clone, 0, 1, 2);
     }
 
-    public void checkTree(Tree<String> tree) {
-        assertTrue(tree.isRoot());
-        assertEquals(A_SET, tree.getChildren().keySet());
+    public void checkTree(Tree<String> tree, int...indexes) {
+        List<Set<?>> orderedSets = List.of(A_SET, B_SET, C_SET);
+        List<Set<?>> sets = List.of(
+                orderedSets.get(indexes[0]),
+                orderedSets.get(indexes[1]),
+                orderedSets.get(indexes[2]));
+        Map<Integer,Integer> idxMap = new HashMap<>(indexes.length);
+        for (int i=0; i<indexes.length; i++) {
+            idxMap.put(indexes[i], i);
+        }
 
-        tree.getChildren().forEach((a, t1) -> {
-            assertEquals(B_SET, t1.getChildren().keySet());
+        assertTrue(tree.isRoot());
+        assertEquals(sets.get(0), 
+                tree.getChildren().keySet());
+
+        tree.getChildren().forEach((x, t1) -> {
+            assertEquals(sets.get(1), 
+                    t1.getChildren().keySet());
             assertFalse(t1.isLeaf());
             assertFalse(t1.isRoot());
             assertEquals(tree, t1.getParent());
             assertEquals(tree, t1.getRoot());
             
-            t1.getChildren().forEach((b, t2) -> {
+            t1.getChildren().forEach((y, t2) -> {
                 assertFalse(t2.isLeaf());
                 assertFalse(t2.isRoot());
                 assertEquals(t1, t2.getParent());
                 assertEquals(tree, t2.getRoot());
-                assertEquals(C_SET, t2.getChildren().keySet());
+                assertEquals(sets.get(2), 
+                        t2.getChildren().keySet());
 
-                t2.getChildren().forEach((c, t3) -> {
+                t2.getChildren().forEach((z, t3) -> {
                     assertTrue(t3.isLeaf());
                     assertFalse(t3.isRoot());
                     assertEquals(t2, t3.getParent());
                     assertEquals(tree, t3.getRoot());
                     
-                    String value = "" + a + ":" + b + ":" + c;
+                    List<?> l = List.of(x, y, z);
+                    String value = "" + l.get(idxMap.get(0)) + 
+                            ":" + l.get(idxMap.get(1)) + 
+                            ":" + l.get(idxMap.get(2));
+                    
                     assertEquals(value, t3.getValue());
                     
                     List<Object> keyList = t3.getKeyList();
-                    assertEquals(a, keyList.get(0));
-                    assertEquals(b, keyList.get(1));
-                    assertEquals(c, keyList.get(2));
+                    assertEquals(x, keyList.get(0));
+                    assertEquals(y, keyList.get(1));
+                    assertEquals(z, keyList.get(2));
                     
-                    assertEquals(value, t3.getKeyListAsString(":"));
+                    String keyValue = "" + x + ":" + y + ":" + z;
+                    assertEquals(keyValue, 
+                            t3.getKeyListAsString(":"));
                 });
             });
         });
