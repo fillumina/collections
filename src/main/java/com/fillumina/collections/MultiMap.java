@@ -111,13 +111,6 @@ public class MultiMap<T> {
             }
         }
         
-        private List<Object> createList(List<Object> list, Object elem) {
-            List<Object> l = new ArrayList<>(list.size() + 1);
-            l.addAll(list);
-            l.add(elem);
-            return l;
-        }
-        
         public Map<List<Object>, T> getLeavesMap() {
             Map<List<Object>,T> map = new HashMap<>();
             visitLeaves(t -> map.put(t.getKeyList(), t.getValue()));
@@ -355,10 +348,9 @@ public class MultiMap<T> {
         return positionKeyList.get(index);
     }
 
-    private final static Object NULL_KEY = new Object();
     /** It's not advisable to use more than 3 indexes */
     public Tree<T> treeFromIndexes(int... indexes) {
-        Tree<T> root = createTree(List.of(), NULL_KEY, indexes, 0, 
+        Tree<T> root = createTree(List.of(), null, indexes, 0, 
                 null);
         return root;
     }
@@ -368,36 +360,40 @@ public class MultiMap<T> {
             int[] indexes, int pos,
             Set<Container<T>> selection) {
         
-        List<Object> keyList = new ArrayList<>(keys.size() + 1);
-        keyList.addAll(keys);
-        Set<Container<T>> currentSelection = null;
-        if (key != NULL_KEY) {
-            keyList.add(key);
+        List<Object> keyList;
+        final Set<Container<T>> currentSelection;
+        if (key != null) {
+            keyList = createList(keys, key);
             Set<Container<T>> keySelection = map.get(key);
-            if (selection != null) {
+            if (keySelection.isEmpty()) {
                 currentSelection = createNewSet(selection);
-                currentSelection.retainAll(keySelection);
             } else {
                 currentSelection = createNewSet(keySelection);
+                if (selection != null && !selection.isEmpty()) {
+                    currentSelection.retainAll(selection);
+                }
             }
             if (currentSelection == null || currentSelection.isEmpty()) {
                 return null;
             }
+        } else {
+            keyList = keys;
+            currentSelection = null;
         }
-        final Set<Container<T>> currSelection = currentSelection;
-        final boolean notLeaf = pos < indexes.length;
-        if (notLeaf) {
+        
+        final boolean isNotLeaf = pos < indexes.length;
+        if (isNotLeaf) {
             Set<Object> keySet = keysAtIndex(indexes[pos]);
             if (keySet.isEmpty()) {
                 return null;
             }
             // cannot use TreeMap on unknown types
             Map<Object, Tree<T>> map = new HashMap<>(keySet.size());
-            
+            int indexPosition = pos + 1;
             keySet.parallelStream().forEach(k -> {
                 
                 final Tree<T> t = createTree(keyList, k,
-                        indexes, pos + 1, currSelection);
+                        indexes, indexPosition, currentSelection);
                 if (t != null) {
                     synchronized (map) {
                         map.put(k, t);
@@ -410,10 +406,7 @@ public class MultiMap<T> {
             }
             return new Tree<>(null, map, null);
         } else {
-            if (currentSelection == null || currSelection.isEmpty()) {
-                return null;
-            }
-            Set<T> set = currSelection.stream()
+            Set<T> set = currentSelection.stream()
                     .map(c -> c.value)
                     .collect(Collectors.toSet());
             
@@ -438,5 +431,12 @@ public class MultiMap<T> {
             }
             keySet.add(keys[i]);
         }
+    }
+
+    private static List<Object> createList(List<Object> list, Object elem) {
+        List<Object> l = new ArrayList<>(list.size() + 1);
+        l.addAll(list);
+        l.add(elem);
+        return l;
     }
 }
