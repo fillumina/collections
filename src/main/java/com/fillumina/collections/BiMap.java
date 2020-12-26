@@ -1,16 +1,16 @@
 package com.fillumina.collections;
 
 import com.fillumina.collections.AbstractSimpleMap.SimpleMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class BiMap<K,V> extends SimpleMap<K,V> {
-
-    private class InverseMap extends SimpleMap<V,K> {
+public class BiMap<K,V> extends SimpleMap<K,V> implements InvertibleBiMap<K,V> {
+    
+    public class InverseMap extends SimpleMap<V,K> 
+            implements InvertibleBiMap<V,K>{
 
         public InverseMap() {
             super();
@@ -20,6 +20,10 @@ public class BiMap<K,V> extends SimpleMap<K,V> {
             super(initialSize);
         }
 
+        public InvertibleBiMap<K,V> inverse() {
+            return BiMap.this;
+        }
+        
         @Override
         protected K innerPut(V key, K value) {
             BiMap.this.inversePut(value, key);
@@ -71,7 +75,7 @@ public class BiMap<K,V> extends SimpleMap<K,V> {
         this.inverseMap = new InverseMap(initialSize);
     }
 
-    public Map<V,K> inverse() {
+    public InvertibleBiMap<V,K> inverse() {
         return inverseMap;
     }
     

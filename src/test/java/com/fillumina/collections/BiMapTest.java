@@ -161,4 +161,14 @@ public class BiMapTest {
         assertTrue(biMap.containsValue(2));
         assertTrue(biMap.containsValue(3));
     }
+    
+    @Test
+    public void shouldInvertInverted() {
+        BiMap<String,Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("two", 2);
+        biMap.put("three", 3);
+
+        assertEquals(1, biMap.inverse().inverse().get("one"));
+    }
 }
