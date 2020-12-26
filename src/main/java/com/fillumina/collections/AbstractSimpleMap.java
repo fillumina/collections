@@ -546,7 +546,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         } while (true);
     }
 
-    public boolean removeEntry(E entry) {
+    protected boolean removeEntry(E entry) {
         return remove(entry.getKey()) != null;
     }
 
