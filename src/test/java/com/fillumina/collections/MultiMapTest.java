@@ -308,4 +308,17 @@ public class MultiMapTest {
 
         assertNotEquals(Set.of("one"), mmap.get('a', 3));
     }
+
+    @Test
+    public void shouldConsiderKeyOrder() {
+        MultiMap<String> mmap = new MultiMap<>();
+
+        mmap.add("one", 'a', 1);
+        mmap.add("two", 1, 'a');
+
+        assertEquals(2, mmap.size());
+
+        assertEquals(Set.of("one"), mmap.get('a', 1));
+        assertEquals(Set.of("two"), mmap.get(1, 'a'));
+    }
 }

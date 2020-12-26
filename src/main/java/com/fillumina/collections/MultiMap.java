@@ -280,19 +280,6 @@ public class MultiMap<T> {
 
     private final List<Map<Object, Set<Container<T>>>> mapList = 
             new ArrayList<>();
-    private final List<Set<Object>> positionKeyList = 
-            new ArrayList<>();
-
-    public MultiMap() {
-        this(10);
-    }
-
-    public MultiMap(int maxIndexs) {
-        for (int i=0; i<maxIndexs; i++) {
-            mapList.add(new ConcurrentHashMap<>());
-            positionKeyList.add(ConcurrentHashMap.newKeySet());
-        }
-    }
 
     private static <T> Set<Container<T>> createNewSet() {
         return new SetWrapper<>();
@@ -343,12 +330,13 @@ public class MultiMap<T> {
     }
 
     public boolean add(T value, Object... keys) {
-        recordKeyPositions(keys);
+        checkMapListSize(keys.length);
         Container container = new Container(keys, value);
         boolean added = false;
         for (int i=0,l=keys.length; i<l; i++) {
             Object k = keys[i];
-            Set<Container<T>> set = mapList.get(i)
+            Set<Container<T>> set = mapList
+                    .get(i)
                     .computeIfAbsent(k, key -> createNewSet());
             synchronized (set) {
                 added |= set.add(container);
@@ -357,6 +345,20 @@ public class MultiMap<T> {
         return added;
     }
 
+    private void checkMapListSize(int size) {
+        if (size > mapList.size()) {
+            synchronized(mapList) {
+                // double check in the thread safe code
+                int innerMissing = size - mapList.size();
+                if (innerMissing > 0) {
+                    for (int i=0; i<innerMissing; i++) {
+                        mapList.add(new ConcurrentHashMap<>());
+                    }
+                }
+            }
+        }
+    }
+    
     public boolean remove(Object... keys) {
         boolean removed = false;
         Container<T> element = new Container<>(keys, null);
@@ -385,7 +387,7 @@ public class MultiMap<T> {
     }
 
     public Set<Object> keysAtIndex(int index) {
-        return positionKeyList.get(index);
+        return mapList.get(index).keySet();
     }
 
     /**
@@ -460,13 +462,6 @@ public class MultiMap<T> {
             }
 
             return new Tree<>(value, null, keyList);
-        }
-    }
-
-    private void recordKeyPositions(Object[] keys) {
-        for (int i = 0; i < keys.length; i++) {
-            Set<Object> keySet = positionKeyList.get(i);
-            keySet.add(keys[i]);
         }
     }
 
