@@ -8,7 +8,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * A container for its key set, which is a very usable set implementation.
+ * A container for its {@link #keySet()}, 
+ * which is a very usable set implementation.
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
