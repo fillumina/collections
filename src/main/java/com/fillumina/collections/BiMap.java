@@ -1,91 +1,45 @@
 package com.fillumina.collections;
 
 import com.fillumina.collections.AbstractSimpleMap.SimpleMap;
-import java.util.Set;
 
 /**
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class BiMap<K,V> extends SimpleMap<K,V> implements InvertibleBiMap<K,V> {
+public class BiMap<K,V> extends SimpleMap<K,V> {
     
-    public class InverseMap extends SimpleMap<V,K> 
-            implements InvertibleBiMap<V,K>{
-
-        public InverseMap() {
-            super();
-        }
-
-        public InverseMap(int initialSize) {
-            super(initialSize);
-        }
-
-        public InvertibleBiMap<K,V> inverse() {
-            return BiMap.this;
-        }
-        
-        @Override
-        protected K innerPut(V key, K value) {
-            BiMap.this.inversePut(value, key);
-            return super.innerPut(key, value);
-        }
-
-        @Override
-        public K remove(Object key) {
-            Entry<V,K> entry = getEntry(key);
-            K value = super.remove(key);
-            BiMap.this.innerRemove(entry.getValue());
-            return value;
-        }
-
-        protected K innerRemove(Object key) {
-            return super.remove(key);
-        }
-
-        @Override
-        public Set<K> values() {
-            return BiMap.this.keySet();
-        }
-
-        @Override
-        public boolean containsValue(Object value) {
-            return BiMap.this.containsKey(value);
-        }
-
-        @Override
-        public void clear() {
-            BiMap.this.clear();
-        }
-        
-        protected void innerClear() {
-            super.clear();
-        }
-        
-    }
-    
-    private final InverseMap inverseMap;
+    private final BiMap<V,K> inverseMap;
     
     public BiMap() {
         super();
-        this.inverseMap = new InverseMap();
+        this.inverseMap = new BiMap(this);
+    }
+
+    private BiMap(BiMap<V,K> inverseMap) {
+        this.inverseMap = inverseMap;
     }
 
     public BiMap(int initialSize) {
         super(initialSize);
-        this.inverseMap = new InverseMap(initialSize);
+        this.inverseMap = new BiMap(this, initialSize);
     }
 
-    public InvertibleBiMap<V,K> inverse() {
+    private BiMap(BiMap<V,K> inverseMap, int initialSize) {
+        super(initialSize);
+        this.inverseMap = inverseMap;
+    }
+
+    public BiMap<V,K> inverse() {
         return inverseMap;
     }
     
     @Override
     protected V innerPut(K key, V value) {
-        inverseMap.innerPut(value, key);
+        inverseMap.inverseInnerPut(value, key);
         return super.innerPut(key, value);
     }
 
-    private V inversePut(K key, V value) {
+    private V inverseInnerPut(K key, V value) {
         return super.innerPut(key, value);
     }
     
@@ -110,5 +64,9 @@ public class BiMap<K,V> extends SimpleMap<K,V> implements InvertibleBiMap<K,V> {
     public void clear() {
         super.clear();
         inverseMap.innerClear();
+    }
+    
+    private void innerClear() {
+        super.clear();
     }
 }
