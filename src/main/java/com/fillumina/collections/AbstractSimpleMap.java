@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A {@link java.util.Map} implementation that offers various interesting
@@ -527,6 +528,15 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         return entry == null ? null : entry.getValue();
     }
 
+    public V getOrCreate(K key, Supplier<V> creator) {
+        V value = get(key);
+        if (value == null) {
+            value = creator.get();
+            put(key, value);
+        }
+        return value;
+    }
+    
     public E getEntry(Object key) {
         if (state.array == null || key == null) {
             return createEntry(null, null);

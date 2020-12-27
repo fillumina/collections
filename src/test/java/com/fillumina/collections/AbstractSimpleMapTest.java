@@ -501,4 +501,11 @@ public class AbstractSimpleMapTest {
         list.forEach( i -> assertEquals(i, map.get("" + i)));
         assertEquals(900, map.size());
     }
+    
+    @Test
+    public void shouldGetOrCreate() {
+        SimpleMap<Integer,String> map = new SimpleMap<>();
+        assertEquals("one", map.getOrCreate(1, () -> "one"));
+        assertEquals("one", map.get(1));
+    }
 }
