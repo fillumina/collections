@@ -50,9 +50,8 @@ public class BiMap<K,V> extends SimpleMap<K,V> {
 
     @Override
     public V remove(Object key) {
-        Entry<K,V> entry = getEntry(key);
         V value = super.remove(key);
-        inverseMap.innerRemove(entry.getValue());
+        inverseMap.innerRemove(value);
         return value;
     }
 

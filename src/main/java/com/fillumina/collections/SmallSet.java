@@ -186,16 +186,6 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         return modified;
     }
 
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        return super.removeAll(c); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        return super.containsAll(c); //To change body of generated methods, choose Tools | Templates.
-    }
-
     /**
      * It's quite an expensive operation.
      */
