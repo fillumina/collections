@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import com.fillumina.collections.AbstractSimpleMap.SimpleMap;
+import java.util.Set;
 
 /**
  *
@@ -48,6 +49,11 @@ public class BiMap<K,V> extends SimpleMap<K,V> {
         return inverseMap.containsKey(value);
     }
 
+    @Override
+    public Set<V> values() {
+        return inverseMap.keySet();
+    }
+    
     @Override
     public V remove(Object key) {
         V value = super.remove(key);

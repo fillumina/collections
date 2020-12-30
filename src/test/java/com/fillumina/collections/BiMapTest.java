@@ -1,6 +1,8 @@
 package com.fillumina.collections;
 
+import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -170,5 +172,18 @@ public class BiMapTest {
         biMap.put("three", 3);
 
         assertEquals(1, biMap.inverse().inverse().get("one"));
+    }
+    
+    @Test
+    public void shouldRemoveFromValueCollection() {
+        BiMap<String,Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("two", 2);
+        biMap.put("three", 3);
+
+        Set<Integer> values = biMap.values();
+        values.remove(2);
+        
+        assertFalse(biMap.containsKey("two"));
     }
 }
