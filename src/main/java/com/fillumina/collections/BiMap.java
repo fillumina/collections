@@ -1,15 +1,24 @@
 package com.fillumina.collections;
 
 import com.fillumina.collections.AbstractSimpleMap.SimpleMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
- *
+ * A BiMap it's not only a double mapping between keys and values but also assures their
+ * biunivocal unicity: if an existing value is inserted with a new key the old mapping is
+ * substituted.
+ * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class BiMap<K,V> extends SimpleMap<K,V> {
     
     private final BiMap<V,K> inverseMap;
+    
+    public BiMap(Map<K,V> map) {
+        this();
+        map.forEach((k,v) -> put(k, v));
+    }
     
     public BiMap() {
         super();
@@ -36,7 +45,10 @@ public class BiMap<K,V> extends SimpleMap<K,V> {
     
     @Override
     protected V innerPut(K key, V value) {
-        inverseMap.inverseInnerPut(value, key);
+        K prevKey = inverseMap.inverseInnerPut(value, key);
+        if (prevKey != null) {
+            innerRemove(prevKey);
+        }
         return super.innerPut(key, value);
     }
 

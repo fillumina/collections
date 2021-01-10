@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.Map;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -185,5 +186,40 @@ public class BiMapTest {
         values.remove(2);
         
         assertFalse(biMap.containsKey("two"));
+    }
+    
+    @Test
+    public void shouldInitWithExistingMap() {
+        BiMap<String,Integer> biMap = new BiMap<>(
+            Map.of("one", 1, "two", 2, "three", 3));
+
+        assertEquals(3, biMap.size());
+        assertEquals(1, biMap.get("one"));
+        assertEquals(2, biMap.get("two"));
+        assertEquals(3, biMap.get("three"));
+    }
+    
+    @Test
+    public void shouldRemoveTheInverseMappingIfExisting() {
+        BiMap<String,Integer> biMap = new BiMap<>();
+        
+        biMap.put("one", 1);
+        biMap.put("two", 1);
+
+        assertEquals(1, biMap.size());
+        assertEquals(1, biMap.inverse().size());
+        
+        assertEquals(1, biMap.get("two"));
+        assertEquals("two", biMap.inverse().get(1));
+        
+    }    
+    
+    @Test
+    public void shouldInitWithExistingUncorrectMap() {
+        BiMap<String,Integer> biMap = new BiMap<>(
+            Map.of("one", 1, "two", 1, "three", 3));
+        
+        assertEquals(2, biMap.size());
+        assertEquals(3, biMap.get("three"));
     }
 }
