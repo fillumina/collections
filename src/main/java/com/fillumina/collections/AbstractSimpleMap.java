@@ -495,7 +495,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
     }
 
     private void resizeCheck() {
-        if (state.array == null) {
+        if (state.array == null || state.array.length == 0) {
             state.array = (E[]) new Entry[INITIAL_SIZE];
             state.mask = state.array.length - 1;
         } else if (state.size > (state.array.length >> 1)) {
@@ -708,6 +708,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
 
                     @Override
                     public void remove() {
+                        readOnlyCheck();
                         AbstractSimpleMap.this.removeIndex(currentIdx);
                         idx = Math.max(0, currentIdx - 1);
                         goToNextNonNullItem();
