@@ -17,13 +17,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Multi map simulates a DB allowing for many keys, indexes and complex
+ * IndexedTree simulates a DB allowing for many keys, indexes and complex
  * searches. It provides a way to easily navigate and manipulate complex
  * structures.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class MultiMap<T> {
+public class IndexedTree<T> {
 
     public static class Tree<T> {
 

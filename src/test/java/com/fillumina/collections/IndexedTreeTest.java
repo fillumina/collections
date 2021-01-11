@@ -1,6 +1,6 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.MultiMap.Tree;
+import com.fillumina.collections.IndexedTree.Tree;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,12 +18,12 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class MultiMapTest {
+public class IndexedTreeTest {
     private static final Set<String> A_SET = Set.of("IT", "FR", "ES");
     private static final Set<Integer> B_SET = Set.of(1, 2, 3);
     private static final Set<Character> C_SET = Set.of('a', 'b');
 
-    private static MultiMap<String> MMAP;
+    private static IndexedTree<String> MMAP;
     private static Tree<String> TREE;
     
     public static void main(String[] args) {
@@ -32,7 +32,7 @@ public class MultiMapTest {
     
     @BeforeAll
     public static void init() {
-        MMAP = new MultiMap<>();
+        MMAP = new IndexedTree<>();
         for (String a : A_SET) {
             for (Integer b : B_SET) {
                 for (Character c : C_SET) {
@@ -46,7 +46,7 @@ public class MultiMapTest {
     
     @Test
     public void shouldAddValues() {
-        MultiMap<Integer> mmap = new MultiMap<>();
+        IndexedTree<Integer> mmap = new IndexedTree<>();
 
         mmap.add(1, "alpha", 12);
         mmap.add(2, "alpha", 13);
@@ -65,7 +65,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldRemoveValues() {
-        MultiMap<Integer> mmap = new MultiMap<>();
+        IndexedTree<Integer> mmap = new IndexedTree<>();
 
         mmap.add(1, "alpha", 12);
         mmap.add(2, "alpha", 13);
@@ -253,7 +253,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldSelectFromEqualElements() {
-        MultiMap<String> mmap = new MultiMap<>();
+        IndexedTree<String> mmap = new IndexedTree<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("one", 'a', 2);
@@ -270,7 +270,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetFromPartialKey() {
-        MultiMap<String> mmap = new MultiMap<>();
+        IndexedTree<String> mmap = new IndexedTree<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("two", 'a', 2);
@@ -298,7 +298,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldDifferentiate() {
-        MultiMap<String> mmap = new MultiMap<>();
+        IndexedTree<String> mmap = new IndexedTree<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("one", 'a', 2);
@@ -311,7 +311,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldConsiderKeyOrder() {
-        MultiMap<String> mmap = new MultiMap<>();
+        IndexedTree<String> mmap = new IndexedTree<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("two", 1, 'a');
