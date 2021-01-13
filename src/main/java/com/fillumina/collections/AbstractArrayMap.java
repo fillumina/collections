@@ -130,6 +130,10 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
     }
     
+    /** Override to provide unmodifiability. */
+    protected void readOnlyCheck() throws UnsupportedOperationException {
+    }
+
     @Override
     public int size() {
         return array == null ? 0 : array.length >> 1;
@@ -156,9 +160,6 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
             }
         }
         return -1;
-    }
-
-    protected void readOnlyCheck() throws UnsupportedOperationException {
     }
 
     @Override
