@@ -15,6 +15,8 @@ import java.util.Map.Entry;
  */
 public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
 
+    public static final PairMap<?,?> EMPTY = new Immutable<>();
+    
     public static class Immutable<K, V> extends PairMap<K, V> {
 
         public Immutable() {

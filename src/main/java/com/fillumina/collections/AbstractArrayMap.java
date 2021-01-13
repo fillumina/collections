@@ -130,7 +130,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
     }
     
-    /** Override to provide unmodifiability. */
+    /** Override to provide immutability. */
     protected void readOnlyCheck() throws UnsupportedOperationException {
     }
 

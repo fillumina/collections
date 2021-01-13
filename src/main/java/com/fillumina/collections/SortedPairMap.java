@@ -12,6 +12,8 @@ import java.util.Objects;
  */
 public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
     private static final int PAIR_MASK = Integer.MAX_VALUE - 1;
+    
+    public static final SortedPairMap<?,?> EMPTY = new SortedPairMap.Immutable<>();
 
     public static class Immutable<K, V> extends SortedPairMap<K, V> {
 
