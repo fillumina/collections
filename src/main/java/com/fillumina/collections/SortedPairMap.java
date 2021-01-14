@@ -17,6 +17,10 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
 
     public static class Immutable<K, V> extends SortedPairMap<K, V> {
 
+        public static <K,V> Builder<SortedPairMap<K,V>,K,V> builder() {
+            return new Builder<>(o -> new SortedPairMap.Immutable<>(o));
+        }
+
         public Immutable() {
         }
 
@@ -37,7 +41,11 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
             throw new UnsupportedOperationException("read only");
         }
     }
-
+    
+    public static <K,V> Builder<SortedPairMap<K,V>,K,V> builder() {
+        return new Builder<>(o -> new SortedPairMap<>(o));
+    }
+    
     public SortedPairMap() {
     }
 
@@ -112,7 +120,8 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
             }
             idx += (cmp > 0) ? range: -range;
             if (range < 2) {
-                return -idx - ((cmp > 0) ? 4 : 2); // where it should be
+                // cache added
+                return -idx - ((cmp > 0) ? 4 : 2);
             }
             if (idx < 0) {
                 return -2;

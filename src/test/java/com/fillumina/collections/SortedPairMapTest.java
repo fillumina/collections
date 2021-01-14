@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SortedPairMapTest extends AbstractPairMapTestHelper {
+public class SortedPairMapTest extends AbstractArrayMapTestHelper {
     
     @Override
     SortedPairMap<Integer,String> create(Object... o) {
@@ -120,11 +120,59 @@ public class SortedPairMapTest extends AbstractPairMapTestHelper {
     }
     
     @Test
+    public void testPutReversed() {
+        AbstractArrayMap<Integer,String> map = create();
+        map.put(5, "five");
+        map.put(4, "four");
+        map.put(3, "three");
+        map.put(2, "two");
+        map.put(1, "one");
+        
+        assertEquals(5, map.size());
+        assertEquals("one", map.get(1));
+        assertEquals("two", map.get(2));
+        assertEquals("three", map.get(3));
+        assertEquals("four", map.get(4));
+        assertEquals("five", map.get(5));
+    }
+    
+    @Test
     public void testReadOnlyCheck() {
         AbstractArrayMap<Integer,String> map = new SortedPairMap.Immutable<>(
             Map.of(1, "one", 2, "two", 3, "three"));
         
         assertThrows(UnsupportedOperationException.class,
+            () -> map.put(4, "four"));
+    }
+    
+    @Test
+    public void testBuilder() {
+        SortedPairMap<Integer,String> map = SortedPairMap.<Integer,String>builder()
+            .put(1, "one")
+            .put(2, "two")
+            .put(3, "three")
+            .build();
+        
+        assertEquals(3, map.size());
+        assertEquals("one", map.get(1));
+        assertEquals("two", map.get(2));
+        assertEquals("three", map.get(3));
+    }
+    
+    @Test
+    public void testImmutableBuilder() {
+        SortedPairMap<Integer,String> map = SortedPairMap.Immutable.<Integer,String>builder()
+            .put(1, "one")
+            .put(2, "two")
+            .put(3, "three")
+            .build();
+        
+        assertEquals(3, map.size());
+        assertEquals("one", map.get(1));
+        assertEquals("two", map.get(2));
+        assertEquals("three", map.get(3));
+        
+        assertThrows(UnsupportedOperationException.class, 
             () -> map.put(4, "four"));
     }
     

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class PairMapTest extends AbstractPairMapTestHelper {
+public class PairMapTest extends AbstractArrayMapTestHelper {
 
     @Override
     PairMap<Integer,String> create(Object... o) {
@@ -90,6 +90,37 @@ public class PairMapTest extends AbstractPairMapTestHelper {
             Map.of(1, "one", 2, "two", 3, "three"));
         
         assertThrows(UnsupportedOperationException.class,
+            () -> map.put(4, "four"));
+    }
+    
+    @Test
+    public void testBuilder() {
+        PairMap<Integer,String> map = PairMap.<Integer,String>builder()
+            .put(1, "one")
+            .put(2, "two")
+            .put(3, "three")
+            .build();
+        
+        assertEquals(3, map.size());
+        assertEquals("one", map.get(1));
+        assertEquals("two", map.get(2));
+        assertEquals("three", map.get(3));
+    }
+    
+    @Test
+    public void testImmutableBuilder() {
+        PairMap<Integer,String> map = PairMap.Immutable.<Integer,String>builder()
+            .put(1, "one")
+            .put(2, "two")
+            .put(3, "three")
+            .build();
+        
+        assertEquals(3, map.size());
+        assertEquals("one", map.get(1));
+        assertEquals("two", map.get(2));
+        assertEquals("three", map.get(3));
+        
+        assertThrows(UnsupportedOperationException.class, 
             () -> map.put(4, "four"));
     }
     

@@ -19,6 +19,10 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
     
     public static class Immutable<K, V> extends PairMap<K, V> {
 
+        public static <K,V> Builder<PairMap<K,V>,K,V> builder() {
+            return new Builder<>(o -> new PairMap.Immutable<>(o));
+        }
+
         public Immutable() {
         }
 
@@ -40,6 +44,10 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
         }
     }
 
+    public static <K,V> Builder<PairMap<K,V>,K,V> builder() {
+        return new Builder<>(o -> new PairMap<K,V>(o));
+    }
+    
     public PairMap() {
     }
 

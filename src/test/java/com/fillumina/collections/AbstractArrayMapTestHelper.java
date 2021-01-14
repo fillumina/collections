@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public abstract class AbstractPairMapTestHelper {
+public abstract class AbstractArrayMapTestHelper {
     
     abstract <T extends AbstractArrayMap<Integer,String>> T create(Object... o);
     
