@@ -5,28 +5,29 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * This is a very minimal size map backed by a simple array. It should be used mainly as a small
- * immutable object. It's easy to clone and easy to pass and save. It's characteristic is that
- * entries are in fact <i>cursors</i> so they are <i>mutable</i> objects: don't use it with
- * parallel streams. Every operation is O(n) so very inefficient for many items. 
- * The map keeps insertion order until a sorting method is called.
+ * This is a very minimal size map backed by an array. It should be used mainly as a small immutable
+ * object. It's easy to clone and easy to pass and save. It's characteristic is that entries are in
+ * fact a <i>cursor</i> that is one single <i>mutable</i> object: don't use it with parallel streams
+ * and never save or use entries outside loops! Every operation is O(n) so very inefficient for many
+ * items (but good enough for a few ones). The map keeps insertion order until a sorting method is
+ * called. This map is not thread safe.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
 
-    public static final PairMap<?,?> EMPTY = new Immutable<>();
-    
+    public static final PairMap<?, ?> EMPTY = new Immutable<>();
+
     public static class Immutable<K, V> extends PairMap<K, V> {
 
-        public static <K,V> Builder<PairMap<K,V>,K,V> builder() {
+        public static <K, V> Builder<PairMap<K, V>, K, V> builder() {
             return new Builder<>(o -> new PairMap.Immutable<>(o));
         }
 
         public Immutable() {
         }
 
-        public Immutable(PairMap<K,V> copy) {
+        public Immutable(PairMap<K, V> copy) {
             super(copy);
         }
 
@@ -44,14 +45,14 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
         }
     }
 
-    public static <K,V> PairMap<K,V> empty() {
+    public static <K, V> PairMap<K, V> empty() {
         return (PairMap<K, V>) EMPTY;
     }
-    
-    public static <K,V> Builder<PairMap<K,V>,K,V> builder() {
-        return new Builder<>(o -> new PairMap<K,V>(o));
+
+    public static <K, V> Builder<PairMap<K, V>, K, V> builder() {
+        return new Builder<>(o -> new PairMap<K, V>(o));
     }
-    
+
     public PairMap() {
     }
 
@@ -66,7 +67,7 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
     public PairMap(Map<K, V> map) {
         super(map);
     }
-    
+
     @Override
     public V put(K key, V value) {
         readOnlyCheck();
@@ -91,23 +92,25 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
         }
     }
 
-    public PairMap<K,V> immutable() {
+    public PairMap<K, V> immutable() {
         if (this instanceof Immutable) {
             return this;
         }
         return new Immutable<>(this);
     }
-    
+
     public V getValueAtIndex(int index) {
         return (V) array[1 + (index << 1)];
     }
-    
+
     public K getKeyAtIndex(int index) {
         return (K) array[index << 1];
     }
 
-    /** A new entry is created at each call!! */
-    public Entry<K,V> getEntryAtIndex(int index) {
+    /**
+     * A new entry is created at each call!!
+     */
+    public Entry<K, V> getEntryAtIndex(int index) {
         return new SimpleEntry<>(getKeyAtIndex(index), getValueAtIndex(index));
     }
 
@@ -132,7 +135,7 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
             swapped = false;
             for (int i = array.length - 3; i > 0; i -= 2) {
                 if (comparator.compare((V) array[i], (V) array[i + 2]) > 0) {
-                    swap(i-1, i + 1);
+                    swap(i - 1, i + 1);
                     swapped = true;
                 }
             }

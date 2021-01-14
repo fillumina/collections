@@ -137,4 +137,11 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
         } while (true);
     }
     
+    public SortedPairMap<K, V> immutable() {
+        if (this instanceof Immutable) {
+            return this;
+        }
+        return new Immutable<>(this);
+    }
+    
 }
