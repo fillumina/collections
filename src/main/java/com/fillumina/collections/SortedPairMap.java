@@ -42,6 +42,10 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
             throw new UnsupportedOperationException("read only");
         }
     }
+
+    public static <K,V> SortedPairMap<K,V> empty() {
+        return (SortedPairMap<K, V>) EMPTY;
+    }
     
     public static <K,V> Builder<SortedPairMap<K,V>,K,V> builder() {
         return new Builder<>(o -> new SortedPairMap<>(o));

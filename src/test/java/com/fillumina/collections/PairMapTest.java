@@ -3,6 +3,7 @@ package com.fillumina.collections;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -124,4 +125,13 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
             () -> map.put(4, "four"));
     }
     
+    @Test
+    public void shouldEmptyMapBeImmutable() {
+        PairMap<Integer,String> map = PairMap.<Integer,String>empty();
+
+        assertTrue(map.isEmpty());
+        
+        assertThrows(UnsupportedOperationException.class, 
+            () -> map.put(4, "four"));
+    }
 }

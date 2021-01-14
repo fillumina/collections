@@ -44,6 +44,10 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
         }
     }
 
+    public static <K,V> PairMap<K,V> empty() {
+        return (PairMap<K, V>) EMPTY;
+    }
+    
     public static <K,V> Builder<PairMap<K,V>,K,V> builder() {
         return new Builder<>(o -> new PairMap<K,V>(o));
     }
