@@ -203,4 +203,5 @@ public class SortedPairMapTest extends AbstractArrayMapTestHelper {
         
         assertTrue(anotherImmutable == immutable);
     }
+    
 }

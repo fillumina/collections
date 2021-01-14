@@ -2,6 +2,7 @@ package com.fillumina.collections;
 
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -133,5 +134,21 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
         
         assertThrows(UnsupportedOperationException.class, 
             () -> map.put(4, "four"));
+    }
+        
+    @Test
+    public void shouldGetImmutableMap() {
+        PairMap<Integer,String> map = new PairMap<>();
+        map.put(3, "three");
+        map.put(1, "one");
+        map.put(2, "two");
+
+        PairMap<Integer,String> immutable = map.immutable();
+        
+        assertFalse(immutable == map);
+        
+        PairMap<Integer,String> anotherImmutable = immutable.immutable();
+        
+        assertTrue(anotherImmutable == immutable);
     }
 }
