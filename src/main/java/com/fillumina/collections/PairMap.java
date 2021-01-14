@@ -9,7 +9,7 @@ import java.util.Map.Entry;
  * immutable object. It's easy to clone and easy to pass and save. It's characteristic is that
  * entries are in fact <i>cursors</i> so they are <i>mutable</i> objects: don't use it with
  * parallel streams. Every operation is O(n) so very inefficient for many items. 
- * The map keeps insertion order until a sorting methods are called.
+ * The map keeps insertion order until a sorting method is called.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

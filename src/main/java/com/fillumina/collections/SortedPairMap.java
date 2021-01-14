@@ -7,6 +7,7 @@ import java.util.Objects;
  * Map backed by a sorted array. Very compact and accessible in O(Log n).
  * Useful to store large maps in a very small space with decent access time.
  * It uses cursors as iterators so don't use it with parallel streams.
+ * It <b>requires</b> a {@link Comparable} implementing key.
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -80,8 +81,8 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
             array[index + 1] = value;
             return prev;
         } else {
+            // the index where the new element should be
             index = -index - 2;
-            // the key where it should be (put it on that key and shift everything right)
             Object[] newArray = new Object[array.length + 2];
             if (index == 0) {
                 System.arraycopy(array, 0, newArray, 2, array.length);
@@ -120,7 +121,6 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
             }
             idx += (cmp > 0) ? range: -range;
             if (range < 2) {
-                // cache added
                 return -idx - ((cmp > 0) ? 4 : 2);
             }
             if (idx < 0) {
