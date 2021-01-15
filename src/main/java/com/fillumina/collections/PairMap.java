@@ -7,10 +7,9 @@ import java.util.Map.Entry;
 /**
  * This is a very minimal size map backed by an array. It should be used mainly as a small immutable
  * object. It's easy to clone and easy to pass and save. It's characteristic is that entries are in
- * fact a <i>cursor</i> that is one single <i>mutable</i> object: don't use it with parallel streams
- * and never save or use entries outside loops! Every operation is O(n) so very inefficient for many
- * items (but good enough for a few ones). The map keeps insertion order until a sorting method is
- * called. This map is not thread safe.
+ * fact a <i>cursor</i> that is one single <i>mutable</i> object: don't use them outside loops!
+ * Every operation is O(n) so very inefficient for many items (but good enough for a few ones). The
+ * map keeps insertion order until a sorting method is called. This map is not thread safe.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

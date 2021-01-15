@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Map backed by a sorted array. Very compact and accessible in O(Log n).
  * Useful to store large maps in a very small space with decent access time.
- * It uses cursors as iterators so don't use it with parallel streams.
+ * It uses cursors as iterators so don't use them outside loops.
  * It <b>requires</b> a {@link Comparable} implementing key.
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>

@@ -9,49 +9,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V> 
+public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     implements Iterable<Map.Entry<K, V>> {
 
-    public static class Builder<M extends AbstractArrayMap<K,V>,K,V> {
-        private final List<Object> list = new ArrayList<>();
-        private final Function<Object[],M> creator;
+    public static class Builder<M extends AbstractArrayMap<K, V>, K, V> {
 
-        public Builder(Function<Object[],M> creator) {
+        private final List<Object> list = new ArrayList<>();
+        private final Function<Object[], M> creator;
+
+        public Builder(Function<Object[], M> creator) {
             this.creator = creator;
         }
-        
-        public Builder<M,K,V> put(K key, V value) {
+
+        public Builder<M, K, V> put(K key, V value) {
             list.add(key);
             list.add(value);
             return this;
         }
-        
+
         public M build() {
             return creator.apply(list.toArray());
         }
     }
-    
+
     private class CursorIterator<K, V> implements Iterator<Entry<K, V>>, Entry<K, V> {
+
         private int index;
 
         public CursorIterator() {
             this(0);
         }
-        
+
         public CursorIterator(int index) {
             this.index = index - 2;
         }
-        
 
         @Override
         public boolean hasNext() {
-            return index < array.length-2;
+            return index < array.length - 2;
         }
 
         @Override
@@ -123,15 +126,82 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         public int size() {
             return array.length;
         }
+
+        @Override
+        public Spliterator<Entry<K, V>> spliterator() {
+            return new PairSpliterator<>();
+        }
     }
-    
+
+    private class PairSpliterator<K, V> implements Spliterator<Entry<K, V>>, Entry<K,V> {
+        private int startIdx;
+        private int endIdx;
+
+        public PairSpliterator() {
+            this(0, array.length);
+        }
+
+        public PairSpliterator(int startIdx, int endIdx) {
+            this.startIdx = startIdx;
+            this.endIdx = endIdx;
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Entry<K, V>> action) {
+            if (startIdx < endIdx) {
+                action.accept(this);
+                this.startIdx += 2;
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Spliterator<Entry<K, V>> trySplit() {
+            if (estimateSize() > 1) {
+                int half = ((startIdx + endIdx) / 2) & (Integer.MAX_VALUE - 1);
+                if (half != startIdx && half != endIdx) {
+                    int splittedEnd = endIdx;
+                    this.endIdx = half;
+                    return new PairSpliterator<>(half, splittedEnd);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public long estimateSize() {
+            return (endIdx - startIdx) / 2;
+        }
+
+        @Override
+        public int characteristics() {
+            return Spliterator.DISTINCT;
+        }
+
+        @Override
+        public K getKey() {
+            return (K) array[startIdx];
+        }
+
+        @Override
+        public V getValue() {
+            return (V) array[startIdx + 1];
+        }
+
+        @Override
+        public V setValue(V value) {
+            throw new UnsupportedOperationException("cannot set into splititerator");
+        }
+    }
+
     protected Object[] array;
     protected Set<Entry<K, V>> entrySet;
 
     public AbstractArrayMap() {
     }
 
-    public AbstractArrayMap(AbstractArrayMap<K,V> copy) {
+    public AbstractArrayMap(AbstractArrayMap<K, V> copy) {
         array = copy.array == null ? null : copy.array.clone();
     }
 
@@ -151,8 +221,10 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
             idx += 2;
         }
     }
-    
-    /** Override to provide immutability. */
+
+    /**
+     * Override to provide immutability.
+     */
     protected void readOnlyCheck() throws UnsupportedOperationException {
     }
 
@@ -165,12 +237,12 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     public void clear() {
         array = null;
     }
-    
+
     @Override
     public V get(Object key) {
         final int idx = getIndexOfKey((K) key);
         return idx < 0 ? null : (V) array[idx + 1];
-    } 
+    }
 
     protected int getIndexOfKey(K key) {
         if (array == null) {
@@ -233,7 +305,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
         return entrySet;
     }
-    
+
     /**
      * Implements a very simple bubble sort.
      */
@@ -253,7 +325,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
             }
         } while (swapped);
     }
-    
+
     protected void swap(int a, int b) {
         Object tmpKey = array[a];
         Object tmpValue = array[a + 1];
@@ -262,5 +334,5 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         array[b] = tmpKey;
         array[b + 1] = tmpValue;
     }
-    
+
 }

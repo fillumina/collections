@@ -1,8 +1,13 @@
 package com.fillumina.collections;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -114,5 +119,53 @@ public abstract class AbstractArrayMapTestHelper {
         AbstractArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
         map.clear();
         assertEquals(0, map.size());
-    }    
+    }
+        
+    @Test
+    public void shouldForEach() {
+        AbstractArrayMap<Integer,String> map = create();
+        map.put(3, "three");
+        map.put(1, "one");
+        map.put(2, "two");
+
+        Map<Integer,String> m = new HashMap<>();
+        map.forEach((k,v) -> m.put(k,v));
+        
+        assertEquals(3, m.size());
+        assertEquals("one", m.get(1));
+        assertEquals("two", m.get(2));
+        assertEquals("three", m.get(3));
+    }
+    
+    @Test
+    public void testMutableEntries() {
+        AbstractArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
+
+        Iterator<Map.Entry<Integer,String>> it = map.entrySet().iterator();
+        Map.Entry<Integer,String> a = it.next();
+        Map.Entry<Integer,String> b = it.next();
+        Map.Entry<Integer,String> c = it.next();
+        
+        assertTrue(a == b);
+        assertTrue(b == c);
+    }
+    
+    @Test
+    public void testParallelStream() {
+        Object[] array = new Object[10];
+        for (int i=0; i<array.length; i++) {
+            if ((i & 1) == 1) {
+                array[i] = "" + i;
+            } else {
+                array[i] = i;
+            }
+        }
+        AbstractArrayMap<Integer,String> map = create(array);
+
+        Map<Integer,String> cmap = new ConcurrentHashMap<>();
+        
+        map.entrySet().parallelStream().forEach(e -> cmap.put(e.getKey(),e.getValue()));
+        
+        assertEquals(map.size(), cmap.size());
+    }
 }

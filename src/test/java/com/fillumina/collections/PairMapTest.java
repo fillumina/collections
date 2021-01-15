@@ -151,4 +151,5 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
         
         assertTrue(anotherImmutable == immutable);
     }
+
 }
