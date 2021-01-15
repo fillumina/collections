@@ -167,5 +167,6 @@ public abstract class AbstractArrayMapTestHelper {
         map.entrySet().parallelStream().forEach(e -> cmap.put(e.getKey(),e.getValue()));
         
         assertEquals(map.size(), cmap.size());
+        assertEquals(map, cmap);
     }
 }
