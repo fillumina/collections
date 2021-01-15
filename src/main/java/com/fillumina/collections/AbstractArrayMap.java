@@ -54,7 +54,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
 
         @Override
         public boolean hasNext() {
-            return index < array.length - 2;
+            return array == null ? false : index < array.length - 2;
         }
 
         @Override

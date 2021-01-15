@@ -3,9 +3,11 @@ package com.fillumina.collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -168,5 +170,20 @@ public abstract class AbstractArrayMapTestHelper {
         
         assertEquals(map.size(), cmap.size());
         assertEquals(map, cmap);
+    }
+    
+    @Test
+    public void shouldIterateOverEmptyMap() {
+        AbstractArrayMap<Integer,String> map = create();
+        
+        Iterator<Entry<Integer,String>> it = map.iterator();
+        assertFalse(it.hasNext());
+    }
+    
+    @Test
+    public void shouldGetSizeForEmptyMap() {
+        AbstractArrayMap<Integer,String> map = create();
+
+        assertEquals(0, map.size());
     }
 }
