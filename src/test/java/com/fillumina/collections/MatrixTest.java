@@ -1,0 +1,216 @@
+package com.fillumina.collections;
+
+import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.Test;
+
+/**
+ *
+ * @author Francesco Illuminati <fillumina@gmail.com>
+ */
+public class MatrixTest {
+
+//    X ^ 
+//    1 |2 4
+//    0 |1 3
+//      +----->
+//       0 1 Y    
+    
+    public static void main(String[] args) {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        System.out.println(mtx.toString());
+    }
+    
+    @Test
+    public void shouldCreateMatrix() {
+        Matrix<Integer> mtx = new Matrix<>();
+    }
+    
+    @Test
+    public void shouldSetElements() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(2, mtx.get(0, 1));
+        assertEquals(3, mtx.get(1, 0));
+        assertEquals(4, mtx.get(1, 1));
+    }
+    
+    @Test
+    public void shouldPresizeMatrix() {
+        Matrix<Integer> mtx = new Matrix<>(2,2) {
+            @Override
+            protected void resizeCheck() {
+                throw new AssertionError();
+            }
+        };
+        
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(2, mtx.get(0, 1));
+        assertEquals(3, mtx.get(1, 0));
+        assertEquals(4, mtx.get(1, 1));
+    }
+    
+    @Test
+    public void shouldSetExistingValue() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        assertEquals(2, mtx.get(0, 1));
+        
+        mtx.set(0, 1, 22);
+        
+        assertEquals(22, mtx.get(0, 1));
+    }
+    
+    @Test
+    public void shouldReturnSize() {
+        Matrix<Integer> mtx = new Matrix<>(3, 7);
+        assertEquals(3, mtx.rowSize());
+        assertEquals(7, mtx.colSize());
+    }
+    
+    @Test
+    public void shouldReturnRowList() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+
+        List<Integer> col = mtx.row(1);
+        
+        assertEquals(2, col.get(0));
+        assertEquals(4, col.get(1));
+    }
+    
+    @Test
+    public void shouldReturnColumnList() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+
+        List<Integer> row = mtx.column(1);
+        
+        assertEquals(3, row.get(0));
+        assertEquals(4, row.get(1));
+    }
+    
+    @Test
+    public void shouldReturnImmutable() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+
+        Matrix<Integer> immutable = mtx.immutable();
+        
+        assertThrows(UnsupportedOperationException.class,
+            () -> immutable.set(0, 3, 666));
+    }
+    
+    @Test
+    public void shouldInsertColumnAtIndex() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        mtx.insertColumnAtIndex(0);
+        
+        assertEquals(null, mtx.get(0, 0));
+        assertEquals(null, mtx.get(0, 1));
+    }
+    
+    @Test
+    public void shouldInsertRowAtIndex() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        mtx.insertRowAtIndex(0);
+        
+        assertEquals(null, mtx.get(0, 0));
+        assertEquals(null, mtx.get(1, 0));
+    }
+    
+    @Test
+    public void shouldRemoveColumnAtIndex0() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        mtx.removeColumnAtIndex(0);
+        
+        assertEquals(3, mtx.get(0, 0));
+        assertEquals(4, mtx.get(0, 1));
+    }
+    
+    @Test
+    public void shouldRemoveColumnAtIndex1() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        mtx.removeColumnAtIndex(1);
+        
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(2, mtx.get(0, 1));
+    }
+    
+    @Test
+    public void shouldRemoveRowAtIndex0() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        mtx.removeRowAtIndex(0);
+        
+        assertEquals(2, mtx.get(0, 0));
+        assertEquals(4, mtx.get(1, 0));
+    }
+    
+    @Test
+    public void shouldRemoveRowAtIndex1() {
+        Matrix<Integer> mtx = new Matrix<>();
+        mtx.set(0,0,1);
+        mtx.set(0,1,2);
+        mtx.set(1,0,3);
+        mtx.set(1,1,4);
+        
+        mtx.removeRowAtIndex(1);
+        
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(3, mtx.get(1, 0));
+    }
+    
+}
