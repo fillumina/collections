@@ -214,15 +214,20 @@ public class Matrix<T> {
                 int align = sizes[j] - str.length();
                 String separator = spaces.get(align);
                 if (separator == null) {
-                    final char[] chars = new char[align + 2];
-                    Arrays.fill(chars, ' ');
-                    separator = new String(chars);
+                    separator = createSpaces(align);
                     spaces.put(align, separator);
                 }
                 consumer.accept(str + separator);
             }
             consumer.accept(System.lineSeparator());
         }
+    }
+
+    private String createSpaces(int size) {
+        final char[] chars = new char[size + 2];
+        Arrays.fill(chars, ' ');
+        String separator = new String(chars);
+        return separator;
     }
     
 }
