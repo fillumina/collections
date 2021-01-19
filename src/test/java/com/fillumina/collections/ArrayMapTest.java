@@ -11,16 +11,16 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class PairMapTest extends AbstractArrayMapTestHelper {
+public class ArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Override
-    PairMap<Integer,String> create(Object... o) {
-        return new PairMap<Integer,String>(o);
+    ArrayMap<Integer,String> create(Object... o) {
+        return new ArrayMap<Integer,String>(o);
     }
 
     @Test
     public void shouldInitWithMap() {
-        PairMap<Integer,String> map = new PairMap<>(
+        ArrayMap<Integer,String> map = new ArrayMap<>(
             Map.of(1, "one", 2, "two", 3, "three"));
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));
@@ -30,7 +30,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testSortByValues() {
-        PairMap<Integer,String> map = create(1, "c", 2, "a", 3, "b");
+        ArrayMap<Integer,String> map = create(1, "c", 2, "a", 3, "b");
         map.sortByValues((a,b) -> a.compareTo(b));
         
         assertEquals(2, map.getKeyAtIndex(0));
@@ -46,7 +46,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testGetValueAtIndex() {
-        PairMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        ArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         
         assertEquals("one", map.getValueAtIndex(0));
         assertEquals("two", map.getValueAtIndex(1));
@@ -55,7 +55,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testKeyAtIndex() {
-        PairMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        ArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         
         assertEquals(1, map.getKeyAtIndex(0));
         assertEquals(2, map.getKeyAtIndex(1));
@@ -64,7 +64,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testEntryAtIndex() {
-        PairMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        ArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         
         Map.Entry<Integer,String> e = map.getEntryAtIndex(1);
         assertEquals("two", e.getValue());
@@ -73,7 +73,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testSortByKeys() {
-        PairMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
+        ArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
         map.sortByKeys((a,b) -> a.compareTo(b));
         
         assertEquals(1, map.getKeyAtIndex(0));
@@ -88,7 +88,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testReadOnlyCheck() {
-        AbstractArrayMap<Integer,String> map = new PairMap.Immutable<>(
+        AbstractArrayMap<Integer,String> map = new ArrayMap.Immutable<>(
             Map.of(1, "one", 2, "two", 3, "three"));
         
         assertThrows(UnsupportedOperationException.class,
@@ -97,7 +97,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testBuilder() {
-        PairMap<Integer,String> map = PairMap.<Integer,String>builder()
+        ArrayMap<Integer,String> map = ArrayMap.<Integer,String>builder()
             .put(1, "one")
             .put(2, "two")
             .put(3, "three")
@@ -111,7 +111,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testImmutableBuilder() {
-        PairMap<Integer,String> map = PairMap.Immutable.<Integer,String>builder()
+        ArrayMap<Integer,String> map = ArrayMap.Immutable.<Integer,String>builder()
             .put(1, "one")
             .put(2, "two")
             .put(3, "three")
@@ -128,7 +128,7 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void shouldEmptyMapBeImmutable() {
-        PairMap<Integer,String> map = PairMap.<Integer,String>empty();
+        ArrayMap<Integer,String> map = ArrayMap.<Integer,String>empty();
 
         assertTrue(map.isEmpty());
         
@@ -138,16 +138,16 @@ public class PairMapTest extends AbstractArrayMapTestHelper {
         
     @Test
     public void shouldGetImmutableMap() {
-        PairMap<Integer,String> map = new PairMap<>();
+        ArrayMap<Integer,String> map = new ArrayMap<>();
         map.put(3, "three");
         map.put(1, "one");
         map.put(2, "two");
 
-        PairMap<Integer,String> immutable = map.immutable();
+        ArrayMap<Integer,String> immutable = map.immutable();
         
         assertFalse(immutable == map);
         
-        PairMap<Integer,String> anotherImmutable = immutable.immutable();
+        ArrayMap<Integer,String> anotherImmutable = immutable.immutable();
         
         assertTrue(anotherImmutable == immutable);
     }

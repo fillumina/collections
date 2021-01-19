@@ -11,21 +11,21 @@ import java.util.Objects;
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
+public class SortedArrayMap<K,V> extends AbstractArrayMap<K,V> {
     private static final int PAIR_MASK = Integer.MAX_VALUE - 1;
     
-    public static final SortedPairMap<?,?> EMPTY = new SortedPairMap.Immutable<>();
+    public static final SortedArrayMap<?,?> EMPTY = new SortedArrayMap.Immutable<>();
 
-    public static class Immutable<K, V> extends SortedPairMap<K, V> {
+    public static class Immutable<K, V> extends SortedArrayMap<K, V> {
 
-        public static <K,V> Builder<SortedPairMap<K,V>,K,V> builder() {
-            return new Builder<>(o -> new SortedPairMap.Immutable<>(o));
+        public static <K,V> Builder<SortedArrayMap<K,V>,K,V> builder() {
+            return new Builder<>(o -> new SortedArrayMap.Immutable<>(o));
         }
 
         public Immutable() {
         }
 
-        public Immutable(SortedPairMap<K,V> copy) {
+        public Immutable(SortedArrayMap<K,V> copy) {
             super(copy);
         }
 
@@ -43,28 +43,28 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
         }
     }
 
-    public static <K,V> SortedPairMap<K,V> empty() {
-        return (SortedPairMap<K, V>) EMPTY;
+    public static <K,V> SortedArrayMap<K,V> empty() {
+        return (SortedArrayMap<K, V>) EMPTY;
     }
     
-    public static <K,V> Builder<SortedPairMap<K,V>,K,V> builder() {
-        return new Builder<>(o -> new SortedPairMap<>(o));
+    public static <K,V> Builder<SortedArrayMap<K,V>,K,V> builder() {
+        return new Builder<>(o -> new SortedArrayMap<>(o));
     }
     
-    public SortedPairMap() {
+    public SortedArrayMap() {
     }
 
-    public SortedPairMap(SortedPairMap<K, V> copy) {
+    public SortedArrayMap(SortedArrayMap<K, V> copy) {
         super(copy);
         sortByKeys((a,b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
-    public SortedPairMap(Object... o) {
+    public SortedArrayMap(Object... o) {
         super(o);
         sortByKeys((a,b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
-    public SortedPairMap(Map<K, V> map) {
+    public SortedArrayMap(Map<K, V> map) {
         super(map);
         sortByKeys((a,b) -> ((Comparable<K>) a).compareTo((K) b));
     }
@@ -137,7 +137,7 @@ public class SortedPairMap<K,V> extends AbstractArrayMap<K,V> {
         } while (true);
     }
     
-    public SortedPairMap<K, V> immutable() {
+    public SortedArrayMap<K, V> immutable() {
         if (this instanceof Immutable) {
             return this;
         }

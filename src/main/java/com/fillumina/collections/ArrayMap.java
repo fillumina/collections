@@ -13,20 +13,20 @@ import java.util.Map.Entry;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
+public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
 
-    public static final PairMap<?, ?> EMPTY = new Immutable<>();
+    public static final ArrayMap<?, ?> EMPTY = new Immutable<>();
 
-    public static class Immutable<K, V> extends PairMap<K, V> {
+    public static class Immutable<K, V> extends ArrayMap<K, V> {
 
-        public static <K, V> Builder<PairMap<K, V>, K, V> builder() {
-            return new Builder<>(o -> new PairMap.Immutable<>(o));
+        public static <K, V> Builder<ArrayMap<K, V>, K, V> builder() {
+            return new Builder<>(o -> new ArrayMap.Immutable<>(o));
         }
 
         public Immutable() {
         }
 
-        public Immutable(PairMap<K, V> copy) {
+        public Immutable(ArrayMap<K, V> copy) {
             super(copy);
         }
 
@@ -44,26 +44,26 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
         }
     }
 
-    public static <K, V> PairMap<K, V> empty() {
-        return (PairMap<K, V>) EMPTY;
+    public static <K, V> ArrayMap<K, V> empty() {
+        return (ArrayMap<K, V>) EMPTY;
     }
 
-    public static <K, V> Builder<PairMap<K, V>, K, V> builder() {
-        return new Builder<>(o -> new PairMap<K, V>(o));
+    public static <K, V> Builder<ArrayMap<K, V>, K, V> builder() {
+        return new Builder<>(o -> new ArrayMap<K, V>(o));
     }
 
-    public PairMap() {
+    public ArrayMap() {
     }
 
-    public PairMap(AbstractArrayMap<K, V> copy) {
+    public ArrayMap(AbstractArrayMap<K, V> copy) {
         super(copy);
     }
 
-    public PairMap(Object... o) {
+    public ArrayMap(Object... o) {
         super(o);
     }
 
-    public PairMap(Map<K, V> map) {
+    public ArrayMap(Map<K, V> map) {
         super(map);
     }
 
@@ -91,7 +91,7 @@ public class PairMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<En
         }
     }
 
-    public PairMap<K, V> immutable() {
+    public ArrayMap<K, V> immutable() {
         if (this instanceof Immutable) {
             return this;
         }

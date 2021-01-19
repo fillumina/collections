@@ -11,16 +11,16 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SortedPairMapTest extends AbstractArrayMapTestHelper {
+public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
     
     @Override
-    SortedPairMap<Integer,String> create(Object... o) {
-        return new SortedPairMap<Integer,String>(o);
+    SortedArrayMap<Integer,String> create(Object... o) {
+        return new SortedArrayMap<Integer,String>(o);
     }
     
     @Test
     public void shouldMapIsSorted() {
-        AbstractArrayMap<Integer,String> map = new SortedPairMap<>();
+        AbstractArrayMap<Integer,String> map = new SortedArrayMap<>();
         map.put(3, "three");
         map.put(2, "two");
         map.put(1, "one");
@@ -140,7 +140,7 @@ public class SortedPairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testReadOnlyCheck() {
-        AbstractArrayMap<Integer,String> map = new SortedPairMap.Immutable<>(
+        AbstractArrayMap<Integer,String> map = new SortedArrayMap.Immutable<>(
             Map.of(1, "one", 2, "two", 3, "three"));
         
         assertThrows(UnsupportedOperationException.class,
@@ -149,7 +149,7 @@ public class SortedPairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testBuilder() {
-        SortedPairMap<Integer,String> map = SortedPairMap.<Integer,String>builder()
+        SortedArrayMap<Integer,String> map = SortedArrayMap.<Integer,String>builder()
             .put(3, "three")
             .put(1, "one")
             .put(2, "two")
@@ -163,7 +163,7 @@ public class SortedPairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testImmutableBuilder() {
-        SortedPairMap<Integer,String> map = SortedPairMap.Immutable.<Integer,String>builder()
+        SortedArrayMap<Integer,String> map = SortedArrayMap.Immutable.<Integer,String>builder()
             .put(1, "one")
             .put(2, "two")
             .put(3, "three")
@@ -180,7 +180,7 @@ public class SortedPairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void shouldEmptyMapBeImmutable() {
-        SortedPairMap<Integer,String> map = SortedPairMap.<Integer,String>empty();
+        SortedArrayMap<Integer,String> map = SortedArrayMap.<Integer,String>empty();
 
         assertTrue(map.isEmpty());
         
@@ -190,16 +190,16 @@ public class SortedPairMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void shouldGetImmutableMap() {
-        SortedPairMap<Integer,String> map = new SortedPairMap<>();
+        SortedArrayMap<Integer,String> map = new SortedArrayMap<>();
         map.put(3, "three");
         map.put(1, "one");
         map.put(2, "two");
 
-        SortedPairMap<Integer,String> immutable = map.immutable();
+        SortedArrayMap<Integer,String> immutable = map.immutable();
         
         assertFalse(immutable == map);
         
-        SortedPairMap<Integer,String> anotherImmutable = immutable.immutable();
+        SortedArrayMap<Integer,String> anotherImmutable = immutable.immutable();
         
         assertTrue(anotherImmutable == immutable);
     }
