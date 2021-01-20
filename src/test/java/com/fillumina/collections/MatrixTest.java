@@ -11,18 +11,20 @@ import org.junit.jupiter.api.Test;
  */
 public class MatrixTest {
 
-//    X ^ 
-//    1 |2 4
-//    0 |1 3
-//      +----->
-//       0 1 Y    
+//       0 1 2 col    
+//      +-----> 
+//    0 |1 2 3
+//    1 |4 5 6
+//  row V
     
     public static void main(String[] args) {
         Matrix<String> mtx = new Matrix<>();
         mtx.set(0,0,"one");
         mtx.set(0,1,"two two");
-        mtx.set(1,0,"three");
-        mtx.set(1,1,"four four four");
+        mtx.set(0,2,"three");
+        mtx.set(1,0,"four four four");
+        mtx.set(1,1,"");
+        mtx.set(1,2,"six");
         System.out.println(mtx.toString());
     }
     

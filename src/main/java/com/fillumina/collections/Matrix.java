@@ -62,28 +62,28 @@ public class Matrix<T> {
     protected void readOnlyCheck() {
     }
     
-    public Matrix set(int x, int y, T value) {
+    public Matrix set(int row, int col, T value) {
         readOnlyCheck();
         if (matrix == null) {
-            matrix = (T[][]) new Object[x + 1][y + 1];
-        } else if (matrix[0].length <= y || matrix.length <= x) {
-            resize(x, y);
+            matrix = (T[][]) new Object[row + 1][col + 1];
+        } else if (matrix[0].length <= col || matrix.length <= row) {
+            resize(row, col);
         }
-        matrix[x][y] = value;
+        matrix[row][col] = value;
         return this;
     }
 
-    private void resize(int x, int y) {
+    private void resize(int row, int col) {
         resizeCheck();
-        final int xsize = Math.max(x + 1, matrix.length);
-        final int ysize = Math.max(y + 1, matrix[0].length);
+        final int xsize = Math.max(row + 1, matrix.length);
+        final int ysize = Math.max(col + 1, matrix[0].length);
         T[][] newMatrix = (T[][]) new Object[xsize][ysize];
         copy(newMatrix, matrix);
         matrix = newMatrix;
     }
 
-    public T get(int x, int y) {
-        return matrix[x][y];
+    public T get(int row, int col) {
+        return matrix[row][col];
     }
     
     public void forEachElement(Consumer<T> consumer) {
@@ -195,15 +195,15 @@ public class Matrix<T> {
     }
 
     public void writeTo(Consumer<String> consumer) {
-        int[] sizes = new int[matrix.length];
+        int[] sizes = new int[matrix[0].length];
         String[][] table = new String[matrix.length][matrix[0].length];
         for (int i=0,li=matrix.length; i<li; i++) {
             for (int j=0,lj=matrix[0].length; j<lj; j++) {
                 final String str = Objects.toString(matrix[i][j], "");
                 table[i][j] = str;
                 int length = str.length();
-                if (sizes[i] < length) {
-                    sizes[i] = length;
+                if (sizes[j] < length) {
+                    sizes[j] = length;
                 }
             }
         }
@@ -211,7 +211,7 @@ public class Matrix<T> {
         Map<Integer,String> spaces = new HashMap<>();
         for (int i=0,li=table.length; i<li; i++) {
             for (int j=0,lj=table[0].length; j<lj; j++) {
-                String str = table[j][i];
+                String str = table[i][j];
                 int align = sizes[j] - str.length();
                 String separator = spaces.get(align);
                 if (separator == null) {
