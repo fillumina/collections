@@ -9,7 +9,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- *
+ * The matrix is organized by columns so it's better to have y size > x size.
+ * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class Matrix<T> {
@@ -201,8 +202,8 @@ public class Matrix<T> {
                 final String str = Objects.toString(matrix[i][j], "");
                 table[i][j] = str;
                 int length = str.length();
-                if (sizes[j] < length) {
-                    sizes[j] = length;
+                if (sizes[i] < length) {
+                    sizes[i] = length;
                 }
             }
         }

@@ -18,11 +18,11 @@ public class MatrixTest {
 //       0 1 Y    
     
     public static void main(String[] args) {
-        Matrix<Integer> mtx = new Matrix<>();
-        mtx.set(0,0,1);
-        mtx.set(0,1,2);
-        mtx.set(1,0,3);
-        mtx.set(1,1,4);
+        Matrix<String> mtx = new Matrix<>();
+        mtx.set(0,0,"one");
+        mtx.set(0,1,"two two");
+        mtx.set(1,0,"three");
+        mtx.set(1,1,"four four four");
         System.out.println(mtx.toString());
     }
     
