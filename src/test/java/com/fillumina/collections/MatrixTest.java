@@ -11,10 +11,11 @@ import org.junit.jupiter.api.Test;
  */
 public class MatrixTest {
 
-//       0 1 2 col    
-//      +-----> 
-//    0 |1 2 3
-//    1 |4 5 6
+//       0 1 col    
+//      +---> 
+//    0 |1 4
+//    1 |2 5
+//    2 |3 6
 //  row V
     
     public static void main(String[] args) {
