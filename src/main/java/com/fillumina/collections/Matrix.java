@@ -15,6 +15,8 @@ import java.util.function.Consumer;
  */
 public class Matrix<T> {
 
+    private static final int COLUMN_SEPARATION = 2;
+
     public static class Immutable<T> extends Matrix<T> {
 
         public Immutable() {
@@ -204,13 +206,18 @@ public class Matrix<T> {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        writeTo(buf::append);
+        writeTo(buf::append, List.of());
         return buf.toString();
     }
-
-    // TODO add headers
-    public void writeTo(Consumer<String> consumer) {
+    
+    public void writeTo(Consumer<String> consumer, List<String> headers) {
         int[] sizes = new int[matrix.length];
+        if (!headers.isEmpty()) {
+            for (int i=Math.min(headers.size(), matrix.length)-1; i>=0; i--) {
+                sizes[i] = headers.get(i).length();
+            }
+        }
+
         String[][] table = new String[matrix.length][matrix[0].length];
         for (int i=0,li=matrix.length; i<li; i++) {
             for (int j=0,lj=matrix[0].length; j<lj; j++) {
@@ -224,23 +231,45 @@ public class Matrix<T> {
         }
 
         Map<Integer, String> spaces = new HashMap<>();
+
+        if (!headers.isEmpty()) {
+            int totalSize = 0;
+            for (int i=0,l=headers.size(); i<l; i++) {
+                String str = headers.get(i);
+                int align = sizes[i] - str.length();
+                String separator = getSeparator(spaces, align);
+                consumer.accept(str + separator);
+                totalSize += sizes[i];
+            }
+            consumer.accept(System.lineSeparator());
+            char[] line = new char[totalSize + (sizes.length - 1) * COLUMN_SEPARATION];
+            Arrays.fill(line, '-');
+            consumer.accept(new String(line));
+            consumer.accept(System.lineSeparator());
+        }
+        
         for (int j = 0, lj = table[0].length; j < lj; j++) {
             for (int i = 0, li = table.length; i < li; i++) {
                 String str = table[i][j];
                 int align = sizes[i] - str.length();
-                String separator = spaces.get(align);
-                if (separator == null) {
-                    separator = createSpaces(align);
-                    spaces.put(align, separator);
-                }
+                String separator = getSeparator(spaces, align);
                 consumer.accept(str + separator);
             }
             consumer.accept(System.lineSeparator());
         }
     }
 
+    private String getSeparator(Map<Integer, String> spaces, int align) {
+        String separator = spaces.get(align);
+        if (separator == null) {
+            separator = createSpaces(align);
+            spaces.put(align, separator);
+        }
+        return separator;
+    }
+
     private String createSpaces(int size) {
-        final char[] chars = new char[size + 2];
+        final char[] chars = new char[size + COLUMN_SEPARATION];
         Arrays.fill(chars, ' ');
         String separator = new String(chars);
         return separator;

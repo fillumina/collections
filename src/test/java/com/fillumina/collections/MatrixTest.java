@@ -26,7 +26,7 @@ public class MatrixTest {
         mtx.set(1,0,"four four four");
         mtx.set(1,1,"");
         mtx.set(1,2,"six");
-        System.out.println(mtx.toString());
+        mtx.writeTo(System.out::print, List.of("ONE", "TWO"));
     }
     
     @Test
