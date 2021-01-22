@@ -205,8 +205,12 @@ public class Matrix<T> {
 
     @Override
     public String toString() {
+        return toString(List.of());
+    }
+    
+    public String toString(List<String> headers) {
         StringBuilder buf = new StringBuilder();
-        writeTo(buf::append, List.of());
+        writeTo(buf::append, headers);
         return buf.toString();
     }
     
