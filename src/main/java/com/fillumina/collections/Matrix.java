@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * The matrix is organized by columns so it's better to have y size &gt; x size.
+ * The matrix is organized by rows so it's better to have the x size greater than the y size.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
