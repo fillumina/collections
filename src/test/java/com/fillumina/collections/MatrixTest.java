@@ -30,6 +30,44 @@ public class MatrixTest {
     }
     
     @Test
+    public void shouldUseBuilder() {
+        Matrix<String> mtx = Matrix.<String>builder()
+                .row("one", "four")
+                .row("two", "five")
+                .row("three", "six")
+                .build();
+        
+        assertEquals("one", mtx.get(0,0));
+        assertEquals("two", mtx.get(1,0));
+        assertEquals("three", mtx.get(2,0));
+        assertEquals("four", mtx.get(0,1));
+        assertEquals("five", mtx.get(1,1));
+        assertEquals("six", mtx.get(2,1));
+        
+        mtx.set(0,0, "first");
+        assertEquals("first", mtx.get(0,0));
+    }
+    
+    @Test
+    public void shouldBuildImmutable() {
+        Matrix<String> mtx = Matrix.<String>builder()
+                .row("one", "four")
+                .row("two", "five")
+                .row("three", "six")
+                .buildImmutable();
+        
+        assertEquals("one", mtx.get(0,0));
+        assertEquals("two", mtx.get(1,0));
+        assertEquals("three", mtx.get(2,0));
+        assertEquals("four", mtx.get(0,1));
+        assertEquals("five", mtx.get(1,1));
+        assertEquals("six", mtx.get(2,1));
+        
+        assertThrows(UnsupportedOperationException.class, 
+                () -> mtx.set(0, 0, "first"));
+    }
+    
+    @Test
     public void shouldCreateMatrix() {
         Matrix<Integer> mtx = new Matrix<>();
     }

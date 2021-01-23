@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,10 @@ public class Matrix<T> {
         public Immutable() {
         }
 
+        protected Immutable(T[][] array) {
+            super(array);
+        }
+        
         public Immutable(int x, int y) {
             super(x, y);
         }
@@ -41,11 +46,50 @@ public class Matrix<T> {
         }
     }
 
+    public static class Builder<T> {
+        private List<T[]> list = new ArrayList<>();
+        private int rowLength = -1;
+        
+        public Builder<T> row(T... values) {
+            list.add(values);
+            if (rowLength == -1) {
+                rowLength = values.length;
+            } else if (rowLength != values.length) {
+                throw new IllegalArgumentException("lines must all have the same element number");
+            }
+            return this;
+        }
+        
+        public Matrix<T> build() {
+            T[][] array = (T[][]) new Object[list.size()][];
+            for (int i=0,l=list.size(); i<l; i++) {
+                array[i] = list.get(i);
+            }
+            return new Matrix<>(array);
+        }
+        
+        public Immutable<T> buildImmutable() {
+            T[][] array = (T[][]) new Object[list.size()][];
+            for (int i=0,l=list.size(); i<l; i++) {
+                array[i] = list.get(i);
+            }
+            return new Immutable<>(array);
+        }
+    }
+    
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+    
     private T[][] matrix;
 
     public Matrix() {
     }
 
+    protected Matrix(T[][] array) {
+        this.matrix = array;
+    }
+    
     /**
      * Sizes the array with predefined length
      */
