@@ -21,7 +21,7 @@ import java.util.Objects;
 public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private static Iterator<?> NULL_ITERATOR = new Iterator<>() {
+    private static Iterator<?> NULL_ITERATOR = new Iterator<Object>() {
         @Override
         public boolean hasNext() {
             return false;

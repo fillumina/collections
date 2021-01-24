@@ -88,7 +88,7 @@ public class MatrixTest {
     
     @Test
     public void shouldPresizeMatrix() {
-        Matrix<Integer> mtx = new Matrix<>(2,2) {
+        Matrix<Integer> mtx = new Matrix<Integer>(2,2) {
             @Override
             protected void resizeCheck() {
                 throw new AssertionError();

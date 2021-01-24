@@ -52,7 +52,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
 
     private static final int INITIAL_SIZE = 8;
 
-    public static Iterator<?> NULL_ITERATOR = new Iterator<>() {
+    public static Iterator<?> NULL_ITERATOR = new Iterator<Object>() {
         @Override
         public boolean hasNext() {
             return false;
