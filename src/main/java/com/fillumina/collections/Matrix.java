@@ -81,7 +81,8 @@ public class Matrix<T> {
         return new Builder<>();
     }
     
-    private T[][] matrix;
+    // using T[][] interferes with Kryo
+    private Object[][] matrix;
 
     public Matrix() {
     }
@@ -125,24 +126,24 @@ public class Matrix<T> {
         resizeCheck();
         final int xsize = Math.max(col + 1, matrix.length);
         final int ysize = Math.max(row + 1, matrix[0].length);
-        T[][] newMatrix = (T[][]) new Object[xsize][ysize];
+        Object[][] newMatrix = new Object[xsize][ysize];
         copy(newMatrix, matrix);
         matrix = newMatrix;
     }
 
     public T get(int row, int col) {
-        return matrix[row][col];
+        return (T) matrix[row][col];
     }
 
     public void forEachElement(Consumer<T> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
-                consumer.accept(matrix[i][j]);
+                consumer.accept((T) matrix[i][j]);
             }
         }
     }
 
-    private void copy(T[][] newMatrix, T[][] matrix) {
+    private void copy(Object[][] newMatrix, Object[][] matrix) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
                 newMatrix[i][j] = matrix[i][j];
@@ -216,7 +217,7 @@ public class Matrix<T> {
         return new AbstractList<T>() {
             @Override
             public T get(int index) {
-                return matrix[x][index];
+                return (T) matrix[x][index];
             }
 
             @Override
@@ -233,7 +234,7 @@ public class Matrix<T> {
         return new AbstractList<T>() {
             @Override
             public T get(int index) {
-                return matrix[index][y];
+                return (T) matrix[index][y];
             }
 
             @Override
