@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * The matrix is organized by rows so it's better to have the x size greater than the y size.
+ * A matrix implementation to help manages squared arrays of data.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -26,7 +26,7 @@ public class Matrix<T> {
         protected Immutable(T[][] array) {
             super(array);
         }
-        
+
         public Immutable(int x, int y) {
             super(x, y);
         }
@@ -47,9 +47,10 @@ public class Matrix<T> {
     }
 
     public static class Builder<T> {
+
         private List<T[]> list = new ArrayList<>();
         private int rowLength = -1;
-        
+
         public Builder<T> row(T... values) {
             list.add(values);
             if (rowLength == -1) {
@@ -59,28 +60,28 @@ public class Matrix<T> {
             }
             return this;
         }
-        
+
         public Matrix<T> build() {
             T[][] array = (T[][]) new Object[list.size()][];
-            for (int i=0,l=list.size(); i<l; i++) {
+            for (int i = 0, l = list.size(); i < l; i++) {
                 array[i] = list.get(i);
             }
             return new Matrix<>(array);
         }
-        
+
         public Immutable<T> buildImmutable() {
             T[][] array = (T[][]) new Object[list.size()][];
-            for (int i=0,l=list.size(); i<l; i++) {
+            for (int i = 0, l = list.size(); i < l; i++) {
                 array[i] = list.get(i);
             }
             return new Immutable<>(array);
         }
     }
-    
+
     public static <T> Builder<T> builder() {
         return new Builder<>();
     }
-    
+
     // using T[][] interferes with Kryo
     private Object[][] matrix;
 
@@ -90,7 +91,7 @@ public class Matrix<T> {
     protected Matrix(T[][] array) {
         this.matrix = array;
     }
-    
+
     /**
      * Sizes the array with predefined length
      */
@@ -252,24 +253,24 @@ public class Matrix<T> {
     public String toString() {
         return toString(List.of());
     }
-    
+
     public String toString(List<String> headers) {
         StringBuilder buf = new StringBuilder();
         writeTo(buf::append, headers);
         return buf.toString();
     }
-    
+
     public void writeTo(Consumer<String> consumer, List<String> headers) {
         int[] sizes = new int[matrix.length];
         if (!headers.isEmpty()) {
-            for (int i=Math.min(headers.size(), matrix.length)-1; i>=0; i--) {
+            for (int i = Math.min(headers.size(), matrix.length) - 1; i >= 0; i--) {
                 sizes[i] = headers.get(i).length();
             }
         }
 
         String[][] table = new String[matrix.length][matrix[0].length];
-        for (int i=0,li=matrix.length; i<li; i++) {
-            for (int j=0,lj=matrix[0].length; j<lj; j++) {
+        for (int i = 0, li = matrix.length; i < li; i++) {
+            for (int j = 0, lj = matrix[0].length; j < lj; j++) {
                 final String str = Objects.toString(matrix[i][j], "");
                 table[i][j] = str;
                 int length = str.length();
@@ -283,7 +284,7 @@ public class Matrix<T> {
 
         if (!headers.isEmpty()) {
             int totalSize = 0;
-            for (int i=0,l=headers.size(); i<l; i++) {
+            for (int i = 0, l = headers.size(); i < l; i++) {
                 String str = headers.get(i);
                 int align = sizes[i] - str.length();
                 String separator = getSeparator(spaces, align);
@@ -296,7 +297,7 @@ public class Matrix<T> {
             consumer.accept(new String(line));
             consumer.accept(System.lineSeparator());
         }
-        
+
         for (int j = 0, lj = table[0].length; j < lj; j++) {
             for (int i = 0, li = table.length; i < li; i++) {
                 String str = table[i][j];

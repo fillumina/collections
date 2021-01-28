@@ -8,13 +8,11 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * A container for its {@link #keySet()}, 
- * which is a very usable set implementation.
+ * A container for its {@link #keySet()}, which is a very usable set implementation.
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class KeyOnlyMap<T>
-        extends AbstractSimpleMap<T,Boolean,KeyOnlyEntry<T>,KeyOnlyMap<T>> {
+public class KeyOnlyMap<T> extends AbstractEntryMap<T,Boolean,KeyOnlyEntry<T>,KeyOnlyMap<T>> {
     
     public static class KeyOnlyEntry<T> implements Map.Entry<T,Boolean> {
         private final T value;
@@ -83,7 +81,7 @@ public class KeyOnlyMap<T>
     }
 
     public static <T> Set<T> createSet(
-            AbstractSimpleMap<T,Boolean,KeyOnlyEntry<T>,KeyOnlyMap<T>>.KeySet set) {
+            AbstractEntryMap<T,Boolean,KeyOnlyEntry<T>,KeyOnlyMap<T>>.KeySet set) {
         return new KeyOnlyMap<T>(set.getMap()).keySet();
     }
     
@@ -99,8 +97,7 @@ public class KeyOnlyMap<T>
         super(map);
     }
 
-    public KeyOnlyMap(
-            AbstractSimpleMap<T, Boolean, KeyOnlyEntry<T>, KeyOnlyMap<T>> map) {
+    public KeyOnlyMap(AbstractEntryMap<T, Boolean, KeyOnlyEntry<T>, KeyOnlyMap<T>> map) {
         super(map);
     }
 
@@ -114,7 +111,7 @@ public class KeyOnlyMap<T>
     }
 
     @Override
-    protected AbstractSimpleMap<T, Boolean, KeyOnlyEntry<T>, KeyOnlyMap<T>> createMap(
+    protected AbstractEntryMap<T, Boolean, KeyOnlyEntry<T>, KeyOnlyMap<T>> createMap(
             int size) {
         return new KeyOnlyMap<>(size);
     }

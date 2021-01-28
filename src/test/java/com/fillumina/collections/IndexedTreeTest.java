@@ -86,15 +86,13 @@ public class IndexedTreeTest {
     
     @Test
     public void shouldCreateTreeWithDifferentIndexOrder() {
-        Tree<String> otherTree = 
-                MMAP.treeFromIndexes(1, 2, 0);
+        Tree<String> otherTree = MMAP.treeFromIndexes(1, 2, 0);
         checkTree(otherTree, 1, 2, 0);
     }
     
     @Test
     public void shouldCreateTreeWithAnotherDifferentIndexOrder() {
-        Tree<String> otherTree = 
-                MMAP.treeFromIndexes(2, 0, 1);
+        Tree<String> otherTree = MMAP.treeFromIndexes(2, 0, 1);
         checkTree(otherTree, 2, 0, 1);
     }
     

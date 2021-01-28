@@ -17,9 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * IndexedTree simulates a DB allowing for many keys, indexes and complex
- * searches. It provides a way to easily navigate and manipulate complex
- * structures.
+ * IndexedTree provides a way to easily navigate, rearrange and manipulate complex structures
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -86,9 +84,9 @@ public class IndexedTree<T> {
         }
 
         /**
-         * Compress the tree to the given level and than convert to map.
-         * {@code flatToLevel(0)} returns a similar map than {@link toMap()} but
-         * keys are of type {@code List<Object>} instead of {@code String}.
+         * Compress the tree to the given level and than convert to map. {@code flatToLevel(0)}
+         * returns a similar map than {@link toMap()} but keys are of type {@code List<Object>}
+         * instead of {@code String}.
          */
         public Map<?, ?> flatToLevel(int level) {
             return (Map<?, ?>) mapAtLevel(List.of(), level);
@@ -278,7 +276,7 @@ public class IndexedTree<T> {
         }
     }
 
-    private final List<Map<Object, Set<Container<T>>>> mapList = 
+    private final List<Map<Object, Set<Container<T>>>> mapList =
             new ArrayList<>();
 
     private static <T> Set<Container<T>> createNewSet() {
@@ -309,10 +307,10 @@ public class IndexedTree<T> {
     private Set<Container<T>> getSetAtIndex(int index, Object key) {
         return mapList.get(index).get(key);
     }
-    
+
     public Set<T> get(Object... keys) {
         Set<Container<T>> result = null;
-        for (int i=0,l=keys.length; i<l; i++) {
+        for (int i = 0, l = keys.length; i < l; i++) {
             Object k = keys[i];
             if (k != null) {
                 Set<Container<T>> set = getSetAtIndex(i, k);
@@ -333,7 +331,7 @@ public class IndexedTree<T> {
         checkMapListSize(keys.length);
         Container container = new Container(keys, value);
         boolean added = false;
-        for (int i=0,l=keys.length; i<l; i++) {
+        for (int i = 0, l = keys.length; i < l; i++) {
             Object k = keys[i];
             Set<Container<T>> set = mapList
                     .get(i)
@@ -347,22 +345,22 @@ public class IndexedTree<T> {
 
     private void checkMapListSize(int size) {
         if (size > mapList.size()) {
-            synchronized(mapList) {
+            synchronized (mapList) {
                 // double check in the thread safe code
                 int innerMissing = size - mapList.size();
                 if (innerMissing > 0) {
-                    for (int i=0; i<innerMissing; i++) {
+                    for (int i = 0; i < innerMissing; i++) {
                         mapList.add(new ConcurrentHashMap<>());
                     }
                 }
             }
         }
     }
-    
+
     public boolean remove(Object... keys) {
         boolean removed = false;
         Container<T> element = new Container<>(keys, null);
-        for (int i=0,l=keys.length; i<l; i++) {
+        for (int i = 0, l = keys.length; i < l; i++) {
             Object k = keys[i];
             Set<Container<T>> set = getSetAtIndex(i, k);
             if (set != null) {

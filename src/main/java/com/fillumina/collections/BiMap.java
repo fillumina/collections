@@ -1,12 +1,14 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.AbstractSimpleMap.SimpleMap;
+import com.fillumina.collections.AbstractEntryMap.SimpleMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A BiMap it's not only a double mapping between keys and values but also assures their biunivocal
- * unicity: if an existing value is inserted with a new key the old mapping is substituted.
+ * A BiMap is a map where values unicity is enforced as well as keys. If an existing value is
+ * inserted with a new key the old mapping is substituted with the new one. The BiMap follows the
+ * {@link Map} specification and its keys and values pairs can inverted by using
+ * {@link #inverseMap()}.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -19,14 +21,14 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         return (BiMap<K, V>) EMPTY;
     }
 
-    public static <K,V> BiMap<K,V> immutable(Map<K,V> map) {
+    public static <K, V> BiMap<K, V> immutable(Map<K, V> map) {
         return new BiMap<>(true, map);
     }
 
-    public static <K,V> BiMap<K,V> immutable(Object... array) {
+    public static <K, V> BiMap<K, V> immutable(Object... array) {
         return new BiMap<>(true, array);
     }
-    
+
     private final BiMap<V, K> inverseMap;
     private final boolean immutable;
 
@@ -46,7 +48,7 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         this.inverseMap = new BiMap(this, immutable, 0, array);
         this.immutable = immutable;
     }
-    
+
     public BiMap() {
         super();
         this.inverseMap = new BiMap(this, false);
@@ -64,11 +66,11 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         this.immutable = false;
     }
 
-    private BiMap(BiMap<V, K> inverseMap, boolean immutable, int initialSize, Map<K,V> map) {
+    private BiMap(BiMap<V, K> inverseMap, boolean immutable, int initialSize, Map<K, V> map) {
         super(initialSize);
         this.inverseMap = inverseMap;
         if (map != null) {
-            map.forEach((k,v) -> put(k,v));
+            map.forEach((k, v) -> put(k, v));
         }
         this.immutable = immutable;
     }
@@ -77,8 +79,8 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         super(initialSize);
         this.inverseMap = inverseMap;
         if (array.length > 0) {
-            for (int i=0;i<array.length;i+=2) {
-                put((K)array[i], (V)array[i+1]);
+            for (int i = 0; i < array.length; i += 2) {
+                put((K) array[i], (V) array[i + 1]);
             }
         }
         this.immutable = immutable;

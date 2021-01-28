@@ -47,7 +47,7 @@ import java.util.function.Supplier;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends Map<K, V>>
+public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Map<K, V>>
         implements Map<K, V> {
 
     private static final int INITIAL_SIZE = 8;
@@ -72,7 +72,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
      * fast {@link #clone() } operation.
      */
     public static class SimpleMap<K, V>
-            extends AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
+            extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
 
         public SimpleMap() {
             super();
@@ -89,7 +89,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         /**
          * Copy constructor.
          */
-        public SimpleMap(AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
+        public SimpleMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
 
@@ -117,7 +117,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
      * fast {@link #clone() } operation.
      */
     public static class EntryMap<K, V>
-            extends AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
+            extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
 
         public EntryMap() {
             super();
@@ -134,7 +134,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
         /**
          * Copy constructor.
          */
-        public EntryMap(AbstractSimpleMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
+        public EntryMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
 
@@ -176,7 +176,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
      * @param <V>
      */
     public static class VieweableMap<K, V>
-            extends AbstractSimpleMap<K, V, SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
+            extends AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
 
         private ReadOnlyMap<K, V> readOnlyView;
 
@@ -196,7 +196,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
          * Copy constructor.
          */
         public VieweableMap(
-                AbstractSimpleMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
+                AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
 
@@ -261,7 +261,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
          * Fast copy constructor.
          */
         public ReadOnlyMap(
-                AbstractSimpleMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
+                AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
 
@@ -305,12 +305,12 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
     private InternalState<E> state;
     private int collisionCounter;
 
-    public AbstractSimpleMap() {
+    public AbstractEntryMap() {
         super();
         state = new InternalState<>();
     }
 
-    public AbstractSimpleMap(int initialSize) {
+    public AbstractEntryMap(int initialSize) {
         this();
         // by using a power of 2 as a size the expensive module operation
         // can be substituted by a very cheap bit masking.
@@ -333,7 +333,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
     /**
      * Usual default {@code java.util} style copy constructor.
      */
-    public AbstractSimpleMap(Map<K, V> map) {
+    public AbstractEntryMap(Map<K, V> map) {
         this();
         map.forEach((k, v) -> innerPut(k, v));
     }
@@ -341,7 +341,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
     /**
      * Very fast copy constructor.
      */
-    public AbstractSimpleMap(AbstractSimpleMap<K, V, E, M> map) {
+    public AbstractEntryMap(AbstractEntryMap<K, V, E, M> map) {
         this();
         this.state.array = map.state.array.clone();
         this.state.mask = map.state.mask;
@@ -351,7 +351,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
     /**
      * View constructor.
      */
-    protected AbstractSimpleMap(InternalState<E> internalState) {
+    protected AbstractEntryMap(InternalState<E> internalState) {
         this.state = internalState;
     }
 
@@ -373,7 +373,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
      * expected data size)
      * @return a new instance of the map
      */
-    protected abstract AbstractSimpleMap<K, V, E, M> createMap(int size);
+    protected abstract AbstractEntryMap<K, V, E, M> createMap(int size);
 
     /**
      * Override to provide a read-only implementation.
@@ -505,7 +505,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
 
     protected void resize(int newSize) {
         if (newSize > (state.size << 1)) {
-            AbstractSimpleMap<K, V, E, M> map =
+            AbstractEntryMap<K, V, E, M> map =
                     createMap(nextPowerOf2(newSize) >> 1);
             if (!isEmpty()) {
                 forEach(e -> map.innerPutEntry(e));
@@ -615,7 +615,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
     }
 
     public boolean retainAll(Collection<K> coll) {
-        AbstractSimpleMap<K,V,E,M> tmap = createMap(size());
+        AbstractEntryMap<K,V,E,M> tmap = createMap(size());
         for (K k : coll) {
             E e = getEntry(k);
             if (e != null) {
@@ -646,32 +646,32 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
 
             @Override
             public int size() {
-                return AbstractSimpleMap.this.size();
+                return AbstractEntryMap.this.size();
             }
 
             @Override
             public void clear() {
-                AbstractSimpleMap.this.clear();
+                AbstractEntryMap.this.clear();
             }
 
             @Override
             public boolean isEmpty() {
-                return AbstractSimpleMap.this.isEmpty();
+                return AbstractEntryMap.this.isEmpty();
             }
 
             @Override
             public boolean remove(Object o) {
-                return AbstractSimpleMap.this.removeEntry(((E) o));
+                return AbstractEntryMap.this.removeEntry(((E) o));
             }
 
             @Override
             public boolean add(Entry<K, V> e) {
-                return AbstractSimpleMap.this.putEntry((E) e) == null;
+                return AbstractEntryMap.this.putEntry((E) e) == null;
             }
 
             @Override
             public boolean contains(Object o) {
-                return AbstractSimpleMap.this.getEntry(o) != null;
+                return AbstractEntryMap.this.getEntry(o) != null;
             }
 
             @Override
@@ -709,7 +709,7 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
                     @Override
                     public void remove() {
                         readOnlyCheck();
-                        AbstractSimpleMap.this.removeIndex(currentIdx);
+                        AbstractEntryMap.this.removeIndex(currentIdx);
                         idx = Math.max(0, currentIdx - 1);
                         goToNextNonNullItem();
                     }
@@ -877,19 +877,19 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
                 }
 
                 public int size() {
-                    return AbstractSimpleMap.this.size();
+                    return AbstractEntryMap.this.size();
                 }
 
                 public boolean isEmpty() {
-                    return AbstractSimpleMap.this.isEmpty();
+                    return AbstractEntryMap.this.isEmpty();
                 }
 
                 public void clear() {
-                    AbstractSimpleMap.this.clear();
+                    AbstractEntryMap.this.clear();
                 }
 
                 public boolean contains(Object v) {
-                    return AbstractSimpleMap.this.containsValue(v);
+                    return AbstractEntryMap.this.containsValue(v);
                 }
             };
             values = vals;
@@ -1026,18 +1026,18 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
             addAll(set);
         }
 
-        protected AbstractSimpleMap<K,V,E,M> getMap() {
-            return AbstractSimpleMap.this;
+        protected AbstractEntryMap<K,V,E,M> getMap() {
+            return AbstractEntryMap.this;
         }
         
         @Override
         public boolean removeAll(Collection<?> c) {
-            return AbstractSimpleMap.this.removeAll((Collection<K>)c);
+            return AbstractEntryMap.this.removeAll((Collection<K>)c);
         }
         
         @Override
         public boolean retainAll(Collection<?> c) {
-            return AbstractSimpleMap.this.retainAll((Collection<K>)c);
+            return AbstractEntryMap.this.retainAll((Collection<K>)c);
         }
 
         @Override
@@ -1052,32 +1052,32 @@ public abstract class AbstractSimpleMap<K, V, E extends Entry<K, V>, M extends M
 
         @Override
         public boolean remove(Object key) {
-            return AbstractSimpleMap.this.remove((K) key) != null;
+            return AbstractEntryMap.this.remove((K) key) != null;
         }
 
         @Override
         public boolean add(K e) {
-            return AbstractSimpleMap.this.put(e, null) == null;
+            return AbstractEntryMap.this.put(e, null) == null;
         }
 
         @Override
         public int size() {
-            return AbstractSimpleMap.this.size();
+            return AbstractEntryMap.this.size();
         }
 
         @Override
         public boolean isEmpty() {
-            return AbstractSimpleMap.this.isEmpty();
+            return AbstractEntryMap.this.isEmpty();
         }
 
         @Override
         public void clear() {
-            AbstractSimpleMap.this.clear();
+            AbstractEntryMap.this.clear();
         }
 
         @Override
         public boolean contains(Object k) {
-            return AbstractSimpleMap.this.containsKey(k);
+            return AbstractEntryMap.this.containsKey(k);
         }
 
         @Override

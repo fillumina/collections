@@ -14,11 +14,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
+ * A very minimal size map backed by an array for both keys and values. It should be used mainly as
+ * a small immutable object useful to pass pairs of values around without having to revert to a full
+ * blown {@link HashMap} which can use quite a lot of memory. It's very fast to clone. Instead of
+ * many entries it uses a <i>cursor</i> that is a single <i>mutable</i> {@link Map.Entry}: for this
+ * reason <b>don't use its {@link Map.Entry} outside loops and never save them!</b> Every operation
+ * is O(n). The map keeps insertion order until a sorting method is called. It's not thread safe.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
-    implements Iterable<Map.Entry<K, V>> {
+        implements Iterable<Map.Entry<K, V>> {
 
     public static class Builder<M extends AbstractArrayMap<K, V>, K, V> {
 
@@ -133,7 +139,8 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
     }
 
-    private class PairSpliterator<K, V> implements Spliterator<Entry<K, V>>, Entry<K,V> {
+    private class PairSpliterator<K, V> implements Spliterator<Entry<K, V>>, Entry<K, V> {
+
         private int startIdx;
         private int endIdx;
 
@@ -282,7 +289,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
             } else {
                 System.arraycopy(array, 0, newArray, 0, index);
                 System.arraycopy(array, index + 2, newArray, index,
-                    array.length - index - 2);
+                        array.length - index - 2);
                 array = newArray;
             }
             return prev;

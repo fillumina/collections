@@ -1,8 +1,8 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.AbstractSimpleMap.ReadOnlyMap;
-import com.fillumina.collections.AbstractSimpleMap.SimpleMap;
-import com.fillumina.collections.AbstractSimpleMap.VieweableMap;
+import com.fillumina.collections.AbstractEntryMap.ReadOnlyMap;
+import com.fillumina.collections.AbstractEntryMap.SimpleMap;
+import com.fillumina.collections.AbstractEntryMap.VieweableMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -41,16 +41,16 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldSelectTheNextPowerOfTwo() {
-        assertEquals(0, AbstractSimpleMap.nextPowerOf2(0));
-        assertEquals(1, AbstractSimpleMap.nextPowerOf2(1));
-        assertEquals(2, AbstractSimpleMap.nextPowerOf2(2));
-        assertEquals(4, AbstractSimpleMap.nextPowerOf2(3));
-        assertEquals(8, AbstractSimpleMap.nextPowerOf2(5));
-        assertEquals(8, AbstractSimpleMap.nextPowerOf2(6));
-        assertEquals(8, AbstractSimpleMap.nextPowerOf2(7));
-        assertEquals(8, AbstractSimpleMap.nextPowerOf2(8));
-        assertEquals(16, AbstractSimpleMap.nextPowerOf2(9));
-        assertEquals(16, AbstractSimpleMap.nextPowerOf2(12));
+        assertEquals(0, AbstractEntryMap.nextPowerOf2(0));
+        assertEquals(1, AbstractEntryMap.nextPowerOf2(1));
+        assertEquals(2, AbstractEntryMap.nextPowerOf2(2));
+        assertEquals(4, AbstractEntryMap.nextPowerOf2(3));
+        assertEquals(8, AbstractEntryMap.nextPowerOf2(5));
+        assertEquals(8, AbstractEntryMap.nextPowerOf2(6));
+        assertEquals(8, AbstractEntryMap.nextPowerOf2(7));
+        assertEquals(8, AbstractEntryMap.nextPowerOf2(8));
+        assertEquals(16, AbstractEntryMap.nextPowerOf2(9));
+        assertEquals(16, AbstractEntryMap.nextPowerOf2(12));
     }
     
     @Test

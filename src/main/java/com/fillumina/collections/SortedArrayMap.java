@@ -4,28 +4,29 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Map backed by a sorted array. Very compact and accessible in O(Log n).
- * Useful to store large maps in a very small space with decent access time.
- * It uses cursors as iterators so don't use them outside loops.
- * It <b>requires</b> a {@link Comparable} implementing key.
- * 
+ * Map backed by a sorted array. Very compact and accessible in O(Log n). Useful to store large maps
+ * in a very small space with decent access time. It's very inefficient to add elements in. It uses
+ * cursors as iterators so don't use {@link Map.Entry} outside loops. It <b>requires</b> a
+ * {@link Comparable} key.
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SortedArrayMap<K,V> extends AbstractArrayMap<K,V> {
+public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
+
     private static final int PAIR_MASK = Integer.MAX_VALUE - 1;
-    
-    public static final SortedArrayMap<?,?> EMPTY = new SortedArrayMap.Immutable<>();
+
+    public static final SortedArrayMap<?, ?> EMPTY = new SortedArrayMap.Immutable<>();
 
     public static class Immutable<K, V> extends SortedArrayMap<K, V> {
 
-        public static <K,V> Builder<SortedArrayMap<K,V>,K,V> builder() {
+        public static <K, V> Builder<SortedArrayMap<K, V>, K, V> builder() {
             return new Builder<>(o -> new SortedArrayMap.Immutable<>(o));
         }
 
         public Immutable() {
         }
 
-        public Immutable(SortedArrayMap<K,V> copy) {
+        public Immutable(SortedArrayMap<K, V> copy) {
             super(copy);
         }
 
@@ -43,30 +44,30 @@ public class SortedArrayMap<K,V> extends AbstractArrayMap<K,V> {
         }
     }
 
-    public static <K,V> SortedArrayMap<K,V> empty() {
+    public static <K, V> SortedArrayMap<K, V> empty() {
         return (SortedArrayMap<K, V>) EMPTY;
     }
-    
-    public static <K,V> Builder<SortedArrayMap<K,V>,K,V> builder() {
+
+    public static <K, V> Builder<SortedArrayMap<K, V>, K, V> builder() {
         return new Builder<>(o -> new SortedArrayMap<>(o));
     }
-    
+
     public SortedArrayMap() {
     }
 
     public SortedArrayMap(SortedArrayMap<K, V> copy) {
         super(copy);
-        sortByKeys((a,b) -> ((Comparable<K>) a).compareTo((K) b));
+        sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
     public SortedArrayMap(Object... o) {
         super(o);
-        sortByKeys((a,b) -> ((Comparable<K>) a).compareTo((K) b));
+        sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
     public SortedArrayMap(Map<K, V> map) {
         super(map);
-        sortByKeys((a,b) -> ((Comparable<K>) a).compareTo((K) b));
+        sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
     @Override
@@ -108,13 +109,15 @@ public class SortedArrayMap<K,V> extends AbstractArrayMap<K,V> {
         }
     }
 
-    /** @return index if found, -index-2 if not found */
+    /**
+     * @return index if found, -index-2 if not found
+     */
     @Override
     protected int getIndexOfKey(K key) {
         if (array == null || array.length == 0) {
             return -2;
         }
-        
+
         final int length = array.length;
         int range = (length == 2) ? 0 : (length / 2) & PAIR_MASK;
         int idx = range;
@@ -123,7 +126,7 @@ public class SortedArrayMap<K,V> extends AbstractArrayMap<K,V> {
             if (cmp == 0) {
                 return idx;
             }
-            idx += (cmp > 0) ? range: -range;
+            idx += (cmp > 0) ? range : -range;
             if (range < 2) {
                 return -idx - ((cmp > 0) ? 4 : 2);
             }
@@ -136,12 +139,12 @@ public class SortedArrayMap<K,V> extends AbstractArrayMap<K,V> {
             range = (range >> 1) & PAIR_MASK;
         } while (true);
     }
-    
+
     public SortedArrayMap<K, V> immutable() {
         if (this instanceof Immutable) {
             return this;
         }
         return new Immutable<>(this);
     }
-    
+
 }

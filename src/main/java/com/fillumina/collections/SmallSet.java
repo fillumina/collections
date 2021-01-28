@@ -14,7 +14,7 @@ import java.util.Objects;
  * performances shouldn't be horrible for very few elements having complexity
  * {@code O(n)}. Doesn't accept {@code null}. It maintains insertion order
  * and the n-th elemnt can be get by using {@link #get(int) }. It's sortable by
- * using its own in place {@link #sort() } implementation. It's not thread safe.
+ * using its own in place {@link #sort()} implementation. It's not thread safe.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
