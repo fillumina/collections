@@ -17,11 +17,31 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * IndexedTree provides a way to easily navigate, rearrange and manipulate complex structures
+ * Provides a way to easily navigate, rearrange and manipulate data present in tree structures. The
+ * idea is to replicate the functioning of a relational database where every inserted key has its
+ * own set of values associated with it and can be queried to create both useful answers or new
+ * organization of the same data. In particular a new tree structure can be created with a different
+ * hierarchy of indexes. For example it is possible to pass from a hierarchy organized by
+ * {@code granpa -> father -> son} to a new one with {@code son -> father -> granpa} or even
+ * compress one level to get: {@code granpa -> families (fathers+sons)}.
+ * <p>
+ * When a tuple is inserted the values is added to a set associated with every given index. For
+ * example in the following tuple (the first parameter is the value, the others are indexes):
+ * <br> {@code indexTree.add(12.3, 'a', "Roma", true);}
+ * <br>
+ * the value {@code 12.3} is added to the sets associated with {@code 'a'}, {@code "Roma"} and
+ * {@code true}.
+ * <br>
+ * If another tuple is inserted:
+ * <br> {@code indexTree.add(7.4, 'b', "Roma", false);}
+ * <br>
+ * then the associated with {@code "Roma"} will contain both {@code 12.3} and {@code 7.4} values
+ * while new sets are created for {@code 'b'} and {@code false}.
+ * <br>
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class IndexedTree<T> {
+public class MultiMap<T> {
 
     public static class Tree<T> {
 
@@ -41,15 +61,14 @@ public class IndexedTree<T> {
         }
 
         /**
-         * Clone the entire structure to map.
+         * Clone the entire structure into a map.
          */
         public Map<?, ?> toMap() {
-            return (Map<?, ?>) replaceMap(
-                    (Function<T, Object>) Function.identity());
+            return (Map<?, ?>) replaceMap((Function<T, Object>) Function.identity());
         }
 
         /**
-         * Clone the entire structure to map changing its leave values.
+         * Clone the entire structure into a map transforming its leave values.
          */
         public Map<?, ?> toMap(Function<T, Object> transformer) {
             return (Map<?, ?>) replaceMap(transformer);
@@ -152,10 +171,10 @@ public class IndexedTree<T> {
         /**
          * Removes leaves and branches passing the predicate test
          */
-        public boolean pruneLeaves(Predicate<T> predicateOnValue) {
+        public boolean pruneLeaves(Predicate<T> leavesRemovePredicate) {
             if (isLeaf()) {
                 if (value != null) {
-                    return predicateOnValue.test(value);
+                    return leavesRemovePredicate.test(value);
                 } else {
                     return true;
                 }
@@ -164,7 +183,7 @@ public class IndexedTree<T> {
                         children.entrySet().iterator();
                 while (it.hasNext()) {
                     Entry<Object, Tree<T>> e = it.next();
-                    if (e.getValue().pruneLeaves(predicateOnValue)) {
+                    if (e.getValue().pruneLeaves(leavesRemovePredicate)) {
                         it.remove();
                     }
                 }
@@ -175,18 +194,18 @@ public class IndexedTree<T> {
         /**
          * Removes branches passing the predicate test
          */
-        public void pruneBranches(Predicate<Object> predicateOnKey) {
+        public void pruneBranches(Predicate<Object> branchRemovePredicate) {
             if (!isLeaf()) {
                 Iterator<Entry<Object, Tree<T>>> it =
                         children.entrySet().iterator();
                 while (it.hasNext()) {
                     Entry<Object, Tree<T>> e = it.next();
                     Object key = e.getKey();
-                    if (predicateOnKey.test(key)) {
+                    if (branchRemovePredicate.test(key)) {
                         it.remove();
                     } else {
                         final Tree<T> t = e.getValue();
-                        t.pruneBranches(predicateOnKey);
+                        t.pruneBranches(branchRemovePredicate);
                     }
                 }
             }
@@ -233,21 +252,58 @@ public class IndexedTree<T> {
             return children;
         }
 
+        public Tree<T> get(Object key) {
+            return children.get(key);
+        }
+
+        public Map<Object, Tree<T>> mget(Object... keys) {
+            if (keys.length == 1) {
+                return Map.of(keys[0], children.get(keys[0]));
+            }
+            Map<Object,Tree<T>> map = new HashMap<>();
+            for (Object k : keys) {
+                map.put(k, children.get(k));
+            }
+            return map;
+        }
+        
         public T getValue() {
             return value;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append("(");
+            if (keyList != null) {
+                buf.append(keyList.toString());
+            }
+            if (keyList != null && value != null) {
+                buf.append(" => ");
+            }
+            if (value != null) {
+                buf.append(value.toString());
+            }
+            buf.append(")");
+            return buf.toString();
+        }
     }
 
+    /**
+     * Contains the value and all the keys it refers to. It's important because we cannot assume all
+     * values have a meaningful {@link Object#hashCode()} and 
+     * {@link Object#equals(java.lang.Object)} implementation.
+     */
     private static class Container<T> {
 
-        private final Object[] params;
+        private final Object[] keys;
         private final T value;
         private final int hashcode;
 
-        public Container(Object[] params, T value) {
-            this.params = params;
+        public Container(Object[] keys, T value) {
+            this.keys = keys;
             this.value = value;
-            this.hashcode = Arrays.deepHashCode(params);
+            this.hashcode = Arrays.deepHashCode(keys);
         }
 
         @Override
@@ -267,47 +323,73 @@ public class IndexedTree<T> {
                 return false;
             }
             final Container<?> other = (Container<?>) obj;
-            return Arrays.deepEquals(this.params, other.params);
+            return Arrays.deepEquals(this.keys, other.keys);
         }
 
         @Override
         public String toString() {
-            return params + " => " + value;
+            return Arrays.toString(keys) + " => " + value;
         }
     }
 
-    private final List<Map<Object, Set<Container<T>>>> mapList =
-            new ArrayList<>();
+    // The keys are organized positionally in a list so that key '1' on the first
+    // position of the list is different from key '1' on the second.
+    //                      key      set of values
+    private final List<Map<Object, Set<Container<T>>>> mapList = new ArrayList<>();
 
+    // helper to be able to change internal set type
     private static <T> Set<Container<T>> createNewSet() {
         return new SetWrapper<>();
     }
 
-    private static <T> Set<Container<T>> createNewSet(
-            Collection<Container<T>> coll) {
+    // helper to be able to change internal set type
+    private static <T> Set<Container<T>> createNewSet(Collection<Container<T>> coll) {
         return new SetWrapper<>(coll);
     }
 
     public void clear() {
         mapList.forEach(m -> m.clear());
+        mapList.clear();
     }
 
+    /**
+     * @return true if no <i>values</i> are present.
+     */
     public boolean isEmpty() {
-        return size() == 0;
+        for (Map<Object, Set<Container<T>>> map : mapList) {
+            if (!map.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    /**
+     * Be careful this is a quite expensive operation.
+     *
+     * @return the total number of <i>values</i>.
+     */
     public int size() {
         return values().size();
     }
 
-    public Set<T> get(Collection<Object> keys) {
-        return get(keys.toArray());
-    }
-
+    /**
+     * @return the values associated with the key at the given index (position).
+     */
     private Set<Container<T>> getSetAtIndex(int index, Object key) {
         return mapList.get(index).get(key);
     }
 
+    /**
+     * @return the values associated to all the passed keys.
+     */
+    public Set<T> get(Collection<Object> keys) {
+        return get(keys.toArray());
+    }
+
+    /**
+     * @return the values associated to all passed keys.
+     */
     public Set<T> get(Object... keys) {
         Set<Container<T>> result = null;
         for (int i = 0, l = keys.length; i < l; i++) {
@@ -323,10 +405,15 @@ public class IndexedTree<T> {
                 }
             }
         }
-        return result.stream()
-                .map(s -> s.value).collect(Collectors.toSet());
+        return result.stream().map(s -> s.value).collect(Collectors.toSet());
     }
 
+    /**
+     * Adds a value to all the sets corresponding to the given keys. The position of the key is
+     * important and equal keys on different position are considered different.
+     *
+     * @return true if the value has been added (was not already present).
+     */
     public boolean add(T value, Object... keys) {
         checkMapListSize(keys.length);
         Container container = new Container(keys, value);
@@ -357,6 +444,12 @@ public class IndexedTree<T> {
         }
     }
 
+    /**
+     * Removes the
+     *
+     * @param keys
+     * @return
+     */
     public boolean remove(Object... keys) {
         boolean removed = false;
         Container<T> element = new Container<>(keys, null);
@@ -389,7 +482,7 @@ public class IndexedTree<T> {
     }
 
     /**
-     * It's not advisable to use more than 3 indexes
+     * @return a tree from the given positions.
      */
     public Tree<T> treeFromIndexes(int... indexes) {
         Tree<T> root = createTree(List.of(), null, indexes, 0,
@@ -456,7 +549,7 @@ public class IndexedTree<T> {
             T value = currentSelection.iterator().next().value;
 
             if (currentSelection.size() > 1) {
-                throw new AssertionError();
+                throw new IllegalArgumentException("wrong number of parameters");
             }
 
             return new Tree<>(value, null, keyList);
