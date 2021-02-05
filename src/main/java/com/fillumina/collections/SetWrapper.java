@@ -19,14 +19,14 @@ public class SetWrapper<T> implements Set<T> {
     private Set<T> delegate;
 
     public SetWrapper() {
-        delegate = new SmallSet<>();
+        delegate = new ArraySet<>();
     }
 
     public SetWrapper(T... array) {
         if (array.length > CUT_OFF) {
             delegate = KeyOnlyMap.createSet(array); 
         } else {
-            delegate = new SmallSet<>(array);
+            delegate = new ArraySet<>(array);
         }
     }
     
@@ -34,7 +34,7 @@ public class SetWrapper<T> implements Set<T> {
         if (coll.size() > CUT_OFF) {
             delegate = KeyOnlyMap.createSet(coll); 
         } else {
-            delegate = new SmallSet<>(coll);
+            delegate = new ArraySet<>(coll);
         }
     }
 

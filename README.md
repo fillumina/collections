@@ -5,7 +5,7 @@ All containers offer static creator, builder and immutable implementation.
 Optimized for **size** efficiency:
 
 * `ArrayMap` and `SortedArrayMap` extend `AbstractArrayMap` which is a standard `Map` implementation apart from the use of a single mutable _cursor_ instead of the classic multiple _entries_ for each mapping. They are based on a single array of `Object`s that grows as needed. It's very compact. The sorted implementation `SortedArrayMap` might improve access time in case of many elements (O(log n)). They are both compact and very fast to clone.
-* `SmallSet` is a very compact `Set` implementation backed by an array. Every insertion must scan the entire array for unicity so it's not very efficient.
+* `ArraySet` is a very compact `Set` implementation backed by an array. Every insertion must scan the entire array for unicity so it's not very efficient.
 
 Optimized for **speed** of access:
 

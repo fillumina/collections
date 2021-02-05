@@ -13,26 +13,26 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SmallSetTest extends AbstractSetTest {
+public class ArraySetTest extends AbstractSetTest {
 
     @Override
     protected <T> Set<T> createSet() {
-        return new SmallSet<>();
+        return new ArraySet<>();
     }
 
     @Override
     protected <T> Set<T> createSet(T... array) {
-        return new SmallSet<>(array);
+        return new ArraySet<>(array);
     }
 
     @Override
     protected <T> Set<T> createSet(Collection<T> coll) {
-        return new SmallSet<>(coll);
+        return new ArraySet<>(coll);
     }
     
     @Test
     public void shouldGetElementsByIndex() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(3, 2, 1));
+        ArraySet<Integer> set = new ArraySet<>(List.of(3, 2, 1));
         assertEquals(3, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(1, set.get(2));
@@ -40,7 +40,7 @@ public class SmallSetTest extends AbstractSetTest {
  
     @Test
     public void shouldBeSortable() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(3, 2, 1));
+        ArraySet<Integer> set = new ArraySet<>(List.of(3, 2, 1));
         set.sort();
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
@@ -49,7 +49,7 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldRemoveAtIndexFirst() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
         set.removeAtIndex(0);
         assertFalse(set.contains(1));
         assertEquals(2, set.size());
@@ -57,7 +57,7 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldRemoveAtIndexMiddle() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
         set.removeAtIndex(1);
         assertFalse(set.contains(2));
         assertEquals(2, set.size());
@@ -65,7 +65,7 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldRemoveAtIndexLast() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
         set.removeAtIndex(2);
         assertFalse(set.contains(3));
         assertEquals(2, set.size());
@@ -73,7 +73,7 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldRemoveByIteratorFirst() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         it.remove();
@@ -85,7 +85,7 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldRemoveByIteratorMiddle() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         assertEquals(2, it.next());
@@ -98,7 +98,7 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldRemoveByIteratorLast() {
-        SmallSet<Integer> set = new SmallSet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         assertEquals(2, it.next());
@@ -111,9 +111,9 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldUseCloneConstructorForArray() {
-        SmallSet<String> smallSet = new SmallSet<>(
+        ArraySet<String> smallSet = new ArraySet<>(
                 "one", "two", "three");
-        SmallSet<String> clone = new SmallSet<>(smallSet);
+        ArraySet<String> clone = new ArraySet<>(smallSet);
         assertEquals("one", clone.get(0));
         assertEquals("two", clone.get(1));
         assertEquals("three", clone.get(2));
@@ -125,8 +125,8 @@ public class SmallSetTest extends AbstractSetTest {
     
     @Test
     public void shouldUseCloneConstructorForSingleObject() {
-        SmallSet<Integer> smallSet = new SmallSet<>(1);
-        SmallSet<Integer> clone = new SmallSet<>(smallSet);
+        ArraySet<Integer> smallSet = new ArraySet<>(1);
+        ArraySet<Integer> clone = new ArraySet<>(smallSet);
         assertEquals(1, clone.get(0));
         
         clone.add(2);

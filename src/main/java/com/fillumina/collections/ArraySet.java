@@ -18,7 +18,7 @@ import java.util.Objects;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SmallSet<T> extends AbstractSet<T> implements Serializable {
+public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private static Iterator<?> NULL_ITERATOR = new Iterator<Object>() {
@@ -33,7 +33,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         }
     };
 
-    public static class ReadOnly<T> extends SmallSet<T> {
+    public static class ReadOnly<T> extends ArraySet<T> {
         private static final long serialVersionUID = 1L;
         
         public ReadOnly() {
@@ -44,7 +44,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
             super(elements);
         }
 
-        public ReadOnly(SmallSet<T> smallSet) {
+        public ReadOnly(ArraySet<T> smallSet) {
             super(smallSet);
         }
 
@@ -64,10 +64,10 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     // 3) an array of objects
     private Object obj;
 
-    public SmallSet() {
+    public ArraySet() {
     }
 
-    public SmallSet(T... elements) {
+    public ArraySet(T... elements) {
         switch (elements.length) {
             case 0: 
                 // do nothing
@@ -80,7 +80,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         }
     }
 
-    public SmallSet(Collection<T> elements) {
+    public ArraySet(Collection<T> elements) {
         if (elements != null && !elements.isEmpty()) {
             if (elements.size() == 1) {
                 obj = elements.iterator().next();
@@ -90,7 +90,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         }
     }
 
-    public SmallSet(SmallSet<T> smallSet) {
+    public ArraySet(ArraySet<T> smallSet) {
         if (smallSet.obj != null) {
             if (smallSet.obj.getClass().isArray()) {
                 this.obj = ((Object[])smallSet.obj).clone();
@@ -280,7 +280,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
                 @Override
                 public void remove() {
                     pos--;
-                    SmallSet.this.removeAtIndex(pos);
+                    ArraySet.this.removeAtIndex(pos);
                 }
             };
         } else {
@@ -304,7 +304,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
 
                 @Override
                 public void remove() {
-                    SmallSet.this.clear();
+                    ArraySet.this.clear();
                 }
             };
         }
