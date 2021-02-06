@@ -16,6 +16,14 @@ public class Counter {
         this.value = value;
     }
     
+    public boolean isZero() {
+        return value == 0;
+    }
+    
+    public boolean equals(int v) {
+        return value == v;
+    }
+    
     public void increment() {
         value++;
     }
