@@ -18,4 +18,6 @@ Different kind of containers:
 * `BiMap` is a compliant `Map` implementation based on `AbstractEntryMap` where values unicity is enforced in addition to usual keys unicity. It's symmetrical and its mapping can be reversed on both ways.
 * `Matrix` allows an easy creation (it resizes automatically), manipulation and visualization of bi-dimensional matrices of objects.
 * `MultiMap` it's a map that allows multiple keys for each value. It can generate tree structures that reflect the associations between keys and offers useful methods to inspect and extract data out of it.
+* `Holder` contains a mutable value to be used inside non concurrent lambdas.
+* `Counter` contains a counter that can be used inside non concurrent lambdas.
 
