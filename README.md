@@ -9,13 +9,13 @@ Optimized for **size** efficiency:
 
 Optimized for **speed** of access:
 
-* `AbstactEntryMap` is designed to be fast on all operations. On worst case scenario adding is slower O(n) compared to O(1) of `HashMap` but in all other (much more common) cases it is pretty fast. It embeds various implementations. Differenlty from the default java `HashMap` it's very fast to clone and can use a customized `Entry` implementation and has many extension points that makes it extremely flexible.
+* `AbstactEntryMap` is designed to be fast on all operations. On worst case scenario adding is slower O(n) compared to O(1) of `HashMap` but in all other (much more common) cases it is pretty fast. It embeds various implementations. It has many extension points that makes it extremely flexible.
 * `KeyOnlyMap` is an `AbstractEntryMap` implementation that manages only keys. It's `keySet` is a very usable Set implementation which uses less memory than the standard JDK `HashSet`.
 * `SetWrapper` uses different types of internal representation depending on the size of the data. It aims for a good balance between space efficiency and speed.
 
 Different kind of containers:
 
-* `BiMap` is a compliant `Map` implementation based on `AbstractEntryMap` where value's unicity is enforced in addition to usual key's unicity. It's symmetrical and its mapping can be reversed on both ways.
+* `BiMap` is a compliant `Map` implementation based on `AbstractEntryMap` where value unicity is enforced in addition to usual key unicity. It's symmetrical and its mapping can be reversed on both ways.
 * `Matrix` allows an easy creation (it resizes automatically), manipulation and visualization of bi-dimensional matrices of objects.
 * `MultiMap` it's a map that allows multiple keys for each value. It can generate tree structures that reflect the associations between keys and offers useful methods to inspect and extract data out of it.
 * `Holder` contains a mutable value to be used inside non concurrent lambdas.

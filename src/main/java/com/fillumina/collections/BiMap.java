@@ -32,23 +32,7 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
     private final BiMap<V, K> inverseMap;
     private final boolean immutable;
 
-    public BiMap(Map<K, V> map) {
-        this();
-        map.forEach((k, v) -> put(k, v));
-    }
-
-    private BiMap(boolean immutable, Map<K, V> map) {
-        super();
-        this.inverseMap = new BiMap(this, immutable, 0, map);
-        this.immutable = immutable;
-    }
-
-    private BiMap(boolean immutable, Object... array) {
-        super();
-        this.inverseMap = new BiMap(this, immutable, 0, array);
-        this.immutable = immutable;
-    }
-
+    /** Empty constructor. */
     public BiMap() {
         super();
         this.inverseMap = new BiMap(this, false);
@@ -60,10 +44,34 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         this.immutable = immutable;
     }
 
+    /** Usual copy constructor from other kind of {@link java.util.Map}. */
+    public BiMap(Map<K, V> map) {
+        this();
+        map.forEach((k, v) -> put(k, v));
+    }
+
+    public BiMap(BiMap<K,V> copy) {
+        this(copy, null, false);
+    }
+    
+    /** @param prepares the map to the expected size (avoid expensive resizing operation). */
     public BiMap(int initialSize) {
         super(initialSize);
         this.inverseMap = new BiMap(this, false, initialSize, EMPTY_ARRAY);
         this.immutable = false;
+    }
+
+    /** Creates an immutableClone map (used by static creators). */
+    private BiMap(boolean immutable, Map<K, V> map) {
+        super(map.size());
+        this.inverseMap = new BiMap(this, immutable, map.size(), map);
+        this.immutable = immutable;
+    }
+
+    private BiMap(boolean immutable, Object... array) {
+        super(array.length);
+        this.inverseMap = new BiMap(this, immutable, array.length, array);
+        this.immutable = immutable;
     }
 
     private BiMap(BiMap<V, K> inverseMap, boolean immutable, int initialSize, Map<K, V> map) {
@@ -86,12 +94,45 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         this.immutable = immutable;
     }
 
+    /** Clone */
+    private BiMap(BiMap<K,V> copy, BiMap<V,K> inverse, boolean immutable) {
+        super(copy);
+        this.immutable = immutable;
+        this.inverseMap = (inverse != null) ? 
+                inverse : 
+                new BiMap(copy.inverseMap, this, immutable);
+    }
+
+    /** View */
+    private BiMap(BiMap<K,V> copy, BiMap<V,K> inverse) {
+        super(copy.getInternalState());
+        this.immutable = true;
+        this.inverseMap = (inverse != null) ? 
+                inverse : 
+                new BiMap(copy.inverseMap, this);
+    }
+
+    
     public BiMap<V, K> inverse() {
         return inverseMap;
     }
 
+    public BiMap<K, V> immutableClone() {
+        return new BiMap<>(this, null, true);
+    }
+    
+    public BiMap<K, V> immutableView() {
+        return new BiMap<>(this, null);
+    }
+    
+    /** It's a clone of the original biMap. */
     @Override
-    public void readOnlyCheck() {
+    public BiMap<K, V> clone() {
+        return new BiMap<>(this, null, false);
+    }
+
+    @Override
+    protected void readOnlyCheck() {
         if (immutable) {
             throw new UnsupportedOperationException("read only instance");
         }
@@ -104,7 +145,11 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
         if (prevKey != null) {
             innerRemove(prevKey);
         }
-        return super.innerPut(key, value);
+        V prevValue = super.innerPut(key, value);
+        if (prevValue != null) {
+            inverseMap.innerRemove(prevValue);
+        }
+        return prevValue;
     }
 
     private V inverseInnerPut(K key, V value) {

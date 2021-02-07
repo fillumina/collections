@@ -14,6 +14,8 @@ import java.util.Set;
  */
 public class KeyOnlyMap<T> extends AbstractEntryMap<T,Boolean,KeyOnlyEntry<T>,KeyOnlyMap<T>> {
     
+    private static final KeyOnlyEntry<?> EMPTY_ENTRY = new KeyOnlyEntry<>(null);
+    
     public static class KeyOnlyEntry<T> implements Map.Entry<T,Boolean> {
         private final T value;
 
@@ -107,6 +109,9 @@ public class KeyOnlyMap<T> extends AbstractEntryMap<T,Boolean,KeyOnlyEntry<T>,Ke
 
     @Override
     protected KeyOnlyEntry<T> createEntry(T k, Boolean v) {
+        if (k == null) {
+            return (KeyOnlyEntry<T>) EMPTY_ENTRY;
+        }
         return new KeyOnlyEntry<>(k);
     }
 

@@ -17,6 +17,109 @@ import org.junit.jupiter.api.Test;
 public class BiMapTest {
 
     @Test
+    public void shouldCloneArray() {
+        int[] array = new int[]{1, 2, 3};
+        int[] clone = array.clone();
+        array[0] = 0;
+        assertEquals(1, clone[0]);
+    }
+    
+    @Test
+    public void shouldGetAnImmutableView() {
+        BiMap<String, Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("two", 2);
+        biMap.put("three", 3);
+
+        BiMap<String, Integer> view = biMap.immutableView();
+
+        biMap.put("one", 11);
+        
+        assertEquals(3, view.size());
+        assertEquals(11, view.get("one")); // <-- the view changes too
+        assertEquals(2, view.get("two"));
+        assertEquals(3, view.get("three"));
+
+        assertEquals(3, view.inverse().size());
+        assertEquals("one", view.inverse().get(11)); // <-- the view changes too
+        assertEquals("two", view.inverse().get(2));
+        assertEquals("three", view.inverse().get(3));
+        
+        assertThrows(UnsupportedOperationException.class, 
+                () -> view.put("wrong", 666));
+        
+    }
+    
+    @Test
+    public void shouldUseCopyConstructor() {
+        BiMap<String, Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("two", 2);
+        biMap.put("three", 3);
+
+        BiMap<String, Integer> copy = new BiMap<>(biMap);
+
+        biMap.put("one", 11);
+        
+        assertEquals(3, copy.size());
+        assertEquals(1, copy.get("one"));
+        assertEquals(2, copy.get("two"));
+        assertEquals(3, copy.get("three"));
+
+        assertEquals(3, copy.inverse().size());
+        assertEquals("one", copy.inverse().get(1));
+        assertEquals("two", copy.inverse().get(2));
+        assertEquals("three", copy.inverse().get(3));
+    }
+
+    @Test
+    public void shouldClone() {
+        BiMap<String, Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("two", 2);
+        biMap.put("three", 3);
+
+        BiMap<String, Integer> clone = biMap.clone();
+        
+        biMap.put("one", 11);
+        
+        assertEquals(3, clone.size());
+        assertEquals(1, clone.get("one"));
+        assertEquals(2, clone.get("two"));
+        assertEquals(3, clone.get("three"));
+
+        assertEquals(3, clone.inverse().size());
+        assertEquals("one", clone.inverse().get(1));
+        assertEquals("two", clone.inverse().get(2));
+        assertEquals("three", clone.inverse().get(3));
+    }
+
+    @Test
+    public void shouldGetImmutableClone() {
+        BiMap<String, Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("two", 2);
+        biMap.put("three", 3);
+
+        BiMap<String, Integer> immutable = biMap.immutableClone();
+        
+        biMap.put("one", 11);
+
+        assertEquals(3, immutable.size());
+        assertEquals(1, immutable.get("one"));
+        assertEquals(2, immutable.get("two"));
+        assertEquals(3, immutable.get("three"));
+
+        assertEquals(3, immutable.inverse().size());
+        assertEquals("one", immutable.inverse().get(1));
+        assertEquals("two", immutable.inverse().get(2));
+        assertEquals("three", immutable.inverse().get(3));
+        
+        assertThrows(UnsupportedOperationException.class, 
+                () -> immutable.put("wrong", 666));
+    }
+    
+    @Test
     public void shouldPutItems() {
         BiMap<String, Integer> biMap = new BiMap<>();
         biMap.put("one", 1);
@@ -32,6 +135,28 @@ public class BiMapTest {
         assertEquals("one", biMap.inverse().get(1));
         assertEquals("two", biMap.inverse().get(2));
         assertEquals("three", biMap.inverse().get(3));
+    }
+    
+    @Test
+    public void shouldReplaceRelation() {
+        BiMap<String, Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("one", 11);
+
+        assertEquals(1, biMap.size());
+        assertEquals(1, biMap.inverse().size());
+        assertTrue(biMap.containsEntry("one", 11));
+    }
+    
+    @Test
+    public void shouldReplaceInverseRelation() {
+        BiMap<String, Integer> biMap = new BiMap<>();
+        biMap.put("one", 1);
+        biMap.put("other", 1);
+
+        assertEquals(1, biMap.size());
+        assertEquals(1, biMap.inverse().size());
+        assertTrue(biMap.containsEntry("other", 1));
     }
 
     @Test

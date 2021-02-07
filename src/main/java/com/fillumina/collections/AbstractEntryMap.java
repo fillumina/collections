@@ -64,8 +64,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
     };
 
-    public static Entry<?, ?> NULL_ENTRY =
-            new SimpleImmutableEntry<>(null, null);
+    public static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
     /**
      * Full {@link java.util.Map} conform implementation. Useful for its very
@@ -93,8 +92,15 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
+        protected SimpleMap(InternalState<Entry<K, V>> internalState) {
+            super(internalState);
+        }
+
         @Override
-        protected SimpleEntry<K, V> createEntry(K k, V v) {
+        protected Entry<K, V> createEntry(K k, V v) {
+            if (k == null && v == null) {
+                return (Entry<K, V>) NULL_ENTRY;
+            }
             return new SimpleEntry<>(k, v);
         }
 
@@ -139,13 +145,17 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
+        /** Passed {@link Entry} will be changed if cloning. */
         @Override
         public Entry<K, V> putEntry(Entry<K, V> entry) {
             return super.putEntry(entry);
         }
         
         @Override
-        protected SimpleEntry<K, V> createEntry(K k, V v) {
+        protected Entry<K, V> createEntry(K k, V v) {
+            if (k == null && v == null) {
+                return (Entry<K, V>) NULL_ENTRY;
+            }
             return new SimpleEntry<>(k, v);
         }
 
@@ -196,18 +206,19 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         /**
          * Copy constructor.
          */
-        public VieweableMap(
-                AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
+        public VieweableMap(AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
 
-        protected VieweableMap(
-                InternalState<SimpleImmutableEntry<K, V>> internalState) {
+        protected VieweableMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
             super(internalState);
         }
 
         @Override
         protected SimpleImmutableEntry<K, V> createEntry(K k, V v) {
+            if (k == null && v == null) {
+                return (SimpleImmutableEntry<K, V>) NULL_ENTRY;
+            }
             return new SimpleImmutableEntry<>(k, v);
         }
 
@@ -269,8 +280,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         /**
          * Used for views.
          */
-        protected ReadOnlyMap(
-                InternalState<SimpleImmutableEntry<K, V>> internalState) {
+        protected ReadOnlyMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
             super(internalState);
         }
 
@@ -340,11 +350,22 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Very fast copy constructor.
+     * Copy constructor.
      */
     public AbstractEntryMap(AbstractEntryMap<K, V, E, M> map) {
         this();
-        this.state.array = map.state.array.clone();
+        E[] otherArray = map.state.array;
+        E[] array = null;
+        if (otherArray != null) {
+            array = (E[]) new Entry[otherArray.length];
+            for (int i=0,l=otherArray.length; i<l; i++) {
+                if (otherArray[i] != null) {
+                    E e = otherArray[i];
+                    array[i] = createEntry(e.getKey(), e.getValue());
+                }
+            }
+        }
+        this.state.array = array;
         this.state.mask = map.state.mask;
         this.state.size = map.state.size;
     }
@@ -379,7 +400,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * Override to provide a read-only implementation.
      */
-    public void readOnlyCheck() {
+    protected void readOnlyCheck() {
         // do nothing
     }
 
@@ -470,7 +491,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     @Override
     public V put(K key, V value) {
-        readOnlyCheck();
         return innerPut(key, value);
     }
 

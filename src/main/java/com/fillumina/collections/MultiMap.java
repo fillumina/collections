@@ -37,7 +37,9 @@ import java.util.stream.Collectors;
  * <br>
  * then the associated with {@code "Roma"} will contain both {@code 12.3} and {@code 7.4} values
  * while new sets are created for {@code 'b'} and {@code false}.
- * <br>
+ * <p>
+ * NOTE: Some of the functionalities of this class can be obtained with
+ * {@link java.util.stream.Collectors#groupingBy(java.util.function.Function) }.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
