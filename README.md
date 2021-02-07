@@ -9,7 +9,7 @@ Optimized for **size** efficiency:
 
 Optimized for **speed** of access:
 
-* `AbstactEntryMap` is designed to be fast on all operations. On worst case scenario adding is slower O(n) compared to O(1) of `HashMap` but in all other (much more common) cases it is pretty fast. It embeds various implementations. It has many extension points that makes it extremely flexible.
+* `AbstactEntryMap` has many extension points that makes it extremely flexible. It is slightly slower than `HashMap`.
 * `KeyOnlyMap` is an `AbstractEntryMap` implementation that manages only keys. It's `keySet` is a very usable Set implementation which uses less memory than the standard JDK `HashSet`.
 * `SetWrapper` uses different types of internal representation depending on the size of the data. It aims for a good balance between space efficiency and speed.
 
