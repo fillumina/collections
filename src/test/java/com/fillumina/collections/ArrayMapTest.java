@@ -70,7 +70,15 @@ public class ArrayMapTest extends AbstractArrayMapTestHelper {
         assertEquals("two", e.getValue());
         assertEquals(2, e.getKey());
     }
-
+    
+    @Test
+    public void shouldContainsEntry() {
+        ArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        
+        assertTrue(map.containsEntry(1, "one"));
+        assertFalse(map.containsEntry(1, "other"));
+    }
+    
     @Test
     public void testSortByKeys() {
         ArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");

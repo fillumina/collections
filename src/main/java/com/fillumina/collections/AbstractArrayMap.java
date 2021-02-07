@@ -235,6 +235,10 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     protected void readOnlyCheck() throws UnsupportedOperationException {
     }
 
+    public boolean containsEntry(K k, V v) {
+        return v.equals(get(k));
+    }
+    
     @Override
     public int size() {
         return array == null ? 0 : array.length >> 1;

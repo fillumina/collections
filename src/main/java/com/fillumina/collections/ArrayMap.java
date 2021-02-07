@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Simple {@link AbstractArrayMap} implementation.
+ * {@link AbstractArrayMap} implementation.
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

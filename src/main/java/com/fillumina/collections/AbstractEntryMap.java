@@ -114,7 +114,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     /**
      * Full {@link java.util.Map} conform implementation. Useful for its very
-     * fast {@link #clone() } operation.
+     * fast {@link #clone() } operation. Differently from {@link SimpleMap} it allows
+     * to add a {@link Map.Entry}.
      */
     public static class EntryMap<K, V>
             extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
@@ -168,9 +169,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * <li>Differently to {@link SimpleMap} entries are read-only (cannot use
      * {@link Map.Entry#setValue(java.lang.Object)}). The map can be changed by
      * other usual methods.
-     * <li>A read-only view of the map is available via 
-     *     {@link #getReadOnlyView() }
+     * <li>A read-only view of the map is available via {@link #getReadOnlyView() }
      * </ul>
+     * This is a base for other types of maps, not really useful by itself.
      *
      * @param <K>
      * @param <V>
@@ -417,6 +418,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return collisionCounter;
     }
 
+    public boolean containsEntry(K k, V v) {
+        return v.equals(get(k));
+    }
+        
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return new SimpleMap<>(this);

@@ -77,6 +77,15 @@ public class AbstractSimpleMapTest {
     }
     
     @Test
+    public void shouldContainsEntry() {
+        SimpleMap<String,String> map = new SimpleMap<>();
+        map.put("1", "one");
+        
+        assertTrue(map.containsEntry("1", "one"));
+        assertFalse(map.containsEntry("1", "other"));
+    }
+    
+    @Test
     public void shouldIncrementSize() {
         SimpleMap<String,String> map = new SimpleMap<>();
         map.put("1", "one");
