@@ -29,6 +29,17 @@ public class ArrayMapTest extends AbstractArrayMapTestHelper {
     }
 
     @Test
+    public void shouldAssertContainsEntry() {
+        ArrayMap<Integer,String> map = new ArrayMap<>(
+            Map.of(1, "one", 2, "two", 3, "three"));
+        map.assertEntry(1, "one");
+        map.assertEntry(2, "two");
+        map.assertEntry(3, "three");
+        
+        assertThrows(AssertionError.class, () -> map.assertEntry(4, "four"));
+    }
+
+    @Test
     public void testSortByValues() {
         ArrayMap<Integer,String> map = create(1, "c", 2, "a", 3, "b");
         map.sortByValues((a,b) -> a.compareTo(b));

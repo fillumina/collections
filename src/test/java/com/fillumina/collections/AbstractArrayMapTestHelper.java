@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,16 @@ public abstract class AbstractArrayMapTestHelper {
         assertEquals("one", map.get(1));
         assertEquals("two", map.get(2));
         assertEquals("three", map.get(3));
+    }
+    
+    @Test
+    public void shouldAssertContainsEntry() {
+        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        map.assertEntry(1, "one");
+        map.assertEntry(2, "two");
+        map.assertEntry(3, "three");
+        
+        assertThrows(AssertionError.class, () -> map.assertEntry(4, "four"));
     }
     
     @Test
