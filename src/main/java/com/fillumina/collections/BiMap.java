@@ -112,7 +112,6 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
                 new BiMap(copy.inverseMap, this);
     }
 
-    
     public BiMap<V, K> inverse() {
         return inverseMap;
     }

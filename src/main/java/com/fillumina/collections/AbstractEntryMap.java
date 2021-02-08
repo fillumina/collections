@@ -15,22 +15,19 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * A {@link java.util.Map} implementation that offers various interesting
- * characteristics over standard {@link java.util.HashMap}:
+ * A {@link java.util.Map} implementation that offers various interesting characteristics over
+ * standard {@link java.util.HashMap}:
  * <ul>
  * <li>It allows to specify a {@link Map.Entry} implementation
- * <li>It has {@link #putEntry(java.util.Map.Entry) } and 
- *     {@link #getEntry(Object) } methods
- * <li>It's extremely fast to clone (much faster than {@link java.util.HashMap})
- * allowing for a quite efficient CopyOnWriteMap implementation (which is a
- * great solution for rarely updating caches - faster than ConcurrentHashMap for
- * this scenario).
- * <li>It's average performances are O(1) for all operations (add, get, remove)
- * but it's O(n) for the worst case scenario (frequent keys collisions)
- * ({@link java.util.HashMap} manages it better with O(1) for insertion and O(n)
- * for extraction and removal on worst case scenario).
- * <li>Space efficient and because of the use of arrays it takes advantage of
- * memory locality, caching and read ahead
+ * <li>It has {@link #putEntry(java.util.Map.Entry) } and {@link #getEntry(Object) } methods
+ * <li>It's extremely fast to clone (much faster than {@link java.util.HashMap}) allowing for a
+ * quite efficient CopyOnWriteMap implementation (which is a great solution for rarely updating
+ * caches - faster than ConcurrentHashMap for this scenario).
+ * <li>It's average performances are O(1) for all operations (add, get, remove) but it's O(n) for
+ * the worst case scenario (frequent keys collisions) ({@link java.util.HashMap} manages it better
+ * with O(1) for insertion and O(n) for extraction and removal on worst case scenario).
+ * <li>Space efficient and because of the use of arrays it takes advantage of memory locality,
+ * caching and read ahead
  * <li>read-only derived class available
  * <li>read-only view
  * <li>clone constructors
@@ -42,8 +39,7 @@ import java.util.function.Supplier;
  * @param <K> map key
  * @param <V> map value
  * @param <E> entry type, needed for {@link #getEntry(Object) }
- * @param <M> map type, needed for fluent methods like
- * {@link #add(Object, Object)}
+ * @param <M> map type, needed for fluent methods like {@link #add(Object, Object)}
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -67,7 +63,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     public static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
     /**
-     * Full {@link java.util.Map} conform implementation. 
+     * Full {@link java.util.Map} conform implementation.
      */
     public static class SimpleMap<K, V>
             extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
@@ -80,17 +76,23 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(initialSize);
         }
 
-        /** Copy constructor from other {@link Map}. */
+        /**
+         * Copy constructor from other {@link Map}.
+         */
         public SimpleMap(Map<K, V> map) {
             super(map);
         }
 
-        /** Homologous copy constructor. */
+        /**
+         * Homologous copy constructor.
+         */
         public SimpleMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
-        
-        /** View constructor. */
+
+        /**
+         * View constructor.
+         */
         protected SimpleMap(InternalState<Entry<K, V>> internalState) {
             super(internalState);
         }
@@ -115,8 +117,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Full {@link java.util.Map} conform implementation. 
-     * Differently from {@link SimpleMap} it allows to add a {@link Map.Entry}.
+     * Full {@link java.util.Map} conform implementation. Differently from {@link SimpleMap} it
+     * allows to add a {@link Map.Entry}.
      */
     public static class EntryMap<K, V>
             extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
@@ -134,17 +136,21 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
-        /** Homologous copy constructor. */
+        /**
+         * Homologous copy constructor.
+         */
         public EntryMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
 
-        /** Passed {@link Entry} will not be maintained in clones (it's data will). */
+        /**
+         * Passed {@link Entry} will not be maintained in clones (it's data will).
+         */
         @Override
         public Entry<K, V> putEntry(Entry<K, V> entry) {
             return super.putEntry(entry);
         }
-        
+
         @Override
         protected Entry<K, V> createEntry(K k, V v) {
             if (k == null && v == null) {
@@ -171,8 +177,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * It's a {@link java.util.Map} implementation with the following features:
      * <ul>
      * <li>Differently to {@link SimpleMap} entries are read-only (cannot use
-     * {@link Map.Entry#setValue(java.lang.Object)}). The map can be changed by
-     * other usual methods.
+     * {@link Map.Entry#setValue(java.lang.Object)}). The map can be changed by other usual methods.
      * <li>A read-only view of the map is available via {@link #getReadOnlyView() }
      * </ul>
      * This is a base for other types of maps, not really useful by itself.
@@ -197,7 +202,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
-        /** Copy constructor. */
+        /**
+         * Copy constructor.
+         */
         public VieweableMap(AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
@@ -221,9 +228,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
 
         /**
-         * @return a read-only view of this map. Every change to this map
-         * reflects to the view. Concurrent access might result in unexpected
-         * results.
+         * @return a read-only view of this map. Every change to this map reflects to the view.
+         * Concurrent access might result in unexpected results.
          */
         public ReadOnlyMap<K, V> getReadOnlyView() {
             if (readOnlyView != null) {
@@ -242,8 +248,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * It's a read only implementation of {@link java.util.Map}. It can be built
-     * via the provided builder or by using one of its constructors.
+     * It's a read only implementation of {@link java.util.Map}. It can be built via the provided
+     * builder or by using one of its constructors.
      *
      * @param <K>
      * @param <V>
@@ -261,12 +267,16 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
-        /** copy constructor. */
-        public ReadOnlyMap( AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
+        /**
+         * copy constructor.
+         */
+        public ReadOnlyMap(AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
 
-        /** Used for views. */
+        /**
+         * Used for views.
+         */
         protected ReadOnlyMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
             super(internalState);
         }
@@ -299,9 +309,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         private int mask;
     }
 
-    private Set<Entry<K, V>> set;
+    private Set<Entry<K, V>> entrySet;
     private InternalState<E> state;
-    private int collisionCounter;
 
     public AbstractEntryMap() {
         super();
@@ -312,8 +321,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         this();
         // by using a power of 2 as a size the expensive module operation
         // can be substituted by a very cheap bit masking.
-        state.array = (E[]) new Entry[nextPowerOf2(initialSize << 1)];
-        state.mask = state.array.length - 1;
+        final int size = nextPowerOf2(initialSize) << 1;
+        state.array = (E[]) new Entry[size];
+        state.mask = size - 1;
     }
 
     // https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
@@ -329,7 +339,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Usual default {@code java.util} style copy constructor.
+     * Copy constructor.
      */
     public AbstractEntryMap(Map<K, V> map) {
         this();
@@ -345,7 +355,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         E[] array = null;
         if (otherArray != null) {
             array = (E[]) new Entry[otherArray.length];
-            for (int i=0,l=otherArray.length; i<l; i++) {
+            for (int i = 0, l = otherArray.length; i < l; i++) {
                 if (otherArray[i] != null) {
                     E e = otherArray[i];
                     array[i] = createEntry(e.getKey(), e.getValue());
@@ -364,23 +374,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         this.state = internalState;
     }
 
-    /**
-     * {@link #getEntry(java.lang.Object) } might require to create an entry
-     * containing null (key=null, value=null). A null object can be used to
-     * avoid {@link java.lang.NullPointerException}.
-     *
-     * @param k the key
-     * @param v the value
-     * @return the created {@link Map.Entry}.
-     */
     protected abstract E createEntry(K k, V v);
 
     /**
      * Needed for map resize. Don't bother to implement if the map is read only.
-     *
-     * @param size the size of its internal array (should be at least twice the
-     * expected data size)
-     * @return a new instance of the map
      */
     protected abstract AbstractEntryMap<K, V, E, M> createMap(int size);
 
@@ -390,7 +387,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     protected void readOnlyCheck() {
         // do nothing
     }
-    
+
     protected boolean isKeyEqualsToEntry(Object key, E e) {
         return Objects.equals(key, e.getKey());
     }
@@ -412,6 +409,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return h ^ (h >>> 7) ^ (h >>> 4);
     }
 
+    // fluent interface methods
     public M add(K k, V v) {
         put(k, v);
         return (M) this;
@@ -426,11 +424,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return (M) this;
     }
 
-    /** This method is not part of the API and could be removed at any time */
-    public int getCollisionCounter() {
-        return collisionCounter;
-    }
-
     public boolean containsEntry(K k, V v) {
         E entry = getEntry(k);
         if (entry == null) {
@@ -438,7 +431,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
         return Objects.equals(entry.getValue(), v);
     }
-        
+
     @Override
     public void clear() {
         readOnlyCheck();
@@ -454,7 +447,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     @Override
     public boolean isEmpty() {
-        return state.size == 0;
+        return size() == 0;
     }
 
     protected E putEntry(E entry) {
@@ -463,12 +456,15 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return innerPutEntry(entry);
     }
 
+    /**
+     * Substitutes the existing entry with the same key if exists.
+     */
     protected E innerPutEntry(E entry) {
+        // risizeCheck() must have been called already
         K key = entry.getKey();
         int idx = hash(key) & state.mask;
         E e;
         while ((e = state.array[idx]) != null) {
-            collisionCounter++;
             if (isKeyEqualsToEntry(key, e)) {
                 state.array[idx] = entry;
                 return e;
@@ -494,12 +490,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         int idx = hash(key) & state.mask;
         E e;
         while ((e = state.array[idx]) != null) {
-            collisionCounter++;
             if (isKeyEqualsToEntry(key, e)) {
                 V old = e.getValue();
                 try {
                     e.setValue(value);
                 } catch (UnsupportedOperationException ex) {
+                    // some Entry implementation doesn't allow setting values, creates a new entry
                     state.array[idx] = createEntry(key, value);
                 }
                 return old;
@@ -521,14 +517,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     protected void resize(int newSize) {
-        if (newSize > (state.size << 1)) {
-            AbstractEntryMap<K, V, E, M> map =
-                    createMap(nextPowerOf2(newSize) >> 1);
-            if (!isEmpty()) {
-                forEach(e -> map.innerPutEntry(e));
-            }
-            this.state = map.state;
-        }
+        AbstractEntryMap<K, V, E, M> map = createMap(nextPowerOf2(newSize) >> 1);
+        forEach(e -> map.innerPutEntry(e));
+        this.state = map.state;
     }
 
     private void relocateEntry(E entry) {
@@ -553,10 +544,19 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
         return value;
     }
-    
+
+    public V getOrCreate(K key, V value) {
+        V v = get(key);
+        if (v == null) {
+            v = value;
+            put(key, v);
+        }
+        return v;
+    }
+
     public E getEntry(Object key) {
         if (state.array == null || key == null) {
-            return createEntry(null, null);
+            return null;
         }
         int hc = hash(key);
         int idx = hc & state.mask;
@@ -621,7 +621,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         } while (true);
         state.size--;
     }
-    
+
     public boolean removeAll(Collection<K> coll) {
         boolean removed = false;
         for (K k : coll) {
@@ -631,7 +631,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     public boolean retainAll(Collection<K> coll) {
-        AbstractEntryMap<K,V,E,M> tmap = createMap(size());
+        AbstractEntryMap<K, V, E, M> tmap = createMap(size());
         for (K k : coll) {
             E e = getEntry(k);
             if (e != null) {
@@ -641,7 +641,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         this.state = tmap.state;
         return !tmap.isEmpty();
     }
-    
+
     public void forEach(Consumer<E> consumer) {
         if (isEmpty()) {
             return;
@@ -655,10 +655,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        if (set != null) {
-            return set;
+        if (entrySet != null) {
+            return entrySet;
         }
-        return set = new AbstractSet<Entry<K, V>>() {
+        return entrySet = new AbstractSet<Entry<K, V>>() {
 
             @Override
             public int size() {
@@ -746,11 +746,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * {@inheritDoc}
      *
-     * @implSpec This implementation iterates over {@code entrySet()} searching
-     * for an entry with the specified value. If such an entry is found,
-     * {@code true} is returned. If the iteration terminates without finding
-     * such an entry, {@code false} is returned. Note that this implementation
-     * requires linear time in the size of the map.
+     * @implSpec This implementation iterates over {@code entrySet()} searching for an entry with
+     * the specified value. If such an entry is found, {@code true} is returned. If the iteration
+     * terminates without finding such an entry, {@code false} is returned. Note that this
+     * implementation requires linear time in the size of the map.
      *
      * @throws ClassCastException {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
@@ -777,14 +776,13 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * {@inheritDoc}
      *
-     * @implSpec This implementation iterates over the specified map's
-     * {@code entrySet()} collection, and calls this map's {@code put} operation
-     * once for each entry returned by the iteration.
+     * @implSpec This implementation iterates over the specified map's {@code entrySet()}
+     * collection, and calls this map's {@code put} operation once for each entry returned by the
+     * iteration.
      *
      * <p>
-     * Note that this implementation throws an
-     * {@code UnsupportedOperationException} if this map does not support the
-     * {@code put} operation and the specified map is nonempty.
+     * Note that this implementation throws an {@code UnsupportedOperationException} if this map
+     * does not support the {@code put} operation and the specified map is nonempty.
      *
      * @throws UnsupportedOperationException {@inheritDoc}
      * @throws ClassCastException {@inheritDoc}
@@ -799,19 +797,17 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     // Views
     /**
-     * Each of these fields are initialized to contain an instance of the
-     * appropriate view the first time this view is requested. The views are
-     * stateless, so there's no reason to create more than one of each.
+     * Each of these fields are initialized to contain an instance of the appropriate view the first
+     * time this view is requested. The views are stateless, so there's no reason to create more
+     * than one of each.
      *
      * <p>
-     * Since there is no synchronization performed while accessing these fields,
-     * it is expected that java.util.Map view classes using these fields have no
-     * non-final fields (or any fields at all except for outer-this). Adhering
-     * to this rule would make the races on these fields benign.
+     * Since there is no synchronization performed while accessing these fields, it is expected that
+     * java.util.Map view classes using these fields have no non-final fields (or any fields at all
+     * except for outer-this). Adhering to this rule would make the races on these fields benign.
      *
      * <p>
-     * It is also imperative that implementations read the field only once, as
-     * in:
+     * It is also imperative that implementations read the field only once, as in:
      *
      * <pre> {@code
      * public Set<K> keySet() {
@@ -830,18 +826,15 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * {@inheritDoc}
      *
-     * @implSpec This implementation returns a set that subclasses
-     * {@link AbstractSet}. The subclass's iterator method returns a "wrapper
-     * object" over this map's {@code entrySet()} iterator. The {@code size}
-     * method delegates to this map's {@code size} method and the
-     * {@code contains} method delegates to this map's {@code containsKey}
-     * method.
+     * @implSpec This implementation returns a set that subclasses {@link AbstractSet}. The
+     * subclass's iterator method returns a "wrapper object" over this map's {@code entrySet()}
+     * iterator. The {@code size} method delegates to this map's {@code size} method and the
+     * {@code contains} method delegates to this map's {@code containsKey} method.
      *
      * <p>
-     * The set is created the first time this method is called, and returned in
-     * response to all subsequent calls. No synchronization is performed, so
-     * there is a slight chance that multiple calls to this method will not all
-     * return the same set.
+     * The set is created the first time this method is called, and returned in response to all
+     * subsequent calls. No synchronization is performed, so there is a slight chance that multiple
+     * calls to this method will not all return the same set.
      */
     public Set<K> keySet() {
         Set<K> ks = keySet;
@@ -856,17 +849,15 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * {@inheritDoc}
      *
      * @implSpec This implementation returns a collection that subclasses {@link
-     * AbstractCollection}. The subclass's iterator method returns a "wrapper
-     * object" over this map's {@code entrySet()} iterator. The {@code size}
-     * method delegates to this map's {@code size} method and the
-     * {@code contains} method delegates to this map's {@code containsValue}
-     * method.
+     * AbstractCollection}. The subclass's iterator method returns a "wrapper object" over this
+     * map's {@code entrySet()} iterator. The {@code size} method delegates to this map's
+     * {@code size} method and the {@code contains} method delegates to this map's
+     * {@code containsValue} method.
      *
      * <p>
-     * The collection is created the first time this method is called, and
-     * returned in response to all subsequent calls. No synchronization is
-     * performed, so there is a slight chance that multiple calls to this method
-     * will not all return the same collection.
+     * The collection is created the first time this method is called, and returned in response to
+     * all subsequent calls. No synchronization is performed, so there is a slight chance that
+     * multiple calls to this method will not all return the same collection.
      */
     public Collection<V> values() {
         Collection<V> vals = values;
@@ -913,22 +904,18 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     // Comparison and hashing
     /**
-     * Compares the specified object with this map for equality. Returns
-     * {@code true} if the given object is also a map and the two maps represent
-     * the same mappings. More formally, two maps {@code m1} and {@code m2}
-     * represent the same mappings if
-     * {@code m1.entrySet().equals(m2.entrySet())}. This ensures that the
-     * {@code equals} method works properly across different implementations of
-     * the {@code Map} interface.
+     * Compares the specified object with this map for equality. Returns {@code true} if the given
+     * object is also a map and the two maps represent the same mappings. More formally, two maps
+     * {@code m1} and {@code m2} represent the same mappings if
+     * {@code m1.entrySet().equals(m2.entrySet())}. This ensures that the {@code equals} method
+     * works properly across different implementations of the {@code Map} interface.
      *
-     * @implSpec This implementation first checks if the specified object is
-     * this map; if so it returns {@code true}. Then, it checks if the specified
-     * object is a map whose size is identical to the size of this map; if not,
-     * it returns {@code false}. If so, it iterates over this map's
-     * {@code entrySet} collection, and checks that the specified map contains
-     * each mapping that this map contains. If the specified map fails to
-     * contain such a mapping, {@code false} is returned. If the iteration
-     * completes, {@code true} is returned.
+     * @implSpec This implementation first checks if the specified object is this map; if so it
+     * returns {@code true}. Then, it checks if the specified object is a map whose size is
+     * identical to the size of this map; if not, it returns {@code false}. If so, it iterates over
+     * this map's {@code entrySet} collection, and checks that the specified map contains each
+     * mapping that this map contains. If the specified map fails to contain such a mapping,
+     * {@code false} is returned. If the iteration completes, {@code true} is returned.
      *
      * @param o object to be compared for equality with this map
      * @return {@code true} if the specified object is equal to this map
@@ -938,16 +925,16 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         if (o == this) {
             return true;
         }
-        
+
         if (!(o instanceof Map)) {
             return false;
         }
-        
+
         Map<?, ?> m = (Map<?, ?>) o;
         if (m.size() != size()) {
             return false;
         }
-        
+
         try {
             for (Entry<K, V> e : entrySet()) {
                 K key = e.getKey();
@@ -972,16 +959,14 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Returns the hash code value for this map. The hash code of a map is
-     * defined to be the sum of the hash codes of each entry in the map's
-     * {@code entrySet()} view. This ensures that {@code m1.equals(m2)} implies
-     * that {@code m1.hashCode()==m2.hashCode()} for any two maps {@code m1} and
-     * {@code m2}, as required by the general contract of
-     * {@link Object#hashCode}.
+     * Returns the hash code value for this map. The hash code of a map is defined to be the sum of
+     * the hash codes of each entry in the map's {@code entrySet()} view. This ensures that
+     * {@code m1.equals(m2)} implies that {@code m1.hashCode()==m2.hashCode()} for any two maps
+     * {@code m1} and {@code m2}, as required by the general contract of {@link Object#hashCode}.
      *
      * @implSpec This implementation iterates over {@code entrySet()}, calling
-     * {@link Map.Entry#hashCode hashCode()} on each element (entry) in the set,
-     * and adding up the results.
+     * {@link Map.Entry#hashCode hashCode()} on each element (entry) in the set, and adding up the
+     * results.
      *
      * @return the hash code value for this map
      * @see Map.Entry#hashCode()
@@ -1000,14 +985,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Returns a string representation of this map. The string representation
-     * consists of a list of key-value mappings in the order returned by the
-     * map's {@code entrySet} view's iterator, enclosed in braces
-     * ({@code "{}"}). Adjacent mappings are separated by the characters
-     * {@code ", "} (comma and space). Each key-value mapping is rendered as the
-     * key followed by an equals sign ({@code "="}) followed by the associated
-     * value. Keys and values are converted to strings as by
-     * {@link String#valueOf(Object)}.
+     * Returns a string representation of this map. The string representation consists of a list of
+     * key-value mappings in the order returned by the map's {@code entrySet} view's iterator,
+     * enclosed in braces ({@code "{}"}). Adjacent mappings are separated by the characters
+     * {@code ", "} (comma and space). Each key-value mapping is rendered as the key followed by an
+     * equals sign ({@code "="}) followed by the associated value. Keys and values are converted to
+     * strings as by {@link String#valueOf(Object)}.
      *
      * @return a string representation of this map
      */
@@ -1043,18 +1026,18 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             addAll(set);
         }
 
-        protected AbstractEntryMap<K,V,E,M> getMap() {
+        protected AbstractEntryMap<K, V, E, M> getMap() {
             return AbstractEntryMap.this;
         }
-        
+
         @Override
         public boolean removeAll(Collection<?> c) {
-            return AbstractEntryMap.this.removeAll((Collection<K>)c);
+            return AbstractEntryMap.this.removeAll((Collection<K>) c);
         }
-        
+
         @Override
         public boolean retainAll(Collection<?> c) {
-            return AbstractEntryMap.this.retainAll((Collection<K>)c);
+            return AbstractEntryMap.this.retainAll((Collection<K>) c);
         }
 
         @Override
