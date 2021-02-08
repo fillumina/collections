@@ -66,13 +66,14 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
     @Override
     public V put(K key, V value) {
         readOnlyCheck();
-        int index = getIndexOfKey(key);
         if (array == null) {
             array = new Object[2];
             array[0] = key;
             array[1] = value;
             return null;
-        } else if (index == -1) {
+        } 
+        int index = getIndexOfKey(key);
+        if (index == -1) {
             index = array.length;
             Object[] newArray = new Object[array.length + 2];
             System.arraycopy(array, 0, newArray, 0, array.length);
