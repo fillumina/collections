@@ -432,7 +432,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return Objects.equals(entry.getValue(), v);
     }
 
-    public AbstractEntryMap<K,V,E,M> assertContainsEntry(K k, V v) throws AssertionError {
+    public AbstractEntryMap<K,V,E,M> assertEntry(K k, V v) throws AssertionError {
         if (!containsEntry(k, v)) {
             throw new AssertionError("entry not present: key=" + k + " => value=" + v);
         }
