@@ -240,9 +240,16 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         return v.equals(get(k));
     }
 
-    public AbstractArrayMap assertEntry(K k, V v) throws AssertionError {
+    public AbstractArrayMap<K,V> assertEntry(K k, V v) throws AssertionError {
         if (!containsEntry(k, v)) {
             throw new AssertionError("entry not present: key=" + k + " => value=" + v);
+        }
+        return this;
+    }
+
+    public AbstractArrayMap<K,V> assertSize(int size) throws AssertionError {
+        if (size != size()) {
+            throw new AssertionError("expected size=" + size + " but was " + size());
         }
         return this;
     }

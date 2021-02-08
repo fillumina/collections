@@ -438,6 +438,13 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
         return this;
     }
+
+    public AbstractEntryMap<K,V,E,M> assertSize(int size) throws AssertionError {
+        if (size != size()) {
+            throw new AssertionError("expected size=" + size + " but was " + size());
+        }
+        return this;
+    }
     
     @Override
     public void clear() {

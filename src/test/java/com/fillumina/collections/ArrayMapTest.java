@@ -40,6 +40,15 @@ public class ArrayMapTest extends AbstractArrayMapTestHelper {
     }
 
     @Test
+    public void shouldAssertSize() {
+        ArrayMap<Integer,String> map = new ArrayMap<>(
+            Map.of(1, "one", 2, "two", 3, "three"));
+        map.assertSize(3);
+        
+        assertThrows(AssertionError.class, () -> map.assertSize(4));
+    }
+
+    @Test
     public void testSortByValues() {
         ArrayMap<Integer,String> map = create(1, "c", 2, "a", 3, "b");
         map.sortByValues((a,b) -> a.compareTo(b));

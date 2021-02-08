@@ -41,6 +41,14 @@ public abstract class AbstractArrayMapTestHelper {
     }
     
     @Test
+    public void shouldAssertSize() {
+        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        map.assertSize(3);
+        
+        assertThrows(AssertionError.class, () -> map.assertSize(4));
+    }
+    
+    @Test
     public void testPut() {
         AbstractArrayMap<Integer,String> map = create();
         map.put(1, "one");
