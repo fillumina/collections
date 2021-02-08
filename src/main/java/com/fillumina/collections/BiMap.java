@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A BiMap is a map where values unicity is enforced as well as keys. If an existing value is
- * inserted with a new key the old mapping is substituted with the new one. The BiMap follows the
- * {@link Map} specification and its keys and values pairs can inverted by using
+ * A BiMap is a map where value unicity is enforced as well as key's. If an existing value is
+ * inserted with a new key the old mapping is removed. The BiMap follows the
+ * {@link Map} specification and its keys and values pairs can be inverted by using
  * {@link #inverseMap()}.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>

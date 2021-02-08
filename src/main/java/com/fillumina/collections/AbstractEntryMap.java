@@ -67,8 +67,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     public static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
     /**
-     * Full {@link java.util.Map} conform implementation. Useful for its very
-     * fast {@link #clone() } operation.
+     * Full {@link java.util.Map} conform implementation. 
      */
     public static class SimpleMap<K, V>
             extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
@@ -81,17 +80,17 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(initialSize);
         }
 
+        /** Copy constructor from other {@link Map}. */
         public SimpleMap(Map<K, V> map) {
             super(map);
         }
 
-        /**
-         * Copy constructor.
-         */
+        /** Homologous copy constructor. */
         public SimpleMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
-
+        
+        /** View constructor. */
         protected SimpleMap(InternalState<Entry<K, V>> internalState) {
             super(internalState);
         }
@@ -109,9 +108,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             return new SimpleMap<>(size);
         }
 
-        /**
-         * Very fast cloning of the map.
-         */
         @Override
         public SimpleMap<K, V> clone() {
             return new SimpleMap<K, V>(this);
@@ -119,9 +115,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Full {@link java.util.Map} conform implementation. Useful for its very
-     * fast {@link #clone() } operation. Differently from {@link SimpleMap} it allows
-     * to add a {@link Map.Entry}.
+     * Full {@link java.util.Map} conform implementation. 
+     * Differently from {@link SimpleMap} it allows to add a {@link Map.Entry}.
      */
     public static class EntryMap<K, V>
             extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
@@ -134,18 +129,17 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(initialSize);
         }
 
+        /* Copy constructor */
         public EntryMap(Map<K, V> map) {
             super(map);
         }
 
-        /**
-         * Copy constructor.
-         */
+        /** Homologous copy constructor. */
         public EntryMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
             super(map);
         }
 
-        /** Passed {@link Entry} will be changed if cloning. */
+        /** Passed {@link Entry} will not be maintained in clones (it's data will). */
         @Override
         public Entry<K, V> putEntry(Entry<K, V> entry) {
             return super.putEntry(entry);
@@ -203,9 +197,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
-        /**
-         * Copy constructor.
-         */
+        /** Copy constructor. */
         public VieweableMap(AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
@@ -269,17 +261,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             super(map);
         }
 
-        /**
-         * Fast copy constructor.
-         */
-        public ReadOnlyMap(
-                AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
+        /** copy constructor. */
+        public ReadOnlyMap( AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
             super(map);
         }
 
-        /**
-         * Used for views.
-         */
+        /** Used for views. */
         protected ReadOnlyMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
             super(internalState);
         }
@@ -403,12 +390,16 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     protected void readOnlyCheck() {
         // do nothing
     }
+    
+    protected boolean isKeyEqualsToEntry(Object key, E e) {
+        return Objects.equals(key, e.getKey());
+    }
 
     protected InternalState<E> getInternalState() {
         return state;
     }
 
-    public int hash(Object key) {
+    protected int hash(Object key) {
         if (key == null) {
             return 0;
         }
@@ -435,19 +426,19 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return (M) this;
     }
 
+    /** This method is not part of the API and could be removed at any time */
     public int getCollisionCounter() {
         return collisionCounter;
     }
 
     public boolean containsEntry(K k, V v) {
-        return v.equals(get(k));
+        E entry = getEntry(k);
+        if (entry == null) {
+            return false;
+        }
+        return Objects.equals(entry.getValue(), v);
     }
         
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return new SimpleMap<>(this);
-    }
-
     @Override
     public void clear() {
         readOnlyCheck();
@@ -478,7 +469,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         E e;
         while ((e = state.array[idx]) != null) {
             collisionCounter++;
-            if (Objects.equals(key, e.getKey())) {
+            if (isKeyEqualsToEntry(key, e)) {
                 state.array[idx] = entry;
                 return e;
             }
@@ -491,6 +482,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     @Override
     public V put(K key, V value) {
+        readOnlyCheck();
         return innerPut(key, value);
     }
 
@@ -503,7 +495,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         E e;
         while ((e = state.array[idx]) != null) {
             collisionCounter++;
-            if (Objects.equals(key, e.getKey())) {
+            if (isKeyEqualsToEntry(key, e)) {
                 V old = e.getValue();
                 try {
                     e.setValue(value);
@@ -573,8 +565,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             if (e == null) {
                 return null; //createEntry(null, null);
             }
-            if (hc == hash(e.getKey()) &&
-                    Objects.equals(key, e.getKey())) {
+            if (hc == hash(e.getKey()) && isKeyEqualsToEntry(key, e)) {
                 return e;
             }
             idx = (idx + 1) & state.mask;
@@ -767,16 +758,14 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     public boolean containsValue(Object value) {
         Iterator<Entry<K, V>> i = entrySet().iterator();
         if (value == null) {
-            while (i.hasNext()) {
-                Entry<K, V> e = i.next();
-                if (e.getValue() == null) {
+            for (E e : state.array) {
+                if (e != null && e.getValue() == null) {
                     return true;
                 }
             }
         } else {
-            while (i.hasNext()) {
-                Entry<K, V> e = i.next();
-                if (value.equals(e.getValue())) {
+            for (E e : state.array) {
+                if (e != null && value.equals(e.getValue() == null)) {
                     return true;
                 }
             }
@@ -949,15 +938,16 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         if (o == this) {
             return true;
         }
-
+        
         if (!(o instanceof Map)) {
             return false;
         }
+        
         Map<?, ?> m = (Map<?, ?>) o;
         if (m.size() != size()) {
             return false;
         }
-
+        
         try {
             for (Entry<K, V> e : entrySet()) {
                 K key = e.getKey();
@@ -1001,8 +991,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     @Override
     public int hashCode() {
         int h = 0;
-        for (Entry<K, V> entry : entrySet()) {
-            h += entry.hashCode();
+        for (E e : state.array) {
+            if (e != null) {
+                h += e.hashCode();
+            }
         }
         return h;
     }
