@@ -317,7 +317,7 @@ public class Matrix<K,V> {
         };
     }
 
-    public V getTranslation(K srcKey, V srcValue, K dstKey) {
+    public V getTranslation(K srcKey, K dstKey, V srcValue) {
         int srcColIdx = keys.indexOf(srcKey);
         int dstColIdx = keys.indexOf(dstKey);
         int row = getColIndexOf(srcColIdx, srcValue);

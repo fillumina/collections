@@ -375,9 +375,9 @@ public class MatrixTest {
                 .row("tre", "three", "trois")
                 .buildImmutable();
         
-        assertEquals("une", mtx.getTranslation("IT", "uno", "FR"));
-        assertEquals("two", mtx.getTranslation("IT", "due", "EN"));
-        assertEquals("trois", mtx.getTranslation("EN", "three", "FR"));
+        assertEquals("une", mtx.getTranslation("IT", "FR", "uno"));
+        assertEquals("two", mtx.getTranslation("IT", "EN", "due"));
+        assertEquals("trois", mtx.getTranslation("EN", "FR", "three"));
     }
     
 }
