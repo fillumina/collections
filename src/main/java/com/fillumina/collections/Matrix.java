@@ -5,6 +5,7 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,14 @@ public class Matrix<K,V> {
         public Immutable() {
         }
 
+        public Immutable(ImmutableList<K> keys, V[][] array) {
+            super(keys, array);
+        }
+
+        public Immutable(ImmutableList<K> keys, int rows) {
+            super(keys, rows);
+        }
+        
         /** Keys are the column headers */
         public Immutable(K[] keys, int rows) {
             super(keys, rows);
@@ -63,19 +72,27 @@ public class Matrix<K,V> {
         }
     }
 
-    public static class Builder<K,V> {
+    public static class RowBuilder<K,V> {
 
         private K[] keys;
-        private List<V[]> list = new ArrayList<>();
+        private List<V[]> rows = new ArrayList<>();
         private int rowLength = -1;
 
-        public Builder<K,V> keys(K... values) {
+        public RowBuilder<K,V> keys(Collection<? extends K> keys) {
+            return keys((K[])keys.toArray());
+        }
+
+        public RowBuilder<K,V> keys(K... values) {
             this.keys = values;
             return this;
         }
 
-        public Builder<K,V> row(V... values) {
-            list.add(values);
+        public RowBuilder<K,V> row(Collection<? extends V> values) {
+            return row((V[])values.toArray());
+        }
+
+        public RowBuilder<K,V> row(V... values) {
+            rows.add(values);
             if (rowLength == -1) {
                 rowLength = values.length;
             } else if (rowLength != values.length) {
@@ -85,19 +102,58 @@ public class Matrix<K,V> {
         }
 
         public Matrix<K,V> build() {
-            V[][] array = (V[][]) new Object[list.size()][];
-            for (int i = 0, l = list.size(); i < l; i++) {
-                array[i] = list.get(i);
+            V[][] array = (V[][]) new Object[rows.size()][];
+            for (int i = 0, l = rows.size(); i < l; i++) {
+                array[i] = rows.get(i);
             }
             return new Matrix<>(keys, array);
         }
 
         public Immutable<K,V> buildImmutable() {
-            V[][] array = (V[][]) new Object[list.size()][];
-            for (int i = 0, l = list.size(); i < l; i++) {
-                array[i] = list.get(i);
+            V[][] array = (V[][]) new Object[rows.size()][];
+            for (int i = 0, l = rows.size(); i < l; i++) {
+                array[i] = rows.get(i);
             }
             return new Immutable<>(keys, array);
+        }
+    }
+
+    public static class ColBuilder<K,V> {
+
+        private List<K> keys = new ArrayList<>();
+        private List<V[]> columns = new ArrayList<>();
+        private int colLength = -1;
+
+        public ColBuilder<K,V> col(K key, Collection<? extends V> values) {
+            return col(key, (V[]) values.toArray());
+        }
+
+        public ColBuilder<K,V> col(K key, V... values) {
+            this.keys.add(key);
+            this.columns.add(values);
+            if (colLength < values.length) {
+                colLength = values.length;
+            }
+            return this;
+        }
+
+        public Matrix<K,V> build() {
+            final int rows = columns.size();
+            V[][] array = (V[][]) new Object[colLength][rows];
+            for (int i=0,il=rows; i<il; i++) {
+                for (int j=0; j<colLength; j++) {
+                    array[j][i] = columns.get(i)[j];
+                }
+            }
+            return new Matrix<>(ImmutableList.of(keys), array);
+        }
+
+        public Immutable<K,V> buildImmutable() {
+            V[][] array = (V[][]) new Object[columns.size()][];
+            for (int i = 0, l = columns.size(); i < l; i++) {
+                array[i] = columns.get(i);
+            }
+            return new Immutable<>(ImmutableList.of(keys), array);
         }
     }
 
@@ -134,8 +190,12 @@ public class Matrix<K,V> {
         public V setValue(V value) { throw new UnsupportedOperationException("read only."); }
     }
     
-    public static <K,V> Builder<K,V> builder() {
-        return new Builder<>();
+    public static <K,V> RowBuilder<K,V> rowBuilder() {
+        return new RowBuilder<>();
+    }
+    
+    public static <K,V> ColBuilder<K,V> columnBuilder() {
+        return new ColBuilder<>();
     }
 
     private ImmutableList<K> keys;
@@ -257,12 +317,18 @@ public class Matrix<K,V> {
         };
     }
 
-    public V get(K srcKey, V srcValue, K dstKey) {
+    public V getTranslation(K srcKey, V srcValue, K dstKey) {
         int srcColIdx = keys.indexOf(srcKey);
         int dstColIdx = keys.indexOf(dstKey);
         int row = getColIndexOf(srcColIdx, srcValue);
         return get(row, dstColIdx);
     }
+    
+    public List<V> getList(K key) {
+        int srcColIdx = keys.indexOf(key);
+        return getColAsList(srcColIdx);
+    }
+    
     
     public void forEachElement(Consumer<V> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
@@ -383,6 +449,9 @@ public class Matrix<K,V> {
     }
     
     public Immutable<K,V> immutable() {
+        if (this instanceof Immutable) {
+            return (Immutable<K, V>) this;
+        }
         return new Immutable<>(this);
     }
 

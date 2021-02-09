@@ -33,7 +33,7 @@ public class MatrixTest {
     
     @Test
     public void shouldUseBuilder() {
-        Matrix<Void,String> mtx = Matrix.<Void,String>builder()
+        Matrix<Void,String> mtx = Matrix.<Void,String>rowBuilder()
                 .row("one", "four")
                 .row("two", "five")
                 .row("three", "six")
@@ -52,7 +52,7 @@ public class MatrixTest {
     
     @Test
     public void shouldBuildImmutable() {
-        Matrix<Void,String> mtx = Matrix.<Void,String>builder()
+        Matrix<Void,String> mtx = Matrix.<Void,String>rowBuilder()
                 .row("one", "four")
                 .row("two", "five")
                 .row("three", "six")
@@ -131,8 +131,25 @@ public class MatrixTest {
     }
     
     @Test
+    public void shouldBuildByColumn() {
+        Matrix<String,Integer> mtx = Matrix.<String,Integer>columnBuilder()
+                .col("A", 11, 21)
+                .col("B", 12, 22)
+                .col("C", 13, 23)
+                .build();
+
+        assertEquals(2, mtx.rowSize());
+        assertEquals(3, mtx.colSize());
+        
+        assertEquals(12, mtx.get(0, 1));
+        assertEquals(22, mtx.get(1, 1));
+        assertEquals(13, mtx.get(0, 2));
+        assertEquals(23, mtx.get(1, 2));
+    }
+    
+    @Test
     public void shouldGerRowsAndColumns() {
-        Matrix<String,Integer> mtx = Matrix.<String,Integer>builder()
+        Matrix<String,Integer> mtx = Matrix.<String,Integer>rowBuilder()
                 .keys("A", "B", "C")
                 .row(11, 12, 13)
                 .row(21, 22, 23)
@@ -291,7 +308,7 @@ public class MatrixTest {
     
     @Test
     public void shouldReturnAMap() {
-        Matrix<Integer,String> mtx = Matrix.<Integer,String>builder()
+        Matrix<Integer,String> mtx = Matrix.<Integer,String>rowBuilder()
                 .keys(1, 2, 3)
                 .row("one", "two", "three")
                 .row("uno", "due", "tre")
@@ -351,15 +368,16 @@ public class MatrixTest {
     
     @Test
     public void shouldGetTranslations() {
-        Matrix<String,String> mtx = Matrix.<String,String>builder()
+        Matrix<String,String> mtx = Matrix.<String,String>rowBuilder()
                 .keys("IT", "EN", "FR")
                 .row("uno", "one", "une")
                 .row("due", "two", "deux")
                 .row("tre", "three", "trois")
                 .buildImmutable();
         
-        assertEquals("une", mtx.get("IT", "uno", "FR"));
-        assertEquals("two", mtx.get("IT", "due", "EN"));
-        assertEquals("trois", mtx.get("EN", "three", "FR"));
+        assertEquals("une", mtx.getTranslation("IT", "uno", "FR"));
+        assertEquals("two", mtx.getTranslation("IT", "due", "EN"));
+        assertEquals("trois", mtx.getTranslation("EN", "three", "FR"));
     }
+    
 }
