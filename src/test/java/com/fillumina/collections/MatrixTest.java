@@ -21,14 +21,14 @@ public class MatrixTest {
 //  row V
     
     public static void main(String[] args) {
-        Matrix<Void,String> mtx = new Matrix<>();
+        Matrix<Integer,String> mtx = new Matrix<>(ImmutableList.of(1, 2));
         mtx.set(0,0,"one");
         mtx.set(0,1,"two two");
         mtx.set(0,2,"three");
         mtx.set(1,0,"four four four");
         mtx.set(1,1,"");
         mtx.set(1,2,"six");
-        mtx.writeTo(System.out::print, List.of("ONE", "TWO"));
+        System.out.println(mtx.toString());
     }
     
     @Test

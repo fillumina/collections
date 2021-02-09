@@ -150,16 +150,16 @@ public class Matrix<K,V> {
     }
 
     public Matrix(K... keys) {
-        this.keys = ImmutableList.create(keys);
+        this.keys = ImmutableList.of(keys);
     }
 
     protected Matrix(K[] keys, V[][] array) {
-        this.keys = ImmutableList.create(keys);
+        this.keys = ImmutableList.of(keys);
         this.matrix = array;
     }
 
     protected Matrix(K[] keys, int rows) {
-        this.keys = ImmutableList.create(keys);
+        this.keys = ImmutableList.of(keys);
         matrix = (V[][]) new Object[keys.length][rows];
     }
 
@@ -183,7 +183,7 @@ public class Matrix<K,V> {
 
     /** Transforms a map in a mono-dimensional matrix where K are keys and V are values. */
     public Matrix(Map<K,V> map) {
-        keys = ImmutableList.create((K[]) map.keySet().toArray());
+        keys = ImmutableList.of((K[]) map.keySet().toArray());
         matrix = (V[][]) new Object[1][];
         matrix[0] = map.values().toArray();
     }
@@ -374,20 +374,20 @@ public class Matrix<K,V> {
     
     @Override
     public String toString() {
-        return toString(List.of());
+        return toString(keys);
     }
 
-    public String toString(List<String> headers) {
+    public String toString(List<?> headers) {
         StringBuilder buf = new StringBuilder();
-        writeTo(buf::append, headers);
+        writeTo(headers, buf::append);
         return buf.toString();
     }
 
-    public void writeTo(Consumer<String> consumer, List<String> headers) {
+    public void writeTo(List<?> headers, Consumer<String> consumer) {
         int[] sizes = new int[matrix.length];
         if (!headers.isEmpty()) {
             for (int i = Math.min(headers.size(), matrix.length) - 1; i >= 0; i--) {
-                sizes[i] = headers.get(i).length();
+                sizes[i] = Objects.toString(headers.get(i)).length();
             }
         }
 
@@ -408,7 +408,7 @@ public class Matrix<K,V> {
         if (!headers.isEmpty()) {
             int totalSize = 0;
             for (int i = 0, l = headers.size(); i < l; i++) {
-                String str = headers.get(i);
+                String str = Objects.toString(headers.get(i));
                 int align = sizes[i] - str.length();
                 String separator = getSeparator(spaces, align);
                 consumer.accept(str + separator);

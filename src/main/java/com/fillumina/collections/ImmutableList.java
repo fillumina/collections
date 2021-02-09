@@ -13,14 +13,14 @@ public class ImmutableList<T> extends AbstractList<T> {
     public static final ImmutableList<?> EMPTY = new ImmutableList<Object>();
     private static final Object[] EMPTY_ARRAY = new Object[0];
     
-    public static <T> ImmutableList<T> create(T... values) {
+    public static <T> ImmutableList<T> of(T... values) {
         if (values == null || values.length == 0) {
             return (ImmutableList<T>) EMPTY;
         }
         return new ImmutableList<T>(values);
     }
     
-    public static <T> ImmutableList<T> create(List<? extends T> list) {
+    public static <T> ImmutableList<T> of(List<? extends T> list) {
         if (list == null || list.isEmpty()) {
             return (ImmutableList<T>) EMPTY;
         }
