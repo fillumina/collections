@@ -29,6 +29,7 @@ public class Matrix<K,V> {
         public Immutable() {
         }
 
+        /** Keys are the column headers */
         public Immutable(K[] keys, int rows) {
             super(keys, rows);
         }
@@ -37,12 +38,14 @@ public class Matrix<K,V> {
             super(map);
         }
 
+        /** Keys are the column headers */
         protected Immutable(K[] keys, V[][] array) {
             super(keys, array);
         }
 
-        public Immutable(int x, int y) {
-            super(x, y);
+        /** Keys are the column headers */
+        public Immutable(int rows, int cols) {
+            super(rows, cols);
         }
 
         public Immutable(Matrix copy) {
@@ -176,7 +179,7 @@ public class Matrix<K,V> {
     /**
      * Sizes the array with predefined length
      */
-    public Matrix(int cols, int rows) {
+    public Matrix(int rows, int cols) {
         keys = null;
         matrix = (V[][]) new Object[cols][rows];
     }
@@ -210,14 +213,14 @@ public class Matrix<K,V> {
     protected void readOnlyCheck() {
     }
 
-    public Matrix set(int col, int row, V value) {
+    public Matrix<K,V> set(int row, int col, V value) {
         readOnlyCheck();
         if (matrix == null) {
-            matrix = (V[][]) new Object[col + 1][row + 1];
-        } else if (matrix[0].length <= row || matrix.length <= col) {
-            resize(col, row);
+            matrix = (V[][]) new Object[row + 1][col + 1];
+        } else if (matrix[0].length <= col || matrix.length <= row) {
+            resize(row, col);
         }
-        matrix[col][row] = value;
+        matrix[row][col] = value;
         return this;
     }
 
@@ -254,6 +257,13 @@ public class Matrix<K,V> {
         };
     }
 
+    public V get(K srcKey, V srcValue, K dstKey) {
+        int srcColIdx = keys.indexOf(srcKey);
+        int dstColIdx = keys.indexOf(dstKey);
+        int row = getColIndexOf(srcColIdx, srcValue);
+        return get(row, dstColIdx);
+    }
+    
     public void forEachElement(Consumer<V> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
@@ -332,16 +342,16 @@ public class Matrix<K,V> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<V> column(int x) {
+    public List<V> getRowAsList(int row) {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {
-                return (V) matrix[x][index];
+                return (V) matrix[row][index];
             }
 
             @Override
             public int size() {
-                return matrix[x].length;
+                return matrix[row].length;
             }
         };
     }
@@ -349,11 +359,11 @@ public class Matrix<K,V> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<V> row(int y) {
+    public List<V> getColAsList(int col) {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {
-                return (V) matrix[index][y];
+                return (V) matrix[index][col];
             }
 
             @Override
@@ -363,6 +373,15 @@ public class Matrix<K,V> {
         };
     }
 
+    public int getColIndexOf(int col, V value) {
+        for (int i=matrix.length-1; i>=0; i--) {
+            if (Objects.equals(value, matrix[i][col])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     public Immutable<K,V> immutable() {
         return new Immutable<>(this);
     }
