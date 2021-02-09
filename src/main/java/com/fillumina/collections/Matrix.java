@@ -1,30 +1,45 @@
 package com.fillumina.collections;
 
 import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * A matrix implementation to help manages squared arrays of data.
+ * A matrix implementation to help manages squared arrays of data. It can be considered a sort
+ * of multi association map or a kind of map generalization. It is also a quite compact (but slow)
+ * map representation.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class Matrix<T> {
+public class Matrix<K,V> {
 
     private static final int COLUMN_SEPARATION = 2;
 
-    public static class Immutable<T> extends Matrix<T> {
+    public static class Immutable<K,V> extends Matrix<K,V> {
 
         public Immutable() {
         }
 
-        protected Immutable(T[][] array) {
-            super(array);
+        public Immutable(K[] keys, int rows) {
+            super(keys, rows);
+        }
+
+        public Immutable(Map<K, V> map) {
+            super(map);
+        }
+
+        protected Immutable(K[] keys, V[][] array) {
+            super(keys, array);
         }
 
         public Immutable(int x, int y) {
@@ -46,12 +61,18 @@ public class Matrix<T> {
         }
     }
 
-    public static class Builder<T> {
+    public static class Builder<K,V> {
 
-        private List<T[]> list = new ArrayList<>();
+        private K[] keys;
+        private List<V[]> list = new ArrayList<>();
         private int rowLength = -1;
 
-        public Builder<T> row(T... values) {
+        public Builder<K,V> keys(K... values) {
+            this.keys = values;
+            return this;
+        }
+
+        public Builder<K,V> row(V... values) {
             list.add(values);
             if (rowLength == -1) {
                 rowLength = values.length;
@@ -61,49 +82,109 @@ public class Matrix<T> {
             return this;
         }
 
-        public Matrix<T> build() {
-            T[][] array = (T[][]) new Object[list.size()][];
+        public Matrix<K,V> build() {
+            V[][] array = (V[][]) new Object[list.size()][];
             for (int i = 0, l = list.size(); i < l; i++) {
                 array[i] = list.get(i);
             }
-            return new Matrix<>(array);
+            return new Matrix<>(keys, array);
         }
 
-        public Immutable<T> buildImmutable() {
-            T[][] array = (T[][]) new Object[list.size()][];
+        public Immutable<K,V> buildImmutable() {
+            V[][] array = (V[][]) new Object[list.size()][];
             for (int i = 0, l = list.size(); i < l; i++) {
                 array[i] = list.get(i);
             }
-            return new Immutable<>(array);
+            return new Immutable<>(keys, array);
         }
     }
 
-    public static <T> Builder<T> builder() {
+    private class RowCursor implements Iterator<Entry<K,V>>, Entry<K,V> {
+        private final int row;
+        private int col = -1;
+        
+        public RowCursor(int row) {
+            this.row = row;
+        }
+        
+        @Override
+        public boolean hasNext() {
+            return col < keys.length;
+        }
+
+        @Override
+        public Entry<K, V> next() {
+            col++;
+            return this;
+        }
+
+        @Override
+        public K getKey() {
+            return keys[col];
+        }
+
+        @Override
+        public V getValue() {
+            return get(row, col);
+        }
+
+        @Override
+        public V setValue(V value) { throw new UnsupportedOperationException("read only."); }
+    }
+    
+    public static <K,V> Builder<K,V> builder() {
         return new Builder<>();
     }
 
+    private final K[] keys;
+    
     // using T[][] interferes with Kryo
     private Object[][] matrix;
 
     public Matrix() {
+        keys = null;
+        matrix = null;
     }
 
-    protected Matrix(T[][] array) {
+    public Matrix(K... keys) {
+        this.keys = keys;
+    }
+
+    protected Matrix(K[] keys, V[][] array) {
+        this.keys = keys;
         this.matrix = array;
+    }
+
+    protected Matrix(K[] keys, int rows) {
+        this.keys = keys;
+        matrix = (V[][]) new Object[keys.length][rows];
     }
 
     /**
      * Sizes the array with predefined length
      */
-    public Matrix(int x, int y) {
-        matrix = (T[][]) new Object[x][y];
+    public Matrix(int cols, int rows) {
+        keys = null;
+        matrix = (V[][]) new Object[cols][rows];
     }
 
-    public Matrix(Matrix copy) {
-        matrix = (T[][]) new Object[copy.matrix.length][];
+    /** Transforms a map in a mono-dimensional matrix where K are keys and V are values. */
+    public Matrix(Map<K,V> map) {
+        keys = (K[]) map.keySet().toArray();
+        matrix = (V[][]) new Object[1][];
+        matrix[0] = map.values().toArray();
+    }
+    
+    public Matrix(Matrix<K,V> copy) {
+        keys = copy.keys;
+        matrix = (V[][]) new Object[copy.matrix.length][];
         for (int i = 0, li = matrix.length; i < li; i++) {
-            matrix[i] = (T[]) copy.matrix[i].clone();
+            matrix[i] = (V[]) copy.matrix[i].clone();
         }
+    }
+
+    protected Matrix(V[][] array) {
+        this(null, array);
     }
 
     protected void resizeCheck() {
@@ -112,10 +193,10 @@ public class Matrix<T> {
     protected void readOnlyCheck() {
     }
 
-    public Matrix set(int col, int row, T value) {
+    public Matrix set(int col, int row, V value) {
         readOnlyCheck();
         if (matrix == null) {
-            matrix = (T[][]) new Object[col + 1][row + 1];
+            matrix = (V[][]) new Object[col + 1][row + 1];
         } else if (matrix[0].length <= row || matrix.length <= col) {
             resize(col, row);
         }
@@ -132,14 +213,34 @@ public class Matrix<T> {
         matrix = newMatrix;
     }
 
-    public T get(int row, int col) {
-        return (T) matrix[row][col];
+    public V get(int row, int col) {
+        return (V) matrix[row][col];
+    }
+    
+    public List<K> getKeys() {
+        return List.of(keys);
+    }
+    
+    public Map<K,V> getRowMap(int row) {
+        return new AbstractMap<K,V>() {
+            @Override public Set<Map.Entry<K, V>> entrySet() {
+                return new AbstractSet<Entry<K,V>>() {
+                    @Override public Iterator<Map.Entry<K, V>> iterator() {
+                        return new RowCursor(row);
+                    }
+
+                    @Override public int size() {
+                        return keys == null ? 0 : keys.length;
+                    }
+                };
+            }
+        };
     }
 
-    public void forEachElement(Consumer<T> consumer) {
+    public void forEachElement(Consumer<V> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
-                consumer.accept((T) matrix[i][j]);
+                consumer.accept((V) matrix[i][j]);
             }
         }
     }
@@ -154,17 +255,17 @@ public class Matrix<T> {
 
     public void insertColumnAtIndex(int index) {
         int length = matrix.length;
-        T[][] newmtx = (T[][]) new Object[length + 1][];
+        V[][] newmtx = (V[][]) new Object[length + 1][];
         System.arraycopy(matrix, 0, newmtx, 0, index);
         System.arraycopy(matrix, index, newmtx, index + 1, length - index);
-        newmtx[index] = (T[]) new Object[matrix[0].length];
+        newmtx[index] = (V[]) new Object[matrix[0].length];
         matrix = newmtx;
     }
 
     public void insertRowAtIndex(int index) {
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
-            T[] array = (T[]) new Object[length + 1];
+            V[] array = (V[]) new Object[length + 1];
             System.arraycopy(matrix[i], 0, array, 0, index);
             System.arraycopy(matrix[i], index, array, index + 1, length - index);
             matrix[i] = array;
@@ -173,7 +274,7 @@ public class Matrix<T> {
 
     public void removeColumnAtIndex(int index) {
         int length = matrix.length;
-        T[][] newmtx = (T[][]) new Object[length - 1][];
+        V[][] newmtx = (V[][]) new Object[length - 1][];
         if (index > 0) {
             System.arraycopy(matrix, 0, newmtx, 0, index);
         }
@@ -186,7 +287,7 @@ public class Matrix<T> {
     public void removeRowAtIndex(int index) {
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
-            T[] array = (T[]) new Object[length - 1];
+            V[] array = (V[]) new Object[length - 1];
             if (index > 0) {
                 System.arraycopy(matrix[i], 0, array, 0, index);
             }
@@ -214,11 +315,11 @@ public class Matrix<T> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<T> column(int x) {
-        return new AbstractList<T>() {
+    public List<V> column(int x) {
+        return new AbstractList<V>() {
             @Override
-            public T get(int index) {
-                return (T) matrix[x][index];
+            public V get(int index) {
+                return (V) matrix[x][index];
             }
 
             @Override
@@ -231,11 +332,11 @@ public class Matrix<T> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<T> row(int y) {
-        return new AbstractList<T>() {
+    public List<V> row(int y) {
+        return new AbstractList<V>() {
             @Override
-            public T get(int index) {
-                return (T) matrix[index][y];
+            public V get(int index) {
+                return (V) matrix[index][y];
             }
 
             @Override
@@ -245,7 +346,7 @@ public class Matrix<T> {
         };
     }
 
-    public Immutable<T> immutable() {
+    public Immutable<K,V> immutable() {
         return new Immutable<>(this);
     }
 
