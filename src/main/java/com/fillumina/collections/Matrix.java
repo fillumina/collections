@@ -16,8 +16,7 @@ import java.util.function.Consumer;
 
 /**
  * A matrix implementation to help manages squared arrays of data. It can be considered a sort
- * of multi association map or a kind of map generalization. It is also a quite compact (but slow)
- * map representation.
+ * of multi association map. It is also a quite compact (but slow) map representation.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -109,7 +108,7 @@ public class Matrix<K,V> {
         
         @Override
         public boolean hasNext() {
-            return col < keys.length;
+            return col < keys.size();
         }
 
         @Override
@@ -120,7 +119,7 @@ public class Matrix<K,V> {
 
         @Override
         public K getKey() {
-            return keys[col];
+            return keys.get(col);
         }
 
         @Override
@@ -136,7 +135,7 @@ public class Matrix<K,V> {
         return new Builder<>();
     }
 
-    private final K[] keys;
+    private ImmutableList<K> keys;
     
     // using T[][] interferes with Kryo
     private Object[][] matrix;
@@ -146,18 +145,32 @@ public class Matrix<K,V> {
         matrix = null;
     }
 
-    public Matrix(K... keys) {
+    public Matrix(ImmutableList<K> keys) {
         this.keys = keys;
     }
 
+    public Matrix(K... keys) {
+        this.keys = ImmutableList.create(keys);
+    }
+
     protected Matrix(K[] keys, V[][] array) {
-        this.keys = keys;
+        this.keys = ImmutableList.create(keys);
         this.matrix = array;
     }
 
     protected Matrix(K[] keys, int rows) {
-        this.keys = keys;
+        this.keys = ImmutableList.create(keys);
         matrix = (V[][]) new Object[keys.length][rows];
+    }
+
+    protected Matrix(ImmutableList<K> keys, V[][] array) {
+        this.keys = keys;
+        this.matrix = array;
+    }
+
+    protected Matrix(ImmutableList<K> keys, int rows) {
+        this.keys = keys;
+        matrix = (V[][]) new Object[keys.size()][rows];
     }
 
     /**
@@ -170,21 +183,25 @@ public class Matrix<K,V> {
 
     /** Transforms a map in a mono-dimensional matrix where K are keys and V are values. */
     public Matrix(Map<K,V> map) {
-        keys = (K[]) map.keySet().toArray();
+        keys = ImmutableList.create((K[]) map.keySet().toArray());
         matrix = (V[][]) new Object[1][];
         matrix[0] = map.values().toArray();
     }
     
     public Matrix(Matrix<K,V> copy) {
         keys = copy.keys;
-        matrix = (V[][]) new Object[copy.matrix.length][];
-        for (int i = 0, li = matrix.length; i < li; i++) {
-            matrix[i] = (V[]) copy.matrix[i].clone();
+        if (copy.matrix == null) {
+            matrix = null;
+        } else {
+            matrix = (V[][]) new Object[copy.matrix.length][];
+            for (int i = 0, li = matrix.length; i < li; i++) {
+                matrix[i] = (V[]) copy.matrix[i].clone();
+            }
         }
     }
 
     protected Matrix(V[][] array) {
-        this(null, array);
+        this((K[])null, array);
     }
 
     protected void resizeCheck() {
@@ -218,7 +235,7 @@ public class Matrix<K,V> {
     }
     
     public List<K> getKeys() {
-        return List.of(keys);
+        return keys;
     }
     
     public Map<K,V> getRowMap(int row) {
@@ -230,7 +247,7 @@ public class Matrix<K,V> {
                     }
 
                     @Override public int size() {
-                        return keys == null ? 0 : keys.length;
+                        return keys == null ? 0 : keys.size();
                     }
                 };
             }
@@ -350,6 +367,11 @@ public class Matrix<K,V> {
         return new Immutable<>(this);
     }
 
+    @Override
+    public Matrix<K,V> clone() {
+        return new Matrix<>(this);
+    }
+    
     @Override
     public String toString() {
         return toString(List.of());
