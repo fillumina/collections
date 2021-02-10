@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -341,12 +342,12 @@ public class MultiMap<T> {
 
     // helper to be able to change internal set type
     private static <T> Set<Container<T>> createNewSet() {
-        return new SetWrapper<>();
+        return new HashSet<>();
     }
 
     // helper to be able to change internal set type
     private static <T> Set<Container<T>> createNewSet(Collection<Container<T>> coll) {
-        return new SetWrapper<>(coll);
+        return new HashSet<>(coll);
     }
 
     public void clear() {

@@ -13,7 +13,8 @@ Optimized for **speed** of access:
 
 Different kind of containers:
 
-* `ImmutableList` is an explicictly immutable list that can be safely shared between objects (other containers in this collections have explicitly immutable versions too).
+* `ImmutableList` is an explicictly immutable list that can be safely shared between objects.
+* `ImmutableSet` is an explicitly immutable linked hash set that can be safely shared between objects. `ArraySet` also has an immutable constructor but it's performances are poor.
 * `BiMap` is a compliant `Map` implementation based on `AbstractEntryMap` where value unicity is enforced in addition to usual key unicity. It's symmetrical and its mapping can be reversed on both ways.
 * `Matrix` it's a multi-associative map, can be created from an existing map, with a builder or just by adding values to the bi-dimensional matrix. It's aimed towards space efficiency and not speed of access.
 * `MultiMap` it's a map that allows multiple keys for each value. It can generate tree structures that reflect the associations between keys and offers useful methods to inspect and extract data out of it.

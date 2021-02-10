@@ -30,11 +30,11 @@ public class Matrix<K,V> {
         public Immutable() {
         }
 
-        public Immutable(ImmutableList<K> keys, V[][] array) {
+        public Immutable(ImmutableSet<K> keys, V[][] array) {
             super(keys, array);
         }
 
-        public Immutable(ImmutableList<K> keys, int rows) {
+        public Immutable(ImmutableSet<K> keys, int rows) {
             super(keys, rows);
         }
         
@@ -145,7 +145,7 @@ public class Matrix<K,V> {
                     array[j][i] = columns.get(i)[j];
                 }
             }
-            return new Matrix<>(ImmutableList.of(keys), array);
+            return new Matrix<>(ImmutableSet.of(keys), array);
         }
 
         public Immutable<K,V> buildImmutable() {
@@ -153,7 +153,7 @@ public class Matrix<K,V> {
             for (int i = 0, l = columns.size(); i < l; i++) {
                 array[i] = columns.get(i);
             }
-            return new Immutable<>(ImmutableList.of(keys), array);
+            return new Immutable<>(ImmutableSet.of(keys), array);
         }
     }
 
@@ -187,7 +187,12 @@ public class Matrix<K,V> {
         }
 
         @Override
-        public V setValue(V value) { throw new UnsupportedOperationException("read only."); }
+        public V setValue(V value) { 
+            readOnlyCheck();
+            V old = get(row, col);
+            set(row, col, value);
+            return old;
+        }
     }
     
     public static <K,V> RowBuilder<K,V> rowBuilder() {
@@ -198,7 +203,7 @@ public class Matrix<K,V> {
         return new ColBuilder<>();
     }
 
-    private ImmutableList<K> keys;
+    private ImmutableSet<K> keys;
     
     // using T[][] interferes with Kryo
     private Object[][] matrix;
@@ -208,30 +213,30 @@ public class Matrix<K,V> {
         matrix = null;
     }
 
-    public Matrix(ImmutableList<K> keys) {
+    public Matrix(ImmutableSet<K> keys) {
         this.keys = keys;
     }
 
     public Matrix(K... keys) {
-        this.keys = ImmutableList.of(keys);
+        this.keys = ImmutableSet.<K>of(keys);
     }
 
     protected Matrix(K[] keys, V[][] array) {
-        this.keys = ImmutableList.of(keys);
+        this.keys = ImmutableSet.<K>of(keys);
         this.matrix = array;
     }
 
     protected Matrix(K[] keys, int rows) {
-        this.keys = ImmutableList.of(keys);
+        this.keys = ImmutableSet.of(keys);
         matrix = (V[][]) new Object[keys.length][rows];
     }
 
-    protected Matrix(ImmutableList<K> keys, V[][] array) {
+    protected Matrix(ImmutableSet<K> keys, V[][] array) {
         this.keys = keys;
         this.matrix = array;
     }
 
-    protected Matrix(ImmutableList<K> keys, int rows) {
+    protected Matrix(ImmutableSet<K> keys, int rows) {
         this.keys = keys;
         matrix = (V[][]) new Object[keys.size()][rows];
     }
@@ -246,7 +251,7 @@ public class Matrix<K,V> {
 
     /** Transforms a map in a mono-dimensional matrix where K are keys and V are values. */
     public Matrix(Map<K,V> map) {
-        keys = ImmutableList.of((K[]) map.keySet().toArray());
+        keys = ImmutableSet.of((K[]) map.keySet().toArray());
         matrix = (V[][]) new Object[1][];
         matrix[0] = map.values().toArray();
     }
@@ -296,8 +301,8 @@ public class Matrix<K,V> {
     public V get(int row, int col) {
         return (V) matrix[row][col];
     }
-    
-    public List<K> getKeys() {
+
+    public Set<K> getKeys() {
         return keys;
     }
     
@@ -317,11 +322,29 @@ public class Matrix<K,V> {
         };
     }
 
+    /** @return the row index at which the given pair of key, value is found. */
+    public int rowIndexOf(K key, V value) {
+        int col = keys.indexOf(key);
+        return rowIndexOf(col, value);
+    }
+
+    /** @return true if the given pair of key, value is found. */
+    public boolean contains(K key, V value) {
+        int col = keys.indexOf(key);
+        return rowIndexOf(col, value) != -1;
+    }
+    
+    public Matrix<K,V> assertContains(K key, V value) {
+        if (!contains(key, value)) {
+            throw new AssertionError("key=" + key + " => value=" + value + " not found");
+        }
+        return this;
+    }
+    
     public V getTranslation(K srcKey, K dstKey, V srcValue) {
-        int srcColIdx = keys.indexOf(srcKey);
-        int dstColIdx = keys.indexOf(dstKey);
-        int row = getColIndexOf(srcColIdx, srcValue);
-        return get(row, dstColIdx);
+        int col = keys.indexOf(dstKey);
+        int row = rowIndexOf(srcKey, srcValue);
+        return get(row, col);
     }
     
     public List<V> getList(K key) {
@@ -439,7 +462,7 @@ public class Matrix<K,V> {
         };
     }
 
-    public int getColIndexOf(int col, V value) {
+    public int rowIndexOf(int col, V value) {
         for (int i=matrix.length-1; i>=0; i--) {
             if (Objects.equals(value, matrix[i][col])) {
                 return i;
@@ -465,9 +488,9 @@ public class Matrix<K,V> {
         return toString(keys);
     }
 
-    public String toString(List<?> headers) {
+    public String toString(Collection<?> headers) {
         StringBuilder buf = new StringBuilder();
-        writeTo(headers, buf::append);
+        writeTo(ImmutableList.of(headers), buf::append);
         return buf.toString();
     }
 

@@ -21,6 +21,8 @@ import java.util.Objects;
 public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
     
+    public static final ArraySet<?> EMPTY = new Immutable<Object>();
+    
     private static Iterator<?> NULL_ITERATOR = new Iterator<Object>() {
         @Override
         public boolean hasNext() {
@@ -33,22 +35,22 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         }
     };
 
-    public static class ReadOnly<T> extends ArraySet<T> {
+    public static class Immutable<T> extends ArraySet<T> {
         private static final long serialVersionUID = 1L;
         
-        public ReadOnly() {
+        public Immutable() {
             super();
         }
 
-        public ReadOnly(T... elements) {
+        public Immutable(T... elements) {
             super(elements);
         }
 
-        public ReadOnly(ArraySet<T> smallSet) {
+        public Immutable(ArraySet<T> smallSet) {
             super(smallSet);
         }
 
-        public ReadOnly(Collection<T> elements) {
+        public Immutable(Collection<? extends T> elements) {
             super(elements);
         }
         
@@ -56,6 +58,27 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         public void readOnlyCheck() {
             throw new UnsupportedOperationException("read only");
         }
+    }
+    
+    public static <T> Immutable<T> empty() {
+        return (Immutable<T>) EMPTY;
+    }
+
+    public static <T> Immutable<T> immutableOf(T... values) {
+        if (values == null || values.length == 0) {
+            return (Immutable<T>) EMPTY;
+        }
+        return new Immutable<T>(values);
+    }
+
+    public static <T> Immutable<T> immutableOf(Collection<? extends T> list) {
+        if (list == null || list.isEmpty()) {
+            return (Immutable<T>) EMPTY;
+        }
+        if (list instanceof ImmutableList) {
+            return (Immutable<T>) list;
+        }
+        return new Immutable<T>(list);
     }
     
     // can be either:
@@ -68,19 +91,21 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     }
 
     public ArraySet(T... elements) {
-        switch (elements.length) {
-            case 0: 
-                // do nothing
-                break;
-            case 1: 
-                obj = elements[0]; 
-                break;
-            default:
-                obj = elements.clone();
+        if (elements != null) {
+            switch (elements.length) {
+                case 0: 
+                    // do nothing
+                    break;
+                case 1: 
+                    obj = elements[0]; 
+                    break;
+                default:
+                    obj = elements.clone();
+            }
         }
     }
 
-    public ArraySet(Collection<T> elements) {
+    public ArraySet(Collection<? extends T> elements) {
         if (elements != null && !elements.isEmpty()) {
             if (elements.size() == 1) {
                 obj = elements.iterator().next();
@@ -90,7 +115,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         }
     }
 
-    public ArraySet(ArraySet<T> smallSet) {
+    public ArraySet(ArraySet<? extends T> smallSet) {
         if (smallSet.obj != null) {
             if (smallSet.obj.getClass().isArray()) {
                 this.obj = ((Object[])smallSet.obj).clone();
@@ -118,6 +143,22 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         throw new IndexOutOfBoundsException("empty set, index=" + index);
     }
 
+    public int indexOf(T t) {
+        if (obj == null) {
+            return -1;
+        } else if (obj.getClass().isArray()) {
+            T[] array = (T[]) obj;
+            for (int i=array.length-1; i>=0; i--) {
+                if (t.equals(array[i])) {
+                    return i;
+                }
+            }
+            return -1;
+        } else {
+            return obj.equals(t) ? 0 : -1;
+        }
+    }
+    
     /**
      * In place sorting. Don't use 
      * {@link java.util.Collections#sort(java.util.List) }

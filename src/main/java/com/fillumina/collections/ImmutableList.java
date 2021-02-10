@@ -14,6 +14,10 @@ public class ImmutableList<T> extends AbstractList<T> {
     public static final ImmutableList<?> EMPTY = new ImmutableList<Object>();
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
+    public static <T> ImmutableList<T> empty() {
+        return (ImmutableList<T>) EMPTY;
+    }
+
     public static <T> ImmutableList<T> of(T... values) {
         if (values == null || values.length == 0) {
             return (ImmutableList<T>) EMPTY;

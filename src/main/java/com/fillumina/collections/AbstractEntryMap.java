@@ -260,6 +260,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             return new VieweableMap<>();
         }
 
+        public ReadOnlyMap() {
+            super();
+        }
+        
         /**
          * Classic {@code java.util} style copy constructor.
          */

@@ -70,7 +70,7 @@ public class KeyOnlyMap<T> extends AbstractEntryMap<T,Boolean,KeyOnlyEntry<T>,Ke
         return new KeyOnlyMap<T>(size).keySet();
     }
 
-    public static <T> Set<T> createSet(Collection<T> coll) {
+    public static <T> Set<T> createSet(Collection<? extends T> coll) {
         final Set<T> set = new KeyOnlyMap<T>(coll.size()).keySet();
         set.addAll(coll);
         return set;
@@ -125,5 +125,4 @@ public class KeyOnlyMap<T> extends AbstractEntryMap<T,Boolean,KeyOnlyEntry<T>,Ke
     protected Boolean innerPut(T key, Boolean value) {
         return super.innerPut(key, true);
     }
-    
 }
