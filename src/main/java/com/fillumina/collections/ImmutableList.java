@@ -2,7 +2,6 @@ package com.fillumina.collections;
 
 import java.util.AbstractList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * An immutable list. This list guarantees its immutability and can be safely shared between
@@ -22,7 +21,7 @@ public class ImmutableList<T> extends AbstractList<T> {
         return new ImmutableList<T>(values);
     }
 
-    public static <T> ImmutableList<T> of(List<? extends T> list) {
+    public static <T> ImmutableList<T> of(Collection<? extends T> list) {
         if (list == null || list.isEmpty()) {
             return (ImmutableList<T>) EMPTY;
         }
@@ -38,7 +37,7 @@ public class ImmutableList<T> extends AbstractList<T> {
     private ImmutableList() {
     }
 
-    private ImmutableList(T... array) {
+    public ImmutableList(T... array) {
         this.array = array == null ? null : array.clone();
     }
 
