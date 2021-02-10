@@ -618,7 +618,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         } while (true);
     }
 
-    private void removeIndex(int idx) {
+    protected void removeIndex(int idx) {
         state.array[idx] = null;
         // relocate following entries until null
         do {

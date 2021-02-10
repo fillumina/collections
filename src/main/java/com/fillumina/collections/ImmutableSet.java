@@ -55,15 +55,17 @@ public class ImmutableSet<T> implements Set<T> {
                 int index = 0;
                 LinkedEntry<K> current = null;
                 for (K k : values) {
-                    LinkedEntry<K> entry = new LinkedEntry<>(k, index);
-                    innerPutEntry(entry);
-                    if (head == null) {
-                        head = entry;
+                    if (!containsKey(k)) {
+                        LinkedEntry<K> entry = new LinkedEntry<>(k, index);
+                        innerPutEntry(entry);
+                        if (head == null) {
+                            head = entry;
+                            current = entry;
+                        }
+                        current.next = entry;
                         current = entry;
+                        index++;
                     }
-                    current.next = entry;
-                    current = entry;
-                    index++;
                 }
             }
         }

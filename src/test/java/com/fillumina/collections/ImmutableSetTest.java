@@ -100,6 +100,12 @@ public class ImmutableSetTest {
     }
 
     @Test
+    public void testDuplicates() {
+        ImmutableSet<Integer> set = ImmutableSet.of(1, 2, 2);
+        assertEquals(2, set.size());
+    }
+    
+    @Test
     public void testContainsAll() {
         assertTrue(ImmutableSet.of(1, 2, 3)
                         .containsAll(List.of(1, 2, 3)) );

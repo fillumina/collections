@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 /**
- * It's a matrix with the columns mapped by a set of immutable keys. The matrix can be accessed like
- * a bi-dimensional array. It is possible to retrieve the value of a cell by indicating its key and
- * the row number and it's possible to "translate" from one cell to another on the same row with a
- * different key. Key access is quite fast being based on an hash set making the mapping O(1) as a
- * whole.
+ * It's a bi-dimensional array with the columns mapped by a set of immutable keys. It is possible to
+ * retrieve the value of a cell by using coordinates or by indicating its key and the row number and
+ * it's possible to "translate" from one cell to another on the same row with a different key. Key
+ * access is quite fast being based on an hash set making the mapping performances an O(1). Cell
+ * access performances are also O(1) with the exception of searching of values which is linear.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
