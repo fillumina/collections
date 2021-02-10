@@ -15,25 +15,17 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * A {@link java.util.Map} implementation that offers various interesting characteristics over
- * standard {@link java.util.HashMap}:
+ * A hash {@link java.util.Map} implementation.
  * <ul>
  * <li>It allows to specify a {@link Map.Entry} implementation
- * <li>It has {@link #putEntry(java.util.Map.Entry) } and {@link #getEntry(Object) } methods
- * <li>It's extremely fast to clone (much faster than {@link java.util.HashMap}) allowing for a
- * quite efficient CopyOnWriteMap implementation (which is a great solution for rarely updating
- * caches - faster than ConcurrentHashMap for this scenario).
- * <li>It's average performances are O(1) for all operations (add, get, remove) but it's O(n) for
- * the worst case scenario (frequent keys collisions) ({@link java.util.HashMap} manages it better
- * with O(1) for insertion and O(n) for extraction and removal on worst case scenario).
- * <li>Space efficient and because of the use of arrays it takes advantage of memory locality,
- * caching and read ahead
- * <li>read-only derived class available
- * <li>read-only view
- * <li>clone constructors
- * <li>Can be copied to other implementations of the same class very quickly
- * <li>Has a {@link #forEach(java.util.function.Consumer) } for entries
- * <li>Its keySet() can add elements (with null value)
+ * <li>It has a {@code public} {@link #forEach(java.util.function.Consumer) } and
+ * <i>{@code protected}</i> {@link #putEntry(java.util.Map.Entry) } and {@link #getEntry(Object) }
+ * and can add entries with its {@code keySet}.
+ * <li>It's performances are O(1) for all operations (add, get, remove) but it's O(n) for the worst
+ * case scenario (colliding keys) ({@link java.util.HashMap} has O(1) for insertion and O(n) for
+ * extraction and removal on worst case scenario).
+ * <li>relatively fast to clone (in respect to {@link java.util.HashMap})
+ * <li>has immutable view
  * </ul>
  *
  * @param <K> map key
@@ -263,7 +255,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         public ReadOnlyMap() {
             super();
         }
-        
+
         /**
          * Classic {@code java.util} style copy constructor.
          */
@@ -308,6 +300,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     public static class InternalState<E> {
+
         private E[] array;
         private int size = 0;
         private int mask;
@@ -436,20 +429,20 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return Objects.equals(entry.getValue(), v);
     }
 
-    public AbstractEntryMap<K,V,E,M> assertEntry(K k, V v) throws AssertionError {
+    public AbstractEntryMap<K, V, E, M> assertEntry(K k, V v) throws AssertionError {
         if (!containsEntry(k, v)) {
             throw new AssertionError("entry not present: key=" + k + " => value=" + v);
         }
         return this;
     }
 
-    public AbstractEntryMap<K,V,E,M> assertSize(int size) throws AssertionError {
+    public AbstractEntryMap<K, V, E, M> assertSize(int size) throws AssertionError {
         if (size != size()) {
             throw new AssertionError("expected size=" + size + " but was " + size());
         }
         return this;
     }
-    
+
     @Override
     public void clear() {
         readOnlyCheck();

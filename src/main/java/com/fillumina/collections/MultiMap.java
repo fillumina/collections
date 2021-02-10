@@ -26,21 +26,9 @@ import java.util.stream.Collectors;
  * {@code granpa -> father -> son} to a new one with {@code son -> father -> granpa} or even
  * compress one level to get: {@code granpa -> families (fathers+sons)}.
  * <p>
- * When a tuple is inserted the values is added to a set associated with every given index. For
- * example in the following tuple (the first parameter is the value, the others are indexes):
- * <br> {@code indexTree.add(12.3, 'a', "Roma", true);}
- * <br>
- * the value {@code 12.3} is added to the sets associated with {@code 'a'}, {@code "Roma"} and
- * {@code true}.
- * <br>
- * If another tuple is inserted:
- * <br> {@code indexTree.add(7.4, 'b', "Roma", false);}
- * <br>
- * then the associated with {@code "Roma"} will contain both {@code 12.3} and {@code 7.4} values
- * while new sets are created for {@code 'b'} and {@code false}.
- * <p>
- * NOTE: Some of the functionalities of this class can be obtained with
- * {@link java.util.stream.Collectors#groupingBy(java.util.function.Function) }.
+ * It's performances are not particularly fast but managing potentially a lot of data the accent was
+ * on having a compact representation. It should be used as a computational step to extract useful
+ * views over unstructured data.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -263,13 +251,13 @@ public class MultiMap<T> {
             if (keys.length == 1) {
                 return Map.of(keys[0], children.get(keys[0]));
             }
-            Map<Object,Tree<T>> map = new HashMap<>();
+            Map<Object, Tree<T>> map = new HashMap<>();
             for (Object k : keys) {
                 map.put(k, children.get(k));
             }
             return map;
         }
-        
+
         public T getValue() {
             return value;
         }
@@ -294,7 +282,7 @@ public class MultiMap<T> {
 
     /**
      * Contains the value and all the keys it refers to. It's important because we cannot assume all
-     * values have a meaningful {@link Object#hashCode()} and 
+     * values have a meaningful {@link Object#hashCode()} and
      * {@link Object#equals(java.lang.Object)} implementation.
      */
     private static class Container<T> {
@@ -447,12 +435,6 @@ public class MultiMap<T> {
         }
     }
 
-    /**
-     * Removes the
-     *
-     * @param keys
-     * @return
-     */
     public boolean remove(Object... keys) {
         boolean removed = false;
         Container<T> element = new Container<>(keys, null);

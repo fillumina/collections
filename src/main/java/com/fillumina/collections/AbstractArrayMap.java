@@ -14,12 +14,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * A very minimal size map backed by a single array for both keys and values. It should be used
- * mainly as a small immutable object useful to pass pairs of values around without having to revert
- * to a full blown {@link HashMap} which can use quite a lot of memory. It's very fast to clone.
- * Instead of <i>entries</i> it uses a <i>cursor</i> that is a single <i>mutable</i>
+ * A very minimal size map backed by a single array interleaved with both keys and values. It should
+ * be used mainly as a small immutable object useful to pass pairs of values around without having
+ * to revert to a full blown {@link HashMap} which can use quite a lot of memory. It's very fast to
+ * clone. Instead of <i>entries</i> it uses a <i>cursor</i> that is a single <i>mutable</i>
  * {@link Map.Entry}: for this reason <b>don't use its {@link Map.Entry} outside loops and never
- * save them!</b> Every operation is O(n). The map keeps insertion order until a sorting method is
+ * save them!</b> Every access is O(n). The map keeps insertion order until a sorting method is
  * called. It's not thread safe.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
@@ -240,14 +240,14 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         return v.equals(get(k));
     }
 
-    public AbstractArrayMap<K,V> assertEntry(K k, V v) throws AssertionError {
+    public AbstractArrayMap<K, V> assertEntry(K k, V v) throws AssertionError {
         if (!containsEntry(k, v)) {
             throw new AssertionError("entry not present: key=" + k + " => value=" + v);
         }
         return this;
     }
 
-    public AbstractArrayMap<K,V> assertSize(int size) throws AssertionError {
+    public AbstractArrayMap<K, V> assertSize(int size) throws AssertionError {
         if (size != size()) {
             throw new AssertionError("expected size=" + size + " but was " + size());
         }

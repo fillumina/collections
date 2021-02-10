@@ -24,11 +24,13 @@ public class MultiMapTest {
     public void usageExample() {
         MultiMap<Double> mmap = new MultiMap<>();
         
-        //       time (s)   runner name    race
+        //       time (s)   runner name    race type
         mmap.add(55.3, "Maria Stella", "400 mt");
         mmap.add(52.9, "Gisella Masi", "400 mt");
+        
         mmap.add(23.3, "Maria Stella", "200 mt");
         mmap.add(21.9, "Gisella Masi", "200 mt");
+        
         mmap.add(12.3, "Maria Stella", "100 mt");
         mmap.add(10.9, "Gisella Masi", "100 mt");
 
