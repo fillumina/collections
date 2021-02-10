@@ -1,25 +1,27 @@
 package com.fillumina.collections;
 
 import java.util.AbstractList;
+import java.util.Collection;
 import java.util.List;
 
 /**
- * An immutable list. This list guarantee its immutability and can be safely shared between objects.
- * 
+ * An immutable list. This list guarantees its immutability and can be safely shared between
+ * objects.
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class ImmutableList<T> extends AbstractList<T> {
-    
+
     public static final ImmutableList<?> EMPTY = new ImmutableList<Object>();
     private static final Object[] EMPTY_ARRAY = new Object[0];
-    
+
     public static <T> ImmutableList<T> of(T... values) {
         if (values == null || values.length == 0) {
             return (ImmutableList<T>) EMPTY;
         }
         return new ImmutableList<T>(values);
     }
-    
+
     public static <T> ImmutableList<T> of(List<? extends T> list) {
         if (list == null || list.isEmpty()) {
             return (ImmutableList<T>) EMPTY;
@@ -29,19 +31,23 @@ public class ImmutableList<T> extends AbstractList<T> {
         }
         return new ImmutableList<T>(list);
     }
-    
-    private final T[] array;
+
+    private T[] array;
+
+    // for kryo
+    private ImmutableList() {
+    }
 
     private ImmutableList(T... array) {
         this.array = array == null ? null : array.clone();
     }
 
-    public ImmutableList(List<? extends T> list) {
-        this.array = (list == null || list.isEmpty()) ? 
-                (T[]) EMPTY_ARRAY : 
+    public ImmutableList(Collection<? extends T> list) {
+        this.array = (list == null || list.isEmpty()) ?
+                (T[]) EMPTY_ARRAY :
                 (T[]) list.toArray().clone();
     }
-    
+
     @Override
     public T get(int index) {
         return array[index];
