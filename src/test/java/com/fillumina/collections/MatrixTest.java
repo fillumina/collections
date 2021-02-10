@@ -391,5 +391,23 @@ public class MatrixTest {
         assertEquals(0, mtx.rowIndexOf("FR", "une"));
         assertEquals(1, mtx.rowIndexOf("IT", "due"));
         assertEquals(2, mtx.rowIndexOf("EN", "three"));
-    }        
+    }    
+
+    enum MyEnum { A, B, C};
+
+    @Test
+    public void shouldChangeKey() {
+        
+        Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
+                .keys("IT", "EN", "FR")
+                .row("uno", "one", "une")
+                .row("due", "two", "deux")
+                .row("tre", "three", "trois")
+                .buildImmutable();
+        
+        ImmutableSet<MyEnum> newKeys = ImmutableSet.of(MyEnum.values());
+        Matrix<MyEnum, String> newMtx = new Matrix<>(newKeys, mtx);
+        
+        assertEquals("two", newMtx.getByKey(MyEnum.B, 1));
+    }
 }

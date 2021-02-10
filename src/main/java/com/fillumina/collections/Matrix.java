@@ -256,15 +256,25 @@ public class Matrix<K,V> {
         matrix[0] = map.values().toArray();
     }
     
-    public Matrix(Matrix<K,V> copy) {
-        keys = copy.keys;
+    public Matrix(ImmutableSet<K> keys, Matrix<?,? extends V> copy) {
+        this.keys = keys;
+        this.matrix = copyFromMatrix(copy);
+    }
+    
+    public Matrix(Matrix<? extends K, ? extends V> copy) {
+        this.keys = (ImmutableSet<K>) copy.keys;
+        this.matrix = copyFromMatrix(copy);
+    }
+
+    private static <V> V[][] copyFromMatrix(Matrix<?, ? extends V> copy) {
         if (copy.matrix == null) {
-            matrix = null;
+            return null;
         } else {
-            matrix = (V[][]) new Object[copy.matrix.length][];
-            for (int i = 0, li = matrix.length; i < li; i++) {
-                matrix[i] = (V[]) copy.matrix[i].clone();
+            V[][] objArray = (V[][]) new Object[copy.matrix.length][];
+            for (int i = 0, li = objArray.length; i < li; i++) {
+                objArray[i] = (V[]) copy.matrix[i].clone();
             }
+            return objArray;
         }
     }
 
@@ -300,6 +310,11 @@ public class Matrix<K,V> {
 
     public V get(int row, int col) {
         return (V) matrix[row][col];
+    }
+
+    public V getByKey(K key, int rowIndex) {
+        int col = keys.indexOf(key);
+        return (V) matrix[rowIndex][col];
     }
 
     public Set<K> getKeys() {
