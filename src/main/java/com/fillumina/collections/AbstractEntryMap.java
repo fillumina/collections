@@ -170,7 +170,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * <ul>
      * <li>Differently to {@link SimpleMap} entries are read-only (cannot use
      * {@link Map.Entry#setValue(java.lang.Object)}). The map can be changed by other usual methods.
-     * <li>A read-only view of the map is available via {@link #getReadOnlyView() }
+     * <li>A read-only view of the map is available via {@link #immutable() }
      * </ul>
      * This is a base for other types of maps, not really useful by itself.
      *
@@ -223,7 +223,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
          * @return a read-only view of this map. Every change to this map reflects to the view.
          * Concurrent access might result in unexpected results.
          */
-        public ReadOnlyMap<K, V> getReadOnlyView() {
+        public ReadOnlyMap<K, V> immutable() {
             if (readOnlyView != null) {
                 return readOnlyView;
             }
@@ -286,7 +286,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
          * Just returns this.
          */
         @Override
-        public ReadOnlyMap<K, V> getReadOnlyView() {
+        public ReadOnlyMap<K, V> immutable() {
             return this;
         }
 

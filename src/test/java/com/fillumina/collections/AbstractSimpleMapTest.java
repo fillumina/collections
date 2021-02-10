@@ -381,7 +381,7 @@ public class AbstractSimpleMapTest {
                 .add("1", "a")
                 .add("2", "b")
                 .add("3", "c")
-                .getReadOnlyView();
+                .immutable();
         
         assertTrue(map.containsKey("1"));       
         assertTrue(map.containsKey("2"));       
@@ -409,7 +409,7 @@ public class AbstractSimpleMapTest {
                 () -> entry.setValue("aa") );
         
         
-        ReadOnlyMap<String,String> roMap = map.getReadOnlyView();
+        ReadOnlyMap<String,String> roMap = map.immutable();
         
         assertEquals(3, roMap.size());
         assertTrue(roMap.containsKey("1"));       
