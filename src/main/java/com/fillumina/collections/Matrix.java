@@ -236,7 +236,7 @@ public class Matrix<K,V> {
         this.matrix = array;
     }
 
-    protected Matrix(ImmutableSet<K> keys, int rows) {
+    public Matrix(ImmutableSet<K> keys, int rows) {
         this.keys = keys;
         matrix = (V[][]) new Object[keys.size()][rows];
     }
