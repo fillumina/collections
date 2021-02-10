@@ -5,6 +5,7 @@
  */
 package com.fillumina.collections;
 
+import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +16,13 @@ import org.junit.jupiter.api.Test;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class CounterTest {
+    
+    @Test
+    public void usage() {
+        Counter counter = new Counter();
+        Stream.iterate(0, i -> i<3, i -> i+1).forEach(i -> counter.increment());
+        assertEquals(3, counter.get());
+    }
     
     @Test
     public void testIncrement() {
