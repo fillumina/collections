@@ -98,6 +98,14 @@ public class ImmutableHashSetTest {
         assertEquals(2, array[1]);
         assertEquals(3, array[2]);
     }
+    
+    @Test
+    public void testToArrayWithOnly1Elem() {
+        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1);
+        Object[] array = set.toArray();
+        assertEquals(1, array.length);
+        assertEquals(1, array[0]);
+    }
 
     @Test
     public void testDuplicates() {

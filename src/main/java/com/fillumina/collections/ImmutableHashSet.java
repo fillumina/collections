@@ -58,9 +58,9 @@ public class ImmutableHashSet<T> implements ImmutableLinkedSet<T> {
                         innerPutEntry(entry);
                         if (head == null) {
                             head = entry;
-                            current = entry;
+                        } else {
+                            current.next = entry;
                         }
-                        current.next = entry;
                         current = entry;
                         index++;
                     }
