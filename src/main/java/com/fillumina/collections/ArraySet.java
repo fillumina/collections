@@ -18,10 +18,10 @@ import java.util.Objects;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ArraySet<T> extends AbstractSet<T> implements Serializable {
+public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Serializable {
     private static final long serialVersionUID = 1L;
     
-    public static final ArraySet<?> EMPTY = new Immutable<Object>();
+    public static final ArraySet<?> EMPTY = new ImmutableArraySet<Object>();
     
     private static Iterator<?> NULL_ITERATOR = new Iterator<Object>() {
         @Override
@@ -34,52 +34,6 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
             throw new NoSuchElementException();
         }
     };
-
-    public static class Immutable<T> extends ArraySet<T> {
-        private static final long serialVersionUID = 1L;
-        
-        public Immutable() {
-            super();
-        }
-
-        public Immutable(T... elements) {
-            super(elements);
-        }
-
-        public Immutable(ArraySet<T> smallSet) {
-            super(smallSet);
-        }
-
-        public Immutable(Collection<? extends T> elements) {
-            super(elements);
-        }
-        
-        @Override
-        public void readOnlyCheck() {
-            throw new UnsupportedOperationException("read only");
-        }
-    }
-    
-    public static <T> Immutable<T> empty() {
-        return (Immutable<T>) EMPTY;
-    }
-
-    public static <T> Immutable<T> immutableOf(T... values) {
-        if (values == null || values.length == 0) {
-            return (Immutable<T>) EMPTY;
-        }
-        return new Immutable<T>(values);
-    }
-
-    public static <T> Immutable<T> immutableOf(Collection<? extends T> list) {
-        if (list == null || list.isEmpty()) {
-            return (Immutable<T>) EMPTY;
-        }
-        if (list instanceof ImmutableList) {
-            return (Immutable<T>) list;
-        }
-        return new Immutable<T>(list);
-    }
     
     // can be either:
     // 1) null
@@ -92,7 +46,8 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
 
     public ArraySet(T... elements) {
         if (elements != null) {
-            switch (elements.length) {
+            final int length = elements.length;
+            switch (length) {
                 case 0: 
                     // do nothing
                     break;
@@ -100,7 +55,23 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                     obj = elements[0]; 
                     break;
                 default:
-                    obj = elements.clone();
+                    Object[] array = new Object[length];
+                    int index = 0;
+                    ELEM: for (T t : elements) {
+                        for (int i=0; i<index; i++) {
+                            if (Objects.equals(array[i],t)) {
+                                continue ELEM;
+                            }
+                        }
+                        array[index] = t;
+                        index++;
+                    }
+                    if (index < length) {
+                        obj = new Object[index];
+                        System.arraycopy(array, 0, obj, 0, index);
+                    } else {
+                        obj = array;
+                    }
             }
         }
     }
@@ -125,13 +96,14 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         }
     }
 
-    public void readOnlyCheck() {
+    protected void readOnlyCheck() {
         // do nothing
     }
     
     /**
      * Get the element at the given index.
      */
+    @Override
     public T get(int index) {
         if (obj == null) {
             throw new IndexOutOfBoundsException("empty set, index=" + index);
@@ -143,6 +115,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         throw new IndexOutOfBoundsException("empty set, index=" + index);
     }
 
+    @Override
     public int indexOf(T t) {
         if (obj == null) {
             return -1;
@@ -164,6 +137,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
+    @Override
     public void sort(Comparator<T> comparator) {
         readOnlyCheck();
         if (obj != null && obj.getClass().isArray()) {
@@ -177,6 +151,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
+    @Override
     public void sort() {
         readOnlyCheck();
         if (obj != null && obj.getClass().isArray()) {
@@ -259,6 +234,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         return false;
     }
 
+    @Override
     public T removeAtIndex(int i) {
         readOnlyCheck();
         T[] array = (T[]) obj;
@@ -292,7 +268,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         return false;
     }
 
-    public boolean equals(Object o, T t) {
+    protected boolean equals(Object o, T t) {
         return o.equals(t);
     }
 
@@ -386,5 +362,10 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
             return Arrays.toString((T[]) obj);
         }
         return "[" + obj.toString() + "]";
+    }
+    
+    /** @return immutable clone */
+    public ImmutableArraySet<T> immutable() {
+        return new ImmutableArraySet<>(this);
     }
 }

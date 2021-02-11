@@ -21,6 +21,12 @@ public abstract class AbstractSetTest {
     
     
     @Test
+    public void shouldSkipDuplicates() {
+        Set<Integer> set = createSet(1, 2, 2, 3, 2, 4);
+        assertEquals(4, set.size());
+    }
+    
+    @Test
     public void shouldBeEmpty() {
         assertTrue(createSet().isEmpty());
     }

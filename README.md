@@ -16,7 +16,9 @@
 ### Immutable containers
 
 * `ImmutableList` is an explicictly immutable `List` implementation.
-* `ImmutableSet` is an explicitly immutable linked hash `Set` implementation (it keeps insertion order).
+* `ImmutableLinkedSet` is a marker interface that states that the implementing class is immutable and maintains input order.
+* `ImmutableArraySet` implements `ImmutableLinkedSet` using as little memory as possible (it's slow to access with O(N)).
+* `ImmutableHashSet` implements `ImmutableLinkedSet` using an hash table with performances of O(1).
 * `ImmutableMap` is an explicitly immutable hash `Map` implementation.
 
 

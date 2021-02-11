@@ -33,7 +33,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldStaticCreateImmutable() {
-        ArraySet<Integer> set = ArraySet.immutableOf(1, 2, 3);
+        ArraySet<Integer> set = new ArraySet<>(1, 2, 3).immutable();
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(3, set.get(2));
