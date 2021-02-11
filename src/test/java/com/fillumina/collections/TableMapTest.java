@@ -1,8 +1,8 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.AbstractEntryMap.ReadOnlyMap;
-import com.fillumina.collections.AbstractEntryMap.SimpleMap;
-import com.fillumina.collections.AbstractEntryMap.VieweableMap;
+import com.fillumina.collections.ImmutableMap;
+import com.fillumina.collections.TableMap;
+import com.fillumina.collections.VieweableMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class AbstractSimpleMapTest {    
+public class TableMapTest {    
     
     @Test
     public void shouldMaskAsModuleForPowerOfTwoValues() {
@@ -55,14 +55,14 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldBeEmptyAtStart() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         
         assertTrue(map.isEmpty());
     }
     
     @Test
     public void shouldPutAnElement() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "one");
         
         assertFalse(map.isEmpty());
@@ -70,7 +70,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldGetAnElement() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "one");
         
         assertEquals("one", map.get("1"));
@@ -78,7 +78,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldContainsEntry() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "one");
         
         assertTrue(map.containsEntry("1", "one"));
@@ -87,7 +87,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldIncrementSize() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "one");
         
         assertEquals(1, map.size());
@@ -95,7 +95,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldNotBeEmptyAfterPut() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "one");
         
         assertFalse(map.isEmpty());
@@ -103,7 +103,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldRemoveAnElement() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "one");
         map.remove("1");
         
@@ -112,7 +112,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldInsertManyElements() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         
         for (int i=0; i<20; i++) {
             String value = "" + i;
@@ -129,7 +129,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldRemoveManyElements() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         
         for (int i=0; i<20; i++) {
             String value = "" + i;
@@ -162,7 +162,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldSetValueOnSameKey() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         MyEntry entry = new MyEntry("1", "one", "mine");
         map.putEntry(entry);
         map.put("1", "uno");
@@ -187,7 +187,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldNotSetValueOnSameKeyForReadOnlyEntry() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         SimpleImmutableEntry<String,String> entry = 
                 new SimpleImmutableEntry<>("1", "one");
         
@@ -204,7 +204,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldIterate() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
@@ -224,7 +224,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldRemoveFirstItemIterator() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
@@ -251,7 +251,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldRemoveMiddleItemIterator() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
@@ -269,7 +269,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldRemoveLastItemIterator() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
@@ -291,7 +291,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldThrowExceptionIfIteratingPastLastItem() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
@@ -307,7 +307,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldInsertSameElementTwice() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         assertNull(map.put("1", "a"));
         assertEquals(1, map.size());
         
@@ -353,7 +353,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldManageHashClashing() {
-        SimpleMap<SameHash,String> map = new SimpleMap<>();
+        TableMap<SameHash,String> map = new TableMap<>();
         
         SameHash one = new SameHash("one");
         SameHash two = new SameHash("two");
@@ -377,7 +377,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldNotPutReadOnlyMap() {
-        ReadOnlyMap<String,String> map = new VieweableMap<String,String>()
+        ImmutableMap<String,String> map = new VieweableMap<String,String>()
                 .add("1", "a")
                 .add("2", "b")
                 .add("3", "c")
@@ -409,7 +409,7 @@ public class AbstractSimpleMapTest {
                 () -> entry.setValue("aa") );
         
         
-        ReadOnlyMap<String,String> roMap = map.immutable();
+        ImmutableMap<String,String> roMap = map.immutable();
         
         assertEquals(3, roMap.size());
         assertTrue(roMap.containsKey("1"));       
@@ -431,7 +431,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldIterateOverEntriesWithForEach() {
-        SimpleMap<String,String> map = new SimpleMap<>();
+        TableMap<String,String> map = new TableMap<>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
@@ -445,7 +445,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldAcceptManyValues() {
-        SimpleMap<String,Integer> map = new SimpleMap<>();
+        TableMap<String,Integer> map = new TableMap<>();
         for (int i=0; i<1000; i++) {
             String s = "" + i;
             map.put(s, i);
@@ -458,7 +458,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldAcceptManyRandomValues() {
-        SimpleMap<String,Integer> map = new SimpleMap<>();
+        TableMap<String,Integer> map = new TableMap<>();
         
         // create array
         int[] indexes = new int[1000];
@@ -496,7 +496,7 @@ public class AbstractSimpleMapTest {
         IntStream.range(0, 1000).forEach(i -> list.add(i));
         Collections.shuffle(list);
 
-        SimpleMap<String,Integer> map = new SimpleMap<>();
+        TableMap<String,Integer> map = new TableMap<>();
         list.forEach( i -> map.put("" + i, i));
 
         Set<Integer> set = new HashSet<>();
@@ -513,7 +513,7 @@ public class AbstractSimpleMapTest {
     
     @Test
     public void shouldGetOrCreate() {
-        SimpleMap<Integer,String> map = new SimpleMap<>();
+        TableMap<Integer,String> map = new TableMap<>();
         assertEquals("one", map.getOrCreate(1, () -> "one"));
         assertEquals("one", map.get(1));
     }

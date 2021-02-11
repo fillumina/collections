@@ -1,6 +1,6 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.AbstractEntryMap.VieweableMap;
+import com.fillumina.collections.VieweableMap;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;

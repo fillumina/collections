@@ -1,7 +1,6 @@
 package com.fillumina.collections;
 
 import java.util.AbstractCollection;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -17,15 +16,13 @@ import java.util.function.Supplier;
 /**
  * A hash {@link java.util.Map} implementation.
  * <ul>
- * <li>It allows to specify a {@link Map.Entry} implementation
- * <li>It has a {@code public} {@link #forEach(java.util.function.Consumer) } and
+ * <li>allows to specify a {@link Map.Entry} implementation
+ * <li>has a {@code public} {@link #forEach(java.util.function.Consumer) } and
  * <i>{@code protected}</i> {@link #putEntry(java.util.Map.Entry) } and {@link #getEntry(Object) }
  * and can add entries with its {@code keySet}.
  * <li>It's performances are O(1) for all operations (add, get, remove) but it's O(n) for the worst
  * case scenario (colliding keys) ({@link java.util.HashMap} has O(1) for insertion and O(n) for
  * extraction and removal on worst case scenario).
- * <li>relatively fast to clone (in respect to {@link java.util.HashMap})
- * <li>has immutable view
  * </ul>
  *
  * @param <K> map key
@@ -54,250 +51,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     public static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
-    /**
-     * Full {@link java.util.Map} conform implementation.
-     */
-    public static class SimpleMap<K, V>
-            extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
-
-        public SimpleMap() {
-            super();
-        }
-
-        public SimpleMap(int initialSize) {
-            super(initialSize);
-        }
-
-        /**
-         * Copy constructor from other {@link Map}.
-         */
-        public SimpleMap(Map<K, V> map) {
-            super(map);
-        }
-
-        /**
-         * Homologous copy constructor.
-         */
-        public SimpleMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
-            super(map);
-        }
-
-        /**
-         * View constructor.
-         */
-        protected SimpleMap(InternalState<Entry<K, V>> internalState) {
-            super(internalState);
-        }
-
-        @Override
-        protected Entry<K, V> createEntry(K k, V v) {
-            if (k == null && v == null) {
-                return (Entry<K, V>) NULL_ENTRY;
-            }
-            return new SimpleEntry<>(k, v);
-        }
-
-        @Override
-        protected SimpleMap<K, V> createMap(int size) {
-            return new SimpleMap<>(size);
-        }
-
-        @Override
-        public SimpleMap<K, V> clone() {
-            return new SimpleMap<K, V>(this);
-        }
-    }
-
-    /**
-     * Full {@link java.util.Map} conform implementation. Differently from {@link SimpleMap} it
-     * allows to add a {@link Map.Entry}.
-     */
-    public static class EntryMap<K, V>
-            extends AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> {
-
-        public EntryMap() {
-            super();
-        }
-
-        public EntryMap(int initialSize) {
-            super(initialSize);
-        }
-
-        /* Copy constructor */
-        public EntryMap(Map<K, V> map) {
-            super(map);
-        }
-
-        /**
-         * Homologous copy constructor.
-         */
-        public EntryMap(AbstractEntryMap<K, V, Entry<K, V>, SimpleMap<K, V>> map) {
-            super(map);
-        }
-
-        /**
-         * Passed {@link Entry} will not be maintained in clones (it's data will).
-         */
-        @Override
-        public Entry<K, V> putEntry(Entry<K, V> entry) {
-            return super.putEntry(entry);
-        }
-
-        @Override
-        protected Entry<K, V> createEntry(K k, V v) {
-            if (k == null && v == null) {
-                return (Entry<K, V>) NULL_ENTRY;
-            }
-            return new SimpleEntry<>(k, v);
-        }
-
-        @Override
-        protected EntryMap<K, V> createMap(int size) {
-            return new EntryMap<>(size);
-        }
-
-        /**
-         * Very fast cloning of the map.
-         */
-        @Override
-        public EntryMap<K, V> clone() {
-            return new EntryMap<K, V>(this);
-        }
-    }
-
-    /**
-     * It's a {@link java.util.Map} implementation with the following features:
-     * <ul>
-     * <li>Differently to {@link SimpleMap} entries are read-only (cannot use
-     * {@link Map.Entry#setValue(java.lang.Object)}). The map can be changed by other usual methods.
-     * <li>A read-only view of the map is available via {@link #immutable() }
-     * </ul>
-     * This is a base for other types of maps, not really useful by itself.
-     *
-     * @param <K>
-     * @param <V>
-     */
-    public static class VieweableMap<K, V>
-            extends AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
-
-        private ReadOnlyMap<K, V> readOnlyView;
-
-        public VieweableMap() {
-            super();
-        }
-
-        public VieweableMap(int initialSize) {
-            super(initialSize);
-        }
-
-        public VieweableMap(Map<K, V> map) {
-            super(map);
-        }
-
-        /**
-         * Copy constructor.
-         */
-        public VieweableMap(AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
-            super(map);
-        }
-
-        protected VieweableMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
-            super(internalState);
-        }
-
-        @Override
-        protected SimpleImmutableEntry<K, V> createEntry(K k, V v) {
-            if (k == null && v == null) {
-                return (SimpleImmutableEntry<K, V>) NULL_ENTRY;
-            }
-            return new SimpleImmutableEntry<>(k, v);
-        }
-
-        @Override
-        protected VieweableMap<K, V> createMap(
-                int size) {
-            return new VieweableMap<>(size);
-        }
-
-        /**
-         * @return a read-only view of this map. Every change to this map reflects to the view.
-         * Concurrent access might result in unexpected results.
-         */
-        public ReadOnlyMap<K, V> immutable() {
-            if (readOnlyView != null) {
-                return readOnlyView;
-            }
-            return readOnlyView = new ReadOnlyMap<K, V>(getInternalState());
-        }
-
-        /**
-         * Very fast cloning of the map.
-         */
-        @Override
-        public VieweableMap<K, V> clone() {
-            return new VieweableMap<K, V>(this);
-        }
-    }
-
-    /**
-     * It's a read only implementation of {@link java.util.Map}. It can be built via the provided
-     * builder or by using one of its constructors.
-     *
-     * @param <K>
-     * @param <V>
-     */
-    public static class ReadOnlyMap<K, V> extends VieweableMap<K, V> {
-
-        public static <K, V> VieweableMap<K, V> builder() {
-            return new VieweableMap<>();
-        }
-
-        public ReadOnlyMap() {
-            super();
-        }
-
-        /**
-         * Classic {@code java.util} style copy constructor.
-         */
-        public ReadOnlyMap(Map<K, V> map) {
-            super(map);
-        }
-
-        /**
-         * copy constructor.
-         */
-        public ReadOnlyMap(AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, ?> map) {
-            super(map);
-        }
-
-        /**
-         * Used for views.
-         */
-        protected ReadOnlyMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
-            super(internalState);
-        }
-
-        @Override
-        public void readOnlyCheck() {
-            throw new UnsupportedOperationException("read only");
-        }
-
-        /**
-         * Just returns this.
-         */
-        @Override
-        public ReadOnlyMap<K, V> immutable() {
-            return this;
-        }
-
-        /**
-         * Very fast read-only clone of the map (not a view anymore).
-         */
-        @Override
-        public ReadOnlyMap<K, V> clone() {
-            return new ReadOnlyMap<K, V>(this);
-        }
-    }
 
     public static class InternalState<E> {
 
@@ -338,7 +91,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * Copy constructor.
      */
-    public AbstractEntryMap(Map<K, V> map) {
+    public AbstractEntryMap(Map<? extends K, ? extends V> map) {
         this();
         map.forEach((k, v) -> innerPut(k, v));
     }
@@ -346,7 +99,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * Copy constructor.
      */
-    public AbstractEntryMap(AbstractEntryMap<K, V, E, M> map) {
+    public AbstractEntryMap(
+            AbstractEntryMap<? extends K, ? extends V, ? extends E, ? extends M> map) {
         this();
         E[] otherArray = map.state.array;
         E[] array = null;

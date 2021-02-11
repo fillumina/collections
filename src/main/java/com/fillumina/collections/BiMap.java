@@ -1,6 +1,5 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.AbstractEntryMap.SimpleMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,7 +11,7 @@ import java.util.Set;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class BiMap<K, V> extends SimpleMap<K, V> {
+public class BiMap<K, V> extends TableMap<K, V> {
 
     public static BiMap<?, ?> EMPTY = immutable();
     private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -96,11 +95,14 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
 
     /** Clone */
     private BiMap(BiMap<K,V> copy, BiMap<V,K> inverse, boolean immutable) {
-        super(copy);
+        super();
+        if (inverse != null) {
+            this.inverseMap = inverse;
+            copy.forEach((k,v) -> noCheckInnerPut(k, v));
+        } else {
+            this.inverseMap = new BiMap(copy.inverseMap, this, immutable);
+        }
         this.immutable = immutable;
-        this.inverseMap = (inverse != null) ? 
-                inverse : 
-                new BiMap(copy.inverseMap, this, immutable);
     }
 
     /** View */
@@ -140,6 +142,10 @@ public class BiMap<K, V> extends SimpleMap<K, V> {
     @Override
     protected V innerPut(K key, V value) {
         readOnlyCheck();
+        return noCheckInnerPut(key, value);
+    }
+
+    private V noCheckInnerPut(K key, V value) {
         K prevKey = inverseMap.inverseInnerPut(value, key);
         if (prevKey != null) {
             innerRemove(prevKey);
