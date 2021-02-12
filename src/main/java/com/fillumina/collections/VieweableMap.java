@@ -4,8 +4,9 @@ import java.util.AbstractMap;
 import java.util.Map;
 
 /**
- * It's a {@link java.util.Map} implementation with the following features:
- * Useful as a builder to create an {@link ImmutableMap}.
+ * It's a {@link java.util.Map} implementation that uses immutable {@link Entry} and can produce
+ * <b>immutable</b> views. Be careful that the immutable view would still change if this class is
+ * modified.
  *
  * @param <K>
  * @param <V>
@@ -14,7 +15,7 @@ public class VieweableMap<K, V>
         extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
 
     // cache the view
-    private transient ImmutableMap<K, V> readOnlyView;
+    private transient ImmutableHashMap<K, V> readOnlyView;
 
     public VieweableMap() {
         super();
@@ -52,11 +53,11 @@ public class VieweableMap<K, V>
     }
 
     /** @return a read-only <i>view<i> of this map. */
-    public ImmutableMap<K, V> immutable() {
+    public ImmutableHashMap<K, V> immutable() {
         if (readOnlyView != null) {
             return readOnlyView;
         }
-        return readOnlyView = new ImmutableMap<K, V>(getInternalState());
+        return readOnlyView = new ImmutableHashMap<K, V>(getInternalState());
     }
 
     @Override

@@ -209,7 +209,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     public AbstractArrayMap() {
     }
 
-    public AbstractArrayMap(AbstractArrayMap<K, V> copy) {
+    public AbstractArrayMap(AbstractArrayMap<? extends K, ? extends V> copy) {
         array = copy.array == null ? null : copy.array.clone();
     }
 
@@ -220,10 +220,10 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         array = o.clone();
     }
 
-    public AbstractArrayMap(Map<K, V> map) {
+    public AbstractArrayMap(Map<? extends K, ? extends V> map) {
         array = new Object[map.size() << 1];
         int idx = 0;
-        for (Entry<K, V> e : map.entrySet()) {
+        for (Entry<? extends K, ? extends V> e : map.entrySet()) {
             array[idx] = e.getKey();
             array[idx + 1] = e.getValue();
             idx += 2;
@@ -261,6 +261,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
 
     @Override
     public void clear() {
+        readOnlyCheck();
         array = null;
     }
 

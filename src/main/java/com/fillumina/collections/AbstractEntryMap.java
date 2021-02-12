@@ -119,7 +119,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * View constructor.
+     * View constructor. Be careful that using this constructor will give access to the same
+     * state to both classes.
      */
     protected AbstractEntryMap(InternalState<E> internalState) {
         this.state = internalState;

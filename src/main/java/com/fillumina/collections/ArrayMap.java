@@ -11,47 +11,20 @@ import java.util.Map.Entry;
  */
 public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
 
-    public static final ArrayMap<?, ?> EMPTY = new Immutable<>();
-
-    public static class Immutable<K, V> extends ArrayMap<K, V> {
-
-        public static <K, V> Builder<ArrayMap<K, V>, K, V> builder() {
-            return new Builder<>(o -> new ArrayMap.Immutable<>(o));
-        }
-
-        public Immutable() {
-        }
-
-        public Immutable(ArrayMap<K, V> copy) {
-            super(copy);
-        }
-
-        public Immutable(Object... objects) {
-            super(objects);
-        }
-
-        public Immutable(Map<K, V> map) {
-            super(map);
-        }
-
-        @Override
-        protected void readOnlyCheck() throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("read only");
-        }
-    }
+    public static final ArrayMap<?, ?> EMPTY = new ImmutableArrayMap<>();
 
     public static <K, V> ArrayMap<K, V> empty() {
         return (ArrayMap<K, V>) EMPTY;
     }
 
-    public static <K, V> Builder<ArrayMap<K, V>, K, V> builder() {
+    public static <K, V> Builder<? extends ArrayMap<K, V>, K, V> builder() {
         return new Builder<>(o -> new ArrayMap<K, V>(o));
     }
 
     public ArrayMap() {
     }
 
-    public ArrayMap(AbstractArrayMap<K, V> copy) {
+    public ArrayMap(AbstractArrayMap<? extends K, ? extends V> copy) {
         super(copy);
     }
 
@@ -59,7 +32,7 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
         super(o);
     }
 
-    public ArrayMap(Map<K, V> map) {
+    public ArrayMap(Map<? extends K, ? extends V> map) {
         super(map);
     }
 
@@ -88,11 +61,12 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
         }
     }
 
+    /** @return an immutable <b>clone</b>. */
     public ArrayMap<K, V> immutable() {
-        if (this instanceof Immutable) {
+        if (this instanceof ImmutableArrayMap) {
             return this;
         }
-        return new Immutable<>(this);
+        return new ImmutableArrayMap<>(this);
     }
 
     public V getValueAtIndex(int index) {

@@ -1,6 +1,6 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.ImmutableMap;
+import com.fillumina.collections.ImmutableHashMap;
 import com.fillumina.collections.TableMap;
 import com.fillumina.collections.VieweableMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -377,7 +377,7 @@ public class TableMapTest {
     
     @Test
     public void shouldNotPutReadOnlyMap() {
-        ImmutableMap<String,String> map = new VieweableMap<String,String>()
+        ImmutableHashMap<String,String> map = new VieweableMap<String,String>()
                 .add("1", "a")
                 .add("2", "b")
                 .add("3", "c")
@@ -409,7 +409,7 @@ public class TableMapTest {
                 () -> entry.setValue("aa") );
         
         
-        ImmutableMap<String,String> roMap = map.immutable();
+        ImmutableHashMap<String,String> roMap = map.immutable();
         
         assertEquals(3, roMap.size());
         assertTrue(roMap.containsKey("1"));       
