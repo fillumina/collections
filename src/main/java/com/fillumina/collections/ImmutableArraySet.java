@@ -12,7 +12,6 @@ import java.util.Collection;
 public final class ImmutableArraySet<T> extends ArraySet<T> {
     
     private static final long serialVersionUID = 1L;
-
     
     public static <T> ImmutableArraySet<T> empty() {
         return (ImmutableArraySet<T>) EMPTY;
