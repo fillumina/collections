@@ -1,42 +1,16 @@
 package com.fillumina.collections;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Very slow immutable map to be used with few items. It's really tight on memory. 
+ * It uses a <i>cursor</i> instead of <i>entries</i> so don't use {@link Map.Entry} outside loops.
+ * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableArrayMap<K, V> extends ArrayMap<K, V> implements ImmutableMap<K,V> {
+public class ImmutableArrayMap<K, V> extends ArrayMap<K, V> {
     
-    // this is a drop in replacement for ImmutableHashMap so the builder was adapted to match
-    public static class Builder<K, V> extends ArrayMap.Builder<ImmutableArrayMap<K,V>,K,V> {
-        private final List<Object> list = new ArrayList<>();
-
-        public Builder() {
-            super(null);
-        }
-
-        public Builder<K, V> put(K key, V value) {
-            return add(key,value);
-        }
-        
-        public Builder<K, V> add(K key, V value) {
-            list.add(key);
-            list.add(value);
-            return this;
-        }
-
-        public ImmutableArrayMap<K,V> build() {
-            return immutable();
-        }
-
-        public ImmutableArrayMap<K,V> immutable() {
-            return new ImmutableArrayMap<>(list.toArray());
-        }
-    }
-
     public static final ImmutableArrayMap<?,?> EMPTY = new ImmutableArrayMap<Object, Object>();
     
     public static <K,V> ImmutableArrayMap<K,V> empty() {
@@ -44,19 +18,19 @@ public class ImmutableArrayMap<K, V> extends ArrayMap<K, V> implements Immutable
     }
     
     public static <K,V> ImmutableArrayMap<K,V> of(Object... values) {
-        Builder<K, V> builder = new Builder<>();
+        MapBuilder<ImmutableArrayMap<K,V>, K, V> builder = builder();
         for (int i=0; i<values.length; i+=2) {
-            builder.add((K)values[i], (V)values[i+1]);
+            builder.put((K)values[i], (V)values[i+1]);
         }
-        return builder.immutable();
+        return builder.build();
     }
     
     public static <K,V> ImmutableArrayMap<K,V> of(Map<? extends K, ? extends V> map) {
         return new ImmutableArrayMap<>(map);
     }
     
-    public static <K, V> Builder<K, V> builder() {
-        return new Builder<>();
+    public static <K, V> MapBuilder<ImmutableArrayMap<K, V>, K, V> builder() {
+        return new MapBuilder<>(l -> new ImmutableArrayMap<K, V>(l));
     }
 
     public ImmutableArrayMap() {
@@ -66,10 +40,14 @@ public class ImmutableArrayMap<K, V> extends ArrayMap<K, V> implements Immutable
         super(copy);
     }
 
-    public ImmutableArrayMap(Object... objects) {
+    protected ImmutableArrayMap(Object... objects) {
         super(objects);
     }
 
+    protected ImmutableArrayMap(List<?> list) {
+        super(list);
+    }
+    
     public ImmutableArrayMap(Map<? extends K, ? extends V> map) {
         super(map);
     }

@@ -53,7 +53,7 @@ public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, Tabl
 
     /** @return an immutable <i>clone</i> of this map. */
     public ImmutableHashMap<K, V> immutable() {
-        return new VieweableMap<K, V>(this).immutable();
+        return new ImmutableHashMap<K, V>(this);
     }
     
     @Override

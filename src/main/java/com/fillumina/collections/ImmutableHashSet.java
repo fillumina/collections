@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableHashSet<T> implements ImmutableLinkedSet<T> {
+public class ImmutableHashSet<T> implements Set<T> {
 
     public static final ImmutableHashSet<?> EMPTY = new ImmutableHashSet<Object>();
 

@@ -2,7 +2,6 @@ package com.fillumina.collections;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * A very minimal size map backed by a single array interleaved with both keys and values. It should
@@ -26,26 +24,6 @@ import java.util.function.Function;
  */
 public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         implements Iterable<Map.Entry<K, V>> {
-
-    public static class Builder<M extends AbstractArrayMap<K, V>, K, V> {
-
-        private final List<Object> list = new ArrayList<>();
-        private final Function<Object[], M> creator;
-
-        public Builder(Function<Object[], M> creator) {
-            this.creator = creator;
-        }
-
-        public Builder<M, K, V> put(K key, V value) {
-            list.add(key);
-            list.add(value);
-            return this;
-        }
-
-        public M build() {
-            return creator.apply(list.toArray());
-        }
-    }
 
     private class CursorIterator<K, V> implements Iterator<Entry<K, V>>, Entry<K, V> {
 
@@ -218,6 +196,13 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
      */
     public AbstractArrayMap(Object... o) {
         array = o.clone();
+    }
+
+    /**
+     * Warning: unchecked copy!
+     */
+    protected AbstractArrayMap(List<?> list) {
+        array = list.toArray();
     }
 
     public AbstractArrayMap(Map<? extends K, ? extends V> map) {

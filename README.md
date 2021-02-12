@@ -11,15 +11,16 @@
 
 * `AbstractEntryMap` is a very extendable `Map` implementation based on hash table.
 * `TableMap` is a compliant `Map` implementation based on hash table.
-* `VieweableMap` is a `Map` where `Entry` cannot set values. It provides very fast to obtain _immutable_ and normal _views_.
+* `VieweableMap` is a `Map` where `Entry` cannot set values. It provides an unmodifiable _view_ that share its internal data so it's very fast to create and occupies no extra memory at all.
 
 ### Immutable containers
 
 * `ImmutableList` is an explicictly immutable `List` implementation.
-* `ImmutableLinkedSet` is a marker interface that states that the implementing class is immutable and maintains input order.
-* `ImmutableArraySet` implements `ImmutableLinkedSet` using as little memory as possible (it's slow to access with O(N)).
-* `ImmutableHashSet` implements `ImmutableLinkedSet` using an hash table with performances of O(1).
-* `ImmutableMap` is an explicitly immutable hash `Map` implementation.
+* `ImmutableArraySet` is an immutable set using as little memory as possible (it's slow to access with O(N)).
+* `ImmutableHashSet` is an immutable set using an hash table with performances of O(1).
+* `ImmutableHashMap` is an explicitly immutable hash `Map` implementation with performances of O(1).
+* `ImmutableArrayMap` is an explicitly immutable array backed `Map` implementation with performances of O(N) but very tight memory requirements.
+* `ImmutableSortedArrayMap` is an explicitly immutable sorted array backed `Map` implementation with performances of O(log N) and very tight memory requirements. Prefer `ImmutableArrayMap` for very few elements (i.e. less than 7) because of the overhead in managing bisections.
 
 
 ### Different kind of containers

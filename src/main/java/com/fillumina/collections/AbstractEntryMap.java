@@ -5,6 +5,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -126,6 +127,20 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         this.state = internalState;
     }
 
+    protected AbstractEntryMap(List<?> list) {
+        this(list.toArray());
+    }
+
+    protected AbstractEntryMap(Object... array) {
+        this();
+        for (int i=0,l=array.length; i<l; i+=2) {
+            K k = (K) array[i];
+            V v = (V) array[i+1];
+            // skip read-only check
+            innerPut(k,v);
+        }
+    }
+    
     protected abstract E createEntry(K k, V v);
 
     /**

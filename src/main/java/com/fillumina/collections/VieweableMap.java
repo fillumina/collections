@@ -1,12 +1,12 @@
 package com.fillumina.collections;
 
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * It's a {@link java.util.Map} implementation that uses immutable {@link Entry} and can produce
- * <b>immutable</b> views. Be careful that the immutable view would still change if this class is
- * modified.
+ * It's a {@link java.util.Map} implementation that uses unmodifiable {@link Entry} and can produce
+ * <b>unmodifiable</b> view.
  *
  * @param <K>
  * @param <V>
@@ -15,7 +15,7 @@ public class VieweableMap<K, V>
         extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
 
     // cache the view
-    private transient ImmutableHashMap<K, V> readOnlyView;
+    private transient UnmodifiableHashMap<K, V> readOnlyView;
 
     public VieweableMap() {
         super();
@@ -39,6 +39,14 @@ public class VieweableMap<K, V>
         super(internalState);
     }
 
+    protected VieweableMap(List<?> list) {
+        super(list);
+    }
+
+    protected VieweableMap(Object... array) {
+        super(array);
+    }
+    
     @Override
     protected AbstractMap.SimpleImmutableEntry<K, V> createEntry(K k, V v) {
         if (k == null && v == null) {
@@ -53,11 +61,16 @@ public class VieweableMap<K, V>
     }
 
     /** @return a read-only <i>view<i> of this map. */
-    public ImmutableHashMap<K, V> immutable() {
+    public UnmodifiableHashMap<K, V> unmodifiable() {
         if (readOnlyView != null) {
             return readOnlyView;
         }
-        return readOnlyView = new ImmutableHashMap<K, V>(getInternalState());
+        return readOnlyView = new UnmodifiableHashMap<K, V>(getInternalState());
+    }
+
+    /** @return an immutable <i>clone<i> of this map. */
+    public ImmutableHashMap<K, V> immutable() {
+        return new ImmutableHashMap<K, V>(this);
     }
 
     @Override

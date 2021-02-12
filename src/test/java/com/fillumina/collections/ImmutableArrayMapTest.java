@@ -50,10 +50,10 @@ public class ImmutableArrayMapTest {
     @Test
     public void testBuilder() {
         Map<Integer, String> map = ImmutableArrayMap.<Integer, String>builder()
-                .add(1, "one")
-                .add(2, "two")
-                .add(3, "three")
-                .immutable();
+                .put(1, "one")
+                .put(2, "two")
+                .put(3, "three")
+                .build();
 
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));
@@ -64,10 +64,10 @@ public class ImmutableArrayMapTest {
     @Test
     public void shouldNotModify() {
         Map<Integer, String> map = ImmutableArrayMap.<Integer, String>builder()
-                .add(1, "one")
-                .add(2, "two")
-                .add(3, "three")
-                .immutable();
+                .put(1, "one")
+                .put(2, "two")
+                .put(3, "three")
+                .build();
 
         assertThrows(UnsupportedOperationException.class, () -> map.put(4, "four"));
         assertThrows(UnsupportedOperationException.class, () -> map.remove(2));

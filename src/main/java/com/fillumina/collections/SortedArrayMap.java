@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -15,41 +16,15 @@ public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
 
     private static final int PAIR_MASK = Integer.MAX_VALUE - 1;
 
-    public static final SortedArrayMap<?, ?> EMPTY = new SortedArrayMap.Immutable<>();
+    public static final SortedArrayMap<?, ?> EMPTY = new ImmutableSortedArrayMap<>();
 
-    public static class Immutable<K, V> extends SortedArrayMap<K, V> {
-
-        public static <K, V> Builder<SortedArrayMap<K, V>, K, V> builder() {
-            return new Builder<>(o -> new SortedArrayMap.Immutable<>(o));
-        }
-
-        public Immutable() {
-        }
-
-        public Immutable(SortedArrayMap<K, V> copy) {
-            super(copy);
-        }
-
-        public Immutable(Object... objects) {
-            super(objects);
-        }
-
-        public Immutable(Map<K, V> map) {
-            super(map);
-        }
-
-        @Override
-        protected void readOnlyCheck() throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("read only");
-        }
-    }
 
     public static <K, V> SortedArrayMap<K, V> empty() {
         return (SortedArrayMap<K, V>) EMPTY;
     }
 
-    public static <K, V> Builder<SortedArrayMap<K, V>, K, V> builder() {
-        return new Builder<>(o -> new SortedArrayMap<>(o));
+    public static <K, V> MapBuilder<SortedArrayMap<K, V>, K, V> builder() {
+        return new MapBuilder<>(o -> new SortedArrayMap<>(o));
     }
 
     public SortedArrayMap() {
@@ -65,6 +40,11 @@ public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
         sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
+    protected SortedArrayMap(List<?> list) {
+        super(list);
+        sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
+    }
+    
     public SortedArrayMap(Map<K, V> map) {
         super(map);
         sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
@@ -141,10 +121,10 @@ public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
     }
 
     public SortedArrayMap<K, V> immutable() {
-        if (this instanceof Immutable) {
+        if (this instanceof ImmutableSortedArrayMap) {
             return this;
         }
-        return new Immutable<>(this);
+        return new ImmutableSortedArrayMap<>(this);
     }
 
 }

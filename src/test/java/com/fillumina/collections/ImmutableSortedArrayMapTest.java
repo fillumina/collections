@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableHashMapTest {
+public class ImmutableSortedArrayMapTest {
 
     @Test
     public void testOfValues() {
-        Map<Integer, String> map = ImmutableHashMap
+        Map<Integer, String> map = ImmutableSortedArrayMap
                 .of(1, "one", 2, "two", 3, "three");
 
         assertEquals(3, map.size());
@@ -26,7 +26,7 @@ public class ImmutableHashMapTest {
 
     @Test
     public void testOfValuesWithOneValue() {
-        Map<Integer, String> map = ImmutableHashMap.of(1, "one");
+        Map<Integer, String> map = ImmutableSortedArrayMap.of(1, "one");
 
         assertEquals(1, map.size());
         assertEquals("one", map.get(1));
@@ -39,7 +39,7 @@ public class ImmutableHashMapTest {
         m.put(2, "two");
         m.put(3, "three");
         
-        Map<Integer, String> map = ImmutableHashMap.of(m);
+        Map<Integer, String> map = ImmutableSortedArrayMap.of(m);
 
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));
@@ -49,7 +49,7 @@ public class ImmutableHashMapTest {
     
     @Test
     public void testBuilder() {
-        Map<Integer, String> map = ImmutableHashMap.<Integer, String>builder()
+        Map<Integer, String> map = ImmutableSortedArrayMap.<Integer, String>builder()
                 .put(1, "one")
                 .put(2, "two")
                 .put(3, "three")
@@ -63,7 +63,7 @@ public class ImmutableHashMapTest {
 
     @Test
     public void shouldNotModify() {
-        Map<Integer, String> map = ImmutableHashMap.<Integer, String>builder()
+        Map<Integer, String> map = ImmutableSortedArrayMap.<Integer, String>builder()
                 .put(1, "one")
                 .put(2, "two")
                 .put(3, "three")

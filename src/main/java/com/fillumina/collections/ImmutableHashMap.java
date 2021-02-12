@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Map;
  * @param <K>
  * @param <V>
  */
-public class ImmutableHashMap<K, V> extends VieweableMap<K, V> implements ImmutableMap<K,V> {
+public class ImmutableHashMap<K, V> extends UnmodifiableHashMap<K, V> {
 
     public static final ImmutableHashMap<?,?> EMPTY = new ImmutableHashMap<Object, Object>();
     
@@ -19,22 +20,23 @@ public class ImmutableHashMap<K, V> extends VieweableMap<K, V> implements Immuta
     }
     
     public static <K,V> ImmutableHashMap<K,V> of(Object... values) {
-        VieweableMap<K,V> builder = ImmutableHashMap.builder();
+        MapBuilder<ImmutableHashMap<K,V>, K,V> builder = builder();
         for (int i=0; i<values.length; i+=2) {
             builder.put((K)values[i], (V)values[i+1]);
         }
-        return builder.immutable();
+        return builder.build();
     }
     
     public static <K,V> ImmutableHashMap<K,V> of(Map<? extends K, ? extends V> map) {
         return new ImmutableHashMap<>(map);
     }
     
-    public static <K, V> VieweableMap<K, V> builder() {
-        return new VieweableMap<>();
+    public static <K, V> MapBuilder<ImmutableHashMap<K,V>, K, V> builder() {
+        return new MapBuilder<>(l -> new ImmutableHashMap<>(l));
     }
 
-    public ImmutableHashMap() {
+    /** Empty immutable map. */
+    private ImmutableHashMap() {
         super();
     }
 
@@ -53,27 +55,22 @@ public class ImmutableHashMap<K, V> extends VieweableMap<K, V> implements Immuta
         super(map);
     }
 
-    /**
-     * Used for views. Be careful: the map would not be immutable because the original one
-     * could change it.
-     */
-    protected ImmutableHashMap(InternalState<AbstractMap.SimpleImmutableEntry<K, V>> internalState) {
-        super(internalState);
+    protected ImmutableHashMap(List<?> list) {
+        super(list);
     }
-
-    @Override
-    protected void readOnlyCheck() {
-        throw new UnsupportedOperationException("read only");
-    }
-
+    
     @Override
     public ImmutableHashMap<K, V> immutable() {
         return this;
     }
 
     @Override
+    public UnmodifiableHashMap<K, V> unmodifiable() {
+        return this;
+    }
+    
+    @Override
     public ImmutableHashMap<K, V> clone() {
-        // just in case this immutable is a view it might be cloned into an endependent object
-        return new ImmutableHashMap<>(this);
+        return this;
     }
 }

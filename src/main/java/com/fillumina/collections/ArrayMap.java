@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -17,8 +18,8 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
         return (ArrayMap<K, V>) EMPTY;
     }
 
-    public static <K, V> Builder<? extends ArrayMap<K, V>, K, V> builder() {
-        return new Builder<>(o -> new ArrayMap<K, V>(o));
+    public static <K, V> MapBuilder<? extends ArrayMap<K, V>, K, V> builder() {
+        return new MapBuilder<>(l -> new ArrayMap<K, V>(l));
     }
 
     public ArrayMap() {
@@ -30,6 +31,10 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
 
     public ArrayMap(Object... o) {
         super(o);
+    }
+
+    protected ArrayMap(List<?> list) {
+        super(list);
     }
 
     public ArrayMap(Map<? extends K, ? extends V> map) {

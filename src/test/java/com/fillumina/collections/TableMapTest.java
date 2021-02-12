@@ -1,8 +1,5 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.ImmutableHashMap;
-import com.fillumina.collections.TableMap;
-import com.fillumina.collections.VieweableMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -373,60 +370,6 @@ public class TableMapTest {
         assertNull(map.get(one));
         
         assertTrue(map.isEmpty());
-    }
-    
-    @Test
-    public void shouldNotPutReadOnlyMap() {
-        ImmutableHashMap<String,String> map = new VieweableMap<String,String>()
-                .add("1", "a")
-                .add("2", "b")
-                .add("3", "c")
-                .immutable();
-        
-        assertTrue(map.containsKey("1"));       
-        assertTrue(map.containsKey("2"));       
-        assertTrue(map.containsKey("3"));
-        
-        assertThrows(UnsupportedOperationException.class, () -> map.remove("1") );
-
-        assertThrows(UnsupportedOperationException.class, () -> map.clear() );
-    }
-    
-    @Test
-    public void shouldExtractReadOnlyMapFromViewableMap() {
-        VieweableMap<String,String> map = new VieweableMap<>();
-        map.put("1", "a");
-        map.put("2", "b");
-        map.put("3", "c");
-
-        assertEquals(3, map.size());
-        assertTrue(map.containsKey("1"));       
-        assertTrue(map.containsKey("2"));       
-        assertTrue(map.containsKey("3"));
-
-        Entry<String,String> entry = map.getEntry("1");
-        assertThrows(UnsupportedOperationException.class, 
-                () -> entry.setValue("aa") );
-        
-        
-        ImmutableHashMap<String,String> roMap = map.immutable();
-        
-        assertEquals(3, roMap.size());
-        assertTrue(roMap.containsKey("1"));       
-        assertTrue(roMap.containsKey("2"));       
-        assertTrue(roMap.containsKey("3"));
-        
-        assertThrows(UnsupportedOperationException.class, 
-                () -> roMap.remove("1") );
-
-        assertThrows(UnsupportedOperationException.class, 
-                () -> roMap.put("4", "d") );
-
-        assertThrows(UnsupportedOperationException.class, 
-                () -> roMap.clear() );
-
-        map.put("4", "d");
-        assertTrue(roMap.containsKey("4"));
     }
     
     @Test

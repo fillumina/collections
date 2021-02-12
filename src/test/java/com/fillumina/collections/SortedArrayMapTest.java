@@ -140,7 +140,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testReadOnlyCheck() {
-        AbstractArrayMap<Integer,String> map = new SortedArrayMap.Immutable<>(
+        AbstractArrayMap<Integer,String> map = new ImmutableSortedArrayMap<>(
             Map.of(1, "one", 2, "two", 3, "three"));
         
         assertThrows(UnsupportedOperationException.class,
@@ -163,7 +163,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
     
     @Test
     public void testImmutableBuilder() {
-        SortedArrayMap<Integer,String> map = SortedArrayMap.Immutable.<Integer,String>builder()
+        SortedArrayMap<Integer,String> map = ImmutableSortedArrayMap.<Integer,String>builder()
             .put(1, "one")
             .put(2, "two")
             .put(3, "three")

@@ -18,7 +18,7 @@ import java.util.Objects;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Serializable {
+public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
     
     public static final ArraySet<?> EMPTY = new ImmutableArraySet<Object>();
@@ -103,7 +103,6 @@ public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Seriali
     /**
      * Get the element at the given index.
      */
-    @Override
     public T get(int index) {
         if (obj == null) {
             throw new IndexOutOfBoundsException("empty set, index=" + index);
@@ -115,7 +114,6 @@ public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Seriali
         throw new IndexOutOfBoundsException("empty set, index=" + index);
     }
 
-    @Override
     public int indexOf(T t) {
         if (obj == null) {
             return -1;
@@ -137,7 +135,6 @@ public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Seriali
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
-    @Override
     public void sort(Comparator<T> comparator) {
         readOnlyCheck();
         if (obj != null && obj.getClass().isArray()) {
@@ -151,7 +148,6 @@ public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Seriali
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
-    @Override
     public void sort() {
         readOnlyCheck();
         if (obj != null && obj.getClass().isArray()) {
@@ -234,7 +230,6 @@ public class ArraySet<T> extends AbstractSet<T> implements LinkedSet<T>, Seriali
         return false;
     }
 
-    @Override
     public T removeAtIndex(int i) {
         readOnlyCheck();
         T[] array = (T[]) obj;
