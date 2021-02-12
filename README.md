@@ -9,18 +9,20 @@
 
 ### Optimized for speed of access
 
-* `AbstractEntryMap` is a very extendable `Map` implementation based on hash table.
-* `TableMap` is a compliant `Map` implementation based on hash table.
-* `VieweableMap` is a `Map` where `Entry` cannot set values. It provides an unmodifiable _view_ that share its internal data so it's very fast to create and occupies no extra memory at all.
+* `AbstractEntryMap` is a very extendable, compliant, `Map` implementation based on hash table with performances of O(1).
+* `TableMap` is an `AbstractEntryMap` implementation useful to extend (otherwise just prefer JDK's `HashMap`) or to use because of it's builder.
+* `VieweableMap` is `AbstractEntryMap` implementation where `Entry` cannot set values. It provides an _unmodifiable view_ that share its internal data so it's very fast to create and occupies no extra memory useful to pass internal data to clients in a safe way. The _unmodifiable view_ can produce an _immutable clone_ if needed (but that would imply an internal data copying).
 
 ### Immutable containers
 
-* `ImmutableList` is an explicictly immutable `List` implementation.
+The Java JDK library uses defensive copy extensively to avoid making an object being changed unexpectedly provoking all sort of _side effect_ type of bugs. These can be avoided by using _immutable_ objects. The JDK offers several ways to create immutable containers but all of them fail to explicitly present them as such. So even an immutable container must be defensively copied over and over when being passed to other objects. The containers listed here are _guaranteed_ immutable and can be used directly without the need of an expensive defensive copy.
+
+* `ImmutableList` is an immutable `List` implementation.
 * `ImmutableArraySet` is an immutable set using as little memory as possible (it's slow to access with O(N)).
 * `ImmutableHashSet` is an immutable set using an hash table with performances of O(1).
-* `ImmutableHashMap` is an explicitly immutable hash `Map` implementation with performances of O(1).
-* `ImmutableArrayMap` is an explicitly immutable array backed `Map` implementation with performances of O(N) but very tight memory requirements.
-* `ImmutableSortedArrayMap` is an explicitly immutable sorted array backed `Map` implementation with performances of O(log N) and very tight memory requirements. Prefer `ImmutableArrayMap` for very few elements (i.e. less than 7) because of the overhead in managing bisections.
+* `ImmutableHashMap` is an immutable hash `Map` implementation with performances of O(1).
+* `ImmutableArrayMap` is an immutable array backed `Map` implementation with performances of O(N) but very tight memory requirements.
+* `ImmutableSortedArrayMap` is an immutable sorted array backed `Map` implementation with performances of O(log N) and very tight memory requirements. Its keys must implement `Comparable`. Prefer `ImmutableArrayMap` for very few elements (i.e. less than 7) because of the overhead in managing bisections.
 
 
 ### Different kind of containers
