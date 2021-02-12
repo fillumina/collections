@@ -2,20 +2,20 @@
 
 ### Optimized for size efficiency
 
-* `AbstractArrayMap` is an abstract `Map` backed by a growing array of interleaved keys and values. It's very compact but also slow to access. Useful to pass few elements around or if many maps are needed (it doesn't use `Entry` so it's footprint is really small). It's very fast to clone. It uses _cursor_ instead of _entries_.
+* `AbstractArrayMap` is an abstract `Map` backed by a growing array of interleaved keys and values. It's very compact but also slow to access. Useful to pass few elements around or if many maps are needed (it doesn't use `Entry` so it's footprint is really small). It's very fast to clone. It uses a _cursor_ instead of _entries_.
 * `ArrayMap` is a simple `AbstractArrayMap` implementation.
-* `SortedArrayMap` is a `Map` implementation that maintains it's keys sorted so obtaining access time of O(log N). Its keys need to implement `Comparable`.
+* `SortedArrayMap` is a `AbstractArrayMap` implementation that maintains it's keys sorted to obtain access time of O(log N). Its keys need to implement `Comparable`.
 * `ArraySet` is a very compact `Set` implementation backed by an array. Every insertion must scan the entire array for unicity so it's not very efficient O(N).
 
 ### Optimized for speed of access
 
 * `AbstractEntryMap` is a very extendable, compliant, `Map` implementation based on hash table with performances of O(1).
 * `TableMap` is an `AbstractEntryMap` implementation useful to extend (otherwise just prefer JDK's `HashMap`) or to use because of it's builder.
-* `VieweableMap` is `AbstractEntryMap` implementation where `Entry` cannot set values. It provides an _unmodifiable view_ that share its internal data so it's very fast to create and occupies no extra memory useful to pass internal data to clients in a safe way. The _unmodifiable view_ can produce an _immutable clone_ if needed (but that would imply an internal data copying).
+* `VieweableMap` is `AbstractEntryMap` implementation where `Entry` cannot set values. It provides an _unmodifiable view_ that share its internal data so it's very fast to create and occupies no extra memory useful to pass internal data to clients in a safe way.
 
 ### Immutable containers
 
-The Java JDK library uses defensive copy extensively to avoid making an object being changed unexpectedly provoking all sort of _side effect_ type of bugs. These can be avoided by using _immutable_ objects. The JDK offers several ways to create immutable containers but all of them fail to explicitly present them as such. So even an immutable container must be defensively copied over and over when being passed to other objects. The containers listed here are _guaranteed_ immutable and can be used directly without the need of an expensive defensive copy.
+The Java JDK library uses defensive object copy extensively to avoid having an object changed unexpectedly by another actor provoking all sort of _side effect_ type of bugs. These can be avoided by using _immutable_ objects. The JDK offers several ways to create immutable containers but all of them fail to explicitly present them as such. So even an immutable container must be defensively copied over and over when being passed to other objects. The containers listed here are _guaranteed_ immutable and can be used directly without the need of an expensive defensive copy.
 
 * `ImmutableList` is an immutable `List` implementation.
 * `ImmutableArraySet` is an immutable set using as little memory as possible (it's slow to access with O(N)).
