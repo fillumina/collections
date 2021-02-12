@@ -43,7 +43,7 @@ public final class ImmutableArraySet<T> extends ArraySet<T> {
         super(elements);
     }
 
-    public ImmutableArraySet(SmallSet<T> arraySet) {
+    public ImmutableArraySet(ArraySet<T> arraySet) {
         super(arraySet);
     }
 
