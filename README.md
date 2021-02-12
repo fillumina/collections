@@ -5,7 +5,8 @@
 * `AbstractArrayMap` is an abstract `Map` backed by a growing array of interleaved keys and values. It's very compact but also slow to access. Useful to pass few elements around or if many maps are needed (it doesn't use `Entry` so it's footprint is really small). It's very fast to clone. It uses a _cursor_ instead of _entries_.
 * `ArrayMap` is a simple `AbstractArrayMap` implementation.
 * `SortedArrayMap` is a `AbstractArrayMap` implementation that maintains it's keys sorted to obtain access time of O(log N). Its keys need to implement `Comparable`.
-* `ArraySet` is a very compact `Set` implementation backed by an array. Every insertion must scan the entire array for unicity so it's not very efficient O(N).
+* `SmallSet` is a very compact `Set` implementation backed by an object that would eventually be an array. Every insertion must scan the entire array for unicity so its performances are linear.
+* `ArraySet` is a very compact `Set` implementation backed by an array. Every insertion must scan the entire array for unicity so its performances are linear.
 
 ### Optimized for speed of access
 
@@ -18,7 +19,8 @@
 The Java JDK library uses defensive object copy extensively to avoid having an object changed unexpectedly by another actor provoking all sort of _side effect_ type of bugs. These can be avoided by passing _immutable_ objects when needed. The JDK offers several ways to create immutable containers but all of them fail to explicitly present them as such. So even an immutable container must be defensively copied over and over when being passed to other objects because they have no way to verify that. The containers listed here are _guaranteed_ immutable and can be used directly without the need of an expensive defensive copy.
 
 * `ImmutableList` is an immutable `List` implementation.
-* `ImmutableArraySet` is an immutable set using as little memory as possible (it's slow to access with O(N)).
+* `ImmutableSmallSet` is an immutable set using as little memory as possible with linear access time.
+* `ImmutableArraySet` is an immutable set backed by an array with linear access time.
 * `ImmutableHashSet` is an immutable set using an hash table with performances of O(1).
 * `ImmutableHashMap` is an immutable hash `Map` implementation with performances of O(1).
 * `ImmutableArrayMap` is an immutable array backed `Map` implementation with performances of O(N) but very tight memory requirements.

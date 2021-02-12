@@ -9,45 +9,45 @@ import java.util.Collection;
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public final class ImmutableArraySet<T> extends ArraySet<T> {
+public final class ImmutableSmallSet<T> extends SmallSet<T> {
     
     private static final long serialVersionUID = 1L;
 
     
-    public static <T> ImmutableArraySet<T> empty() {
-        return (ImmutableArraySet<T>) EMPTY;
+    public static <T> ImmutableSmallSet<T> empty() {
+        return (ImmutableSmallSet<T>) EMPTY;
     }
 
-    public static <T> ImmutableArraySet<T> of(T... values) {
+    public static <T> ImmutableSmallSet<T> of(T... values) {
         if (values == null || values.length == 0) {
-            return (ImmutableArraySet<T>) EMPTY;
+            return (ImmutableSmallSet<T>) EMPTY;
         }
-        return new ImmutableArraySet<T>(values);
+        return new ImmutableSmallSet<T>(values);
     }
 
-    public static <T> ImmutableArraySet<T> of(Collection<? extends T> collection) {
+    public static <T> ImmutableSmallSet<T> of(Collection<? extends T> collection) {
         if (collection == null || collection.isEmpty()) {
-            return (ImmutableArraySet<T>) EMPTY;
+            return (ImmutableSmallSet<T>) EMPTY;
         }
         if (collection instanceof ImmutableList) {
-            return (ImmutableArraySet<T>) collection;
+            return (ImmutableSmallSet<T>) collection;
         }
-        return new ImmutableArraySet<T>(collection);
+        return new ImmutableSmallSet<T>(collection);
     }
     
-    public ImmutableArraySet() {
+    public ImmutableSmallSet() {
         super();
     }
 
-    public ImmutableArraySet(T... elements) {
+    public ImmutableSmallSet(T... elements) {
         super(elements);
     }
 
-    public ImmutableArraySet(SmallSet<T> arraySet) {
+    public ImmutableSmallSet(SmallSet<T> arraySet) {
         super(arraySet);
     }
 
-    public ImmutableArraySet(Collection<? extends T> elements) {
+    public ImmutableSmallSet(Collection<? extends T> elements) {
         super(elements);
     }
 

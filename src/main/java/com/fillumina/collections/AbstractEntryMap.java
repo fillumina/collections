@@ -38,20 +38,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     private static final int INITIAL_SIZE = 8;
 
-    public static Iterator<?> NULL_ITERATOR = new Iterator<Object>() {
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public Object next() {
-            throw new NoSuchElementException();
-        }
-    };
-
-    public static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
-
+    protected static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
     public static class InternalState<E> {
 
@@ -474,7 +461,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             @Override
             public Iterator<Entry<K, V>> iterator() {
                 if (state.size == 0) {
-                    return (Iterator<Entry<K, V>>) NULL_ITERATOR;
+                    return EmptyIterator.empty();
                 }
                 int i = 0;
                 while (state.array[i] == null) {

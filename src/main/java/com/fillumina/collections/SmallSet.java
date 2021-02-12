@@ -16,21 +16,25 @@ import java.util.Objects;
  * and the n-th elemnt can be get by using {@link #get(int) }. It's sortable by
  * using its own in place {@link #sort()} implementation. It's not thread safe.
  * <p>
- * NOTE: it doesn't work with Kryo persister because of its use of Object.
+ * NOTE: it doesn't work with well with Kryo persistor.
  *  
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ArraySet<T> extends AbstractSet<T> implements Serializable {
+public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    public static final ArraySet<?> EMPTY = new ImmutableArraySet<Object>();
+    public static final SmallSet<?> EMPTY = new ImmutableSmallSet<Object>();
     
-    private T[] array;
+    // can be either:
+    // 1) null
+    // 2) a single object
+    // 3) an array of objects
+    private Object obj;
 
-    public ArraySet() {
+    public SmallSet() {
     }
 
-    public ArraySet(T... elements) {
+    public SmallSet(T... elements) {
         if (elements != null) {
             final int length = elements.length;
             switch (length) {
@@ -38,42 +42,46 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                     // do nothing
                     break;
                 case 1: 
-                    array = elements; 
+                    obj = elements[0]; 
                     break;
                 default:
-                    Object[] tmpArray = new Object[length];
+                    Object[] array = new Object[length];
                     int index = 0;
                     ELEM: for (T t : elements) {
                         for (int i=0; i<index; i++) {
-                            if (Objects.equals(tmpArray[i],t)) {
+                            if (Objects.equals(array[i],t)) {
                                 continue ELEM;
                             }
                         }
-                        tmpArray[index] = t;
+                        array[index] = t;
                         index++;
                     }
                     if (index < length) {
-                        this.array = (T[]) new Object[index];
-                        System.arraycopy(tmpArray, 0, this.array, 0, index);
+                        obj = new Object[index];
+                        System.arraycopy(array, 0, obj, 0, index);
                     } else {
-                        this.array = (T[]) tmpArray;
+                        obj = array;
                     }
             }
         }
     }
 
-    public ArraySet(Collection<? extends T> elements) {
+    public SmallSet(Collection<? extends T> elements) {
         if (elements != null && !elements.isEmpty()) {
-            array = (T[]) elements.toArray();
+            if (elements.size() == 1) {
+                obj = elements.iterator().next();
+            } else {
+                obj = elements.toArray();
+            }
         }
     }
 
-    public ArraySet(ArraySet<? extends T> smallSet) {
-        if (smallSet.array != null) {
-            if (smallSet.array.getClass().isArray()) {
-                this.array = ((T[])smallSet.array).clone();
+    public SmallSet(SmallSet<? extends T> smallSet) {
+        if (smallSet.obj != null) {
+            if (smallSet.obj.getClass().isArray()) {
+                this.obj = ((Object[])smallSet.obj).clone();
             } else {
-                this.array = smallSet.array;
+                this.obj = smallSet.obj;
             }
         }
     }
@@ -86,26 +94,29 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
      * Get the element at the given index.
      */
     public T get(int index) {
-        if (array == null) {
+        if (obj == null) {
             throw new IndexOutOfBoundsException("empty set, index=" + index);
-        } else if (array.getClass().isArray()) {
-            return ((T[]) array)[index];
+        } else if (obj.getClass().isArray()) {
+            return ((T[]) obj)[index];
         } else if (index == 0) {
-            return (T) array;
+            return (T) obj;
         }
         throw new IndexOutOfBoundsException("empty set, index=" + index);
     }
 
     public int indexOf(T t) {
-        if (array == null) {
+        if (obj == null) {
             return -1;
-        } else {
+        } else if (obj.getClass().isArray()) {
+            T[] array = (T[]) obj;
             for (int i=array.length-1; i>=0; i--) {
                 if (t.equals(array[i])) {
                     return i;
                 }
             }
             return -1;
+        } else {
+            return obj.equals(t) ? 0 : -1;
         }
     }
     
@@ -116,7 +127,8 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
      */
     public void sort(Comparator<T> comparator) {
         readOnlyCheck();
-        if (array != null) {
+        if (obj != null && obj.getClass().isArray()) {
+            T[] array = ((T[]) obj);
             Arrays.sort(array, comparator);
         }
     }
@@ -128,7 +140,8 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
      */
     public void sort() {
         readOnlyCheck();
-        if (array != null) {
+        if (obj != null && obj.getClass().isArray()) {
+            T[] array = ((T[]) obj);
             Arrays.sort(array);
         }
     }
@@ -139,17 +152,24 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         if (e == null) {
             throw new IllegalArgumentException("cannot add null elements");
         }
-        if (array == null) {
-            array = (T[]) new Object[]{e};
+        if (obj == null) {
+            obj = e;
             return true;
-        } else {
+        } else if (obj.getClass().isArray()) {
             if (!contains(e)) {
+                T[] array = ((T[]) obj);
                 T[] next = (T[]) new Object[array.length + 1];
                 System.arraycopy(array, 0, next, 0, array.length);
                 next[array.length] = e;
-                array = next;
+                obj = next;
                 return true;
             }
+        } else if (!equals(obj, e)) {
+            Object old = obj;
+            obj = new Object[2];
+            ((Object[]) obj)[0] = old;
+            ((Object[]) obj)[1] = e;
+            return true;
         }
         return false;
     }
@@ -174,10 +194,11 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     @Override
     public boolean remove(Object e) {
         readOnlyCheck();
-        if (e == null || array == null) {
+        if (e == null || obj == null) {
             return false;
         }
-        if (array.getClass().isArray()) {
+        if (obj.getClass().isArray()) {
+            T[] array = (T[]) obj;
             int l = array.length;
             for (int i = 0; i < l; i++) {
                 if (equals(e, array[i])) {
@@ -188,12 +209,12 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                     if (i < l - 1) {
                         System.arraycopy(array, i + 1, na, i, l - i - 1);
                     }
-                    array = na;
+                    obj = na;
                     return true;
                 }
             }
-        } else if (equals(array, (T)e)) {
-            array = null;
+        } else if (equals(obj, (T)e)) {
+            obj = null;
             return true;
         }
         return false;
@@ -201,6 +222,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
 
     public T removeAtIndex(int i) {
         readOnlyCheck();
+        T[] array = (T[]) obj;
         T oldValue = array[i];
         int l = array.length;
         T[] na = (T[]) new Object[l - 1];
@@ -210,19 +232,19 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         if (i < l - 1) {
             System.arraycopy(array, i + 1, na, i, l - i - 1);
         }
-        array = na;
+        obj = na;
         return oldValue;
     }
     
     @Override
     public boolean contains(Object o) {
-        if (array == null) {
+        if (obj == null) {
             return false;
-        } else if (equals(o, (T)array)) {
+        } else if (equals(o, (T)obj)) {
             // ok there is a catch here but I choose not to care
             return true;
-        } else if (array.getClass().isArray()) {
-            for (T t : ((T[]) array)) {
+        } else if (obj.getClass().isArray()) {
+            for (T t : ((T[]) obj)) {
                 if (equals(o, t)) {
                     return true;
                 }
@@ -237,22 +259,22 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
 
     @Override
     public Iterator<T> iterator() {
-        if (array == null) {
+        if (obj == null) {
             // the set is empty
             return EmptyIterator.empty();
         }
-        if (array.getClass().isArray()) {
+        if (obj.getClass().isArray()) {
             return new Iterator<T>() {
                 int pos = 0;
 
                 @Override
                 public boolean hasNext() {
-                    return pos < ((T[]) array).length;
+                    return pos < ((T[]) obj).length;
                 }
 
                 @Override
                 public T next() {
-                    T t = ((T[]) array)[pos];
+                    T t = ((T[]) obj)[pos];
                     pos++;
                     return t;
                 }
@@ -260,7 +282,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                 @Override
                 public void remove() {
                     pos--;
-                    ArraySet.this.removeAtIndex(pos);
+                    SmallSet.this.removeAtIndex(pos);
                 }
             };
         } else {
@@ -279,12 +301,12 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                         throw new NoSuchElementException();
                     }
                     hasNext = false;
-                    return (T) array;
+                    return (T) obj;
                 }
 
                 @Override
                 public void remove() {
-                    ArraySet.this.clear();
+                    SmallSet.this.clear();
                 }
             };
         }
@@ -293,42 +315,42 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     @Override
     public void clear() {
         readOnlyCheck();
-        array = null;
+        obj = null;
     }
 
     @Override
     public int size() {
-        if (array == null) {
+        if (obj == null) {
             return 0;
-        } else if (array.getClass().isArray()) {
-            return ((T[]) array).length;
+        } else if (obj.getClass().isArray()) {
+            return ((T[]) obj).length;
         }
         return 1;
     }
 
     @Override
     public int hashCode() {
-        if (array == null) {
+        if (obj == null) {
             return 0;
-        } else if (array.getClass().isArray()) {
-            return Arrays.deepHashCode((T[]) array);
+        } else if (obj.getClass().isArray()) {
+            return Arrays.deepHashCode((T[]) obj);
         }
-        return Objects.hashCode(array);
+        return Objects.hashCode(obj);
     }
 
     // equals() is imported from AbstractCollection
     @Override
     public String toString() {
-        if (array == null) {
+        if (obj == null) {
             return "null";
-        } else if (array.getClass().isArray()) {
-            return Arrays.toString((T[]) array);
+        } else if (obj.getClass().isArray()) {
+            return Arrays.toString((T[]) obj);
         }
-        return "[" + array.toString() + "]";
+        return "[" + obj.toString() + "]";
     }
     
     /** @return immutable clone */
-    public ImmutableArraySet<T> immutable() {
-        return new ImmutableArraySet<>(this);
+    public ImmutableSmallSet<T> immutable() {
+        return new ImmutableSmallSet<>(this);
     }
 }
