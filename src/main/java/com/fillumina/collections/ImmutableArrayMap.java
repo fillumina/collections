@@ -9,7 +9,7 @@ import java.util.Map;
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableArrayMap<K, V> extends ArrayMap<K, V> {
+public final class ImmutableArrayMap<K, V> extends ArrayMap<K, V> {
     
     public static final ImmutableArrayMap<?,?> EMPTY = new ImmutableArrayMap<Object, Object>();
     

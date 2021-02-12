@@ -15,7 +15,7 @@
 
 ### Immutable containers
 
-The Java JDK library uses defensive object copy extensively to avoid having an object changed unexpectedly by another actor provoking all sort of _side effect_ type of bugs. These can be avoided by using _immutable_ objects. The JDK offers several ways to create immutable containers but all of them fail to explicitly present them as such. So even an immutable container must be defensively copied over and over when being passed to other objects. The containers listed here are _guaranteed_ immutable and can be used directly without the need of an expensive defensive copy.
+The Java JDK library uses defensive object copy extensively to avoid having an object changed unexpectedly by another actor provoking all sort of _side effect_ type of bugs. These can be avoided by passing _immutable_ objects when needed. The JDK offers several ways to create immutable containers but all of them fail to explicitly present them as such. So even an immutable container must be defensively copied over and over when being passed to other objects because they have no way to verify that. The containers listed here are _guaranteed_ immutable and can be used directly without the need of an expensive defensive copy.
 
 * `ImmutableList` is an immutable `List` implementation.
 * `ImmutableArraySet` is an immutable set using as little memory as possible (it's slow to access with O(N)).

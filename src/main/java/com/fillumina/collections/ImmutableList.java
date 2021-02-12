@@ -9,7 +9,7 @@ import java.util.Collection;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableList<T> extends AbstractList<T> {
+public final class ImmutableList<T> extends AbstractList<T> {
 
     public static final ImmutableList<?> EMPTY = new ImmutableList<Object>();
     private static final Object[] EMPTY_ARRAY = new Object[0];

@@ -11,7 +11,7 @@ import java.util.Map;
  * @param <K>
  * @param <V>
  */
-public class ImmutableHashMap<K, V> extends UnmodifiableHashMap<K, V> {
+public final class ImmutableHashMap<K, V> extends UnmodifiableHashMap<K, V> {
 
     public static final ImmutableHashMap<?,?> EMPTY = new ImmutableHashMap<Object, Object>();
     

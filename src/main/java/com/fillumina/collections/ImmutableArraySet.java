@@ -9,7 +9,7 @@ import java.util.Collection;
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableArraySet<T> extends ArraySet<T> {
+public final class ImmutableArraySet<T> extends ArraySet<T> {
     
     private static final long serialVersionUID = 1L;
 

@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableHashSet<T> implements Set<T> {
+public final class ImmutableHashSet<T> implements Set<T> {
 
     public static final ImmutableHashSet<?> EMPTY = new ImmutableHashSet<Object>();
 
-    public static class LinkedEntry<K> implements Map.Entry<K, Integer> {
+    private static class LinkedEntry<K> implements Map.Entry<K, Integer> {
         private final K key;
         private final int index;
         private LinkedEntry<K> next;
@@ -43,7 +43,7 @@ public class ImmutableHashSet<T> implements Set<T> {
         }
     }
 
-    public static class LinkedEntryMap<K>
+    private static class LinkedEntryMap<K>
             extends AbstractEntryMap<K, Integer, LinkedEntry<K>, VieweableMap<K, Integer>> {
         
         private LinkedEntry<K> head;

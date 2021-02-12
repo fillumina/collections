@@ -10,7 +10,7 @@ import java.util.Map;
  * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableSortedArrayMap<K, V> extends SortedArrayMap<K, V> {
+public final class ImmutableSortedArrayMap<K, V> extends SortedArrayMap<K, V> {
     
     public static final ImmutableSortedArrayMap<?,?> EMPTY = 
             new ImmutableSortedArrayMap<Object, Object>();
@@ -35,7 +35,7 @@ public class ImmutableSortedArrayMap<K, V> extends SortedArrayMap<K, V> {
         return new MapBuilder<>(o -> new ImmutableSortedArrayMap<>(o));
     }
 
-    protected ImmutableSortedArrayMap() {
+    private ImmutableSortedArrayMap() {
         super();
     }
 
@@ -51,7 +51,7 @@ public class ImmutableSortedArrayMap<K, V> extends SortedArrayMap<K, V> {
         super(map);
     }
 
-    protected ImmutableSortedArrayMap(List<?> list) {
+    private ImmutableSortedArrayMap(List<?> list) {
         super(list);
     }
 
