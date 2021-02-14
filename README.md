@@ -21,7 +21,7 @@ The Java JDK library uses defensive object copy extensively to avoid having an o
 * `ImmutableList` is an immutable `List` implementation.
 * `ImmutableSmallSet` is an immutable set using as little memory as possible with linear access time.
 * `ImmutableArraySet` is an immutable set backed by an array with linear access time.
-* `ImmutableHashSet` is an immutable set using an hash table with performances of O(1).
+* `ImmutableLinkedHashSet` is an immutable set using an hash table with performances of O(1).
 * `ImmutableHashMap` is an immutable hash `Map` implementation with performances of O(1).
 * `ImmutableArrayMap` is an immutable array backed `Map` implementation with performances of O(N) but very tight memory requirements.
 * `ImmutableSortedArrayMap` is an immutable sorted array backed `Map` implementation with performances of O(log N) and very tight memory requirements. Its keys must implement `Comparable`. Prefer `ImmutableArrayMap` for very few elements (i.e. less than 7) because of the overhead in managing bisections.
