@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public final class ImmutableHashSet<T> implements Set<T> {
+public final class ImmutableLinkedHashSet<T> implements Set<T> {
 
-    public static final ImmutableHashSet<?> EMPTY = new ImmutableHashSet<Object>();
+    public static final ImmutableLinkedHashSet<?> EMPTY = new ImmutableLinkedHashSet<Object>();
 
     private static class LinkedEntry<K> implements Map.Entry<K, Integer> {
         private final K key;
@@ -86,39 +86,39 @@ public final class ImmutableHashSet<T> implements Set<T> {
     }
     
     
-    public static <T> ImmutableHashSet<T> empty() {
-        return (ImmutableHashSet<T>) EMPTY;
+    public static <T> ImmutableLinkedHashSet<T> empty() {
+        return (ImmutableLinkedHashSet<T>) EMPTY;
     }
 
-    public static <T> ImmutableHashSet<T> of(T... values) {
+    public static <T> ImmutableLinkedHashSet<T> of(T... values) {
         if (values == null || values.length == 0) {
-            return (ImmutableHashSet<T>) EMPTY;
+            return (ImmutableLinkedHashSet<T>) EMPTY;
         }
-        return new ImmutableHashSet<T>(values);
+        return new ImmutableLinkedHashSet<T>(values);
     }
 
-    public static <T> ImmutableHashSet<T> of(Collection<? extends T> list) {
+    public static <T> ImmutableLinkedHashSet<T> of(Collection<? extends T> list) {
         if (list == null || list.isEmpty()) {
-            return (ImmutableHashSet<T>) EMPTY;
+            return (ImmutableLinkedHashSet<T>) EMPTY;
         }
         if (list instanceof ImmutableList) {
-            return (ImmutableHashSet<T>) list;
+            return (ImmutableLinkedHashSet<T>) list;
         }
-        return new ImmutableHashSet<T>(list);
+        return new ImmutableLinkedHashSet<T>(list);
     }
 
     private LinkedEntryMap<T> delegate;
 
     // for kryo
-    public ImmutableHashSet() {
+    public ImmutableLinkedHashSet() {
         delegate = new LinkedEntryMap<>((T[])new Object[0]);
     }
     
-    public ImmutableHashSet(T... elements) {
+    public ImmutableLinkedHashSet(T... elements) {
         delegate = new LinkedEntryMap<>(elements);
     }
 
-    public ImmutableHashSet(Collection<? extends T> collection) {
+    public ImmutableLinkedHashSet(Collection<? extends T> collection) {
         delegate = new LinkedEntryMap<>((T[])collection.toArray());
     }
     

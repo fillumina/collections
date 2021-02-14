@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -13,18 +14,28 @@ import org.junit.jupiter.api.Test;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ImmutableHashSetTest {
+public class ImmutableLinkedHashSetTest {
     
     @Test
     public void testEmpty() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.empty();
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.empty();
         assertTrue(set.isEmpty());
         assertThrows(UnsupportedOperationException.class, () -> set.add(4));
     }
 
     @Test
+    public void shouldMaintainOrderOfInsertion() {
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(
+                7, 3, 2, 1, 4, 0);
+        
+        List<Integer> list = new ArrayList<>(set);
+        
+        assertEquals(List.of(7, 3, 2, 1, 4, 0), list);
+    }
+    
+    @Test
     public void testOf_GenericType() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 3);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 3);
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(3, set.get(2));
@@ -40,7 +51,7 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testOf_Collection() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(List.of(1, 2, 3));
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(List.of(1, 2, 3));
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(3, set.get(2));
@@ -48,7 +59,7 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testIndexOf() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 3);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 3);
         assertEquals(0, set.indexOf(1));
         assertEquals(1, set.indexOf(2));
         assertEquals(2, set.indexOf(3));
@@ -56,16 +67,16 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testSize() {
-        assertEquals(0, ImmutableHashSet.of().size());
-        assertEquals(1, ImmutableHashSet.of(1).size());
-        assertEquals(2, ImmutableHashSet.of(1, 2).size());
-        assertEquals(3, ImmutableHashSet.of(1, 2, 3).size());
+        assertEquals(0, ImmutableLinkedHashSet.of().size());
+        assertEquals(1, ImmutableLinkedHashSet.of(1).size());
+        assertEquals(2, ImmutableLinkedHashSet.of(1, 2).size());
+        assertEquals(3, ImmutableLinkedHashSet.of(1, 2, 3).size());
     }
 
 
     @Test
     public void testContains() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 3);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 3);
         assertTrue(set.contains(1));
         assertTrue(set.contains(2));
         assertTrue(set.contains(3));
@@ -74,7 +85,7 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testIterator() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 3);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 3);
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         assertEquals(2, it.next());
@@ -83,7 +94,7 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testToArray_0args() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 3);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 3);
         Number[] array = set.toArray(new Number[3]);
         assertEquals(1, array[0]);
         assertEquals(2, array[1]);
@@ -92,7 +103,7 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testToArray_GenericType() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 3);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 3);
         Object[] array = set.toArray();
         assertEquals(1, array[0]);
         assertEquals(2, array[1]);
@@ -101,7 +112,7 @@ public class ImmutableHashSetTest {
     
     @Test
     public void testToArrayWithOnly1Elem() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1);
         Object[] array = set.toArray();
         assertEquals(1, array.length);
         assertEquals(1, array[0]);
@@ -109,64 +120,64 @@ public class ImmutableHashSetTest {
 
     @Test
     public void testDuplicates() {
-        ImmutableHashSet<Integer> set = ImmutableHashSet.of(1, 2, 2);
+        ImmutableLinkedHashSet<Integer> set = ImmutableLinkedHashSet.of(1, 2, 2);
         assertEquals(2, set.size());
     }
     
     @Test
     public void testContainsAll() {
-        assertTrue(ImmutableHashSet.of(1, 2, 3)
+        assertTrue(ImmutableLinkedHashSet.of(1, 2, 3)
                         .containsAll(List.of(1, 2, 3)) );
 
-        assertFalse(ImmutableHashSet.of(1, 2, 3)
+        assertFalse(ImmutableLinkedHashSet.of(1, 2, 3)
                         .containsAll(List.of(1, 5, 3)) );
     }
 
     @Test
     public void testAdd() {
         assertThrows(UnsupportedOperationException.class,
-                () -> ImmutableHashSet.of(1, 2, 3)
+                () -> ImmutableLinkedHashSet.of(1, 2, 3)
                         .add(4));
     }
 
     @Test
     public void testRemove() {
         assertThrows(UnsupportedOperationException.class,
-                () -> ImmutableHashSet.of(1, 2, 3)
+                () -> ImmutableLinkedHashSet.of(1, 2, 3)
                         .remove(1));
     }
 
     @Test
     public void testAddAll() {
         assertThrows(UnsupportedOperationException.class,
-                () -> ImmutableHashSet.of(1, 2, 3)
+                () -> ImmutableLinkedHashSet.of(1, 2, 3)
                         .addAll(List.of(4, 5, 6)));
     }
 
     @Test
     public void testRetainAll() {
         assertThrows(UnsupportedOperationException.class,
-                () -> ImmutableHashSet.of(1, 2, 3)
+                () -> ImmutableLinkedHashSet.of(1, 2, 3)
                         .retainAll(List.of(1, 2, 6)));
     }
 
     @Test
     public void testRemoveAll() {
         assertThrows(UnsupportedOperationException.class,
-                () -> ImmutableHashSet.of(1, 2, 3)
+                () -> ImmutableLinkedHashSet.of(1, 2, 3)
                         .removeAll(List.of(1, 5, 3)));
     }
 
     @Test
     public void testClear() {
         assertThrows(UnsupportedOperationException.class,
-                () -> ImmutableHashSet.of(1, 2, 3)
+                () -> ImmutableLinkedHashSet.of(1, 2, 3)
                         .clear());
     }
 
     @Test
     public void testEquals() {
-        assertEquals(Set.of(1, 2, 3), ImmutableHashSet.of(1, 2, 3));
+        assertEquals(Set.of(1, 2, 3), ImmutableLinkedHashSet.of(1, 2, 3));
     }
     
 }

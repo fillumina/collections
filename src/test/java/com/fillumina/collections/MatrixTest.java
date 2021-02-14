@@ -21,7 +21,7 @@ public class MatrixTest {
 //    2 |3 6
 //  getColAsList V
     public static void main(String[] args) {
-        Matrix<Integer, String> mtx = new Matrix<Integer, String>(ImmutableHashSet.of(1, 2))
+        Matrix<Integer, String> mtx = new Matrix<Integer, String>(ImmutableLinkedHashSet.of(1, 2))
                 .set(0, 0, "one")
                 .set(0, 1, "two two")
                 .set(0, 2, "three")
@@ -405,7 +405,7 @@ public class MatrixTest {
                 .row("tre", "three", "trois")
                 .buildImmutable();
         
-        ImmutableHashSet<MyEnum> newKeys = ImmutableHashSet.of(MyEnum.values());
+        ImmutableLinkedHashSet<MyEnum> newKeys = ImmutableLinkedHashSet.of(MyEnum.values());
         Matrix<MyEnum, String> newMtx = new Matrix<>(newKeys, mtx);
         
         assertEquals("two", newMtx.getByKey(MyEnum.B, 1));

@@ -33,11 +33,11 @@ public class Matrix<K, V> {
         public Immutable() {
         }
 
-        public Immutable(ImmutableHashSet<K> keys, V[][] array) {
+        public Immutable(ImmutableLinkedHashSet<K> keys, V[][] array) {
             super(keys, array);
         }
 
-        public Immutable(ImmutableHashSet<K> keys, int rows) {
+        public Immutable(ImmutableLinkedHashSet<K> keys, int rows) {
             super(keys, rows);
         }
 
@@ -154,7 +154,7 @@ public class Matrix<K, V> {
                     array[j][i] = columns.get(i)[j];
                 }
             }
-            return new Matrix<>(ImmutableHashSet.of(keys), array);
+            return new Matrix<>(ImmutableLinkedHashSet.of(keys), array);
         }
 
         public Immutable<K, V> buildImmutable() {
@@ -162,7 +162,7 @@ public class Matrix<K, V> {
             for (int i = 0, l = columns.size(); i < l; i++) {
                 array[i] = columns.get(i);
             }
-            return new Immutable<>(ImmutableHashSet.of(keys), array);
+            return new Immutable<>(ImmutableLinkedHashSet.of(keys), array);
         }
     }
 
@@ -213,7 +213,7 @@ public class Matrix<K, V> {
         return new ColBuilder<>();
     }
 
-    private ImmutableHashSet<K> keys;
+    private ImmutableLinkedHashSet<K> keys;
 
     // using T[][] interferes with Kryo
     private Object[][] matrix;
@@ -223,30 +223,30 @@ public class Matrix<K, V> {
         matrix = null;
     }
 
-    public Matrix(ImmutableHashSet<K> keys) {
+    public Matrix(ImmutableLinkedHashSet<K> keys) {
         this.keys = keys;
     }
 
     public Matrix(K... keys) {
-        this.keys = ImmutableHashSet.<K>of(keys);
+        this.keys = ImmutableLinkedHashSet.<K>of(keys);
     }
 
     protected Matrix(K[] keys, V[][] array) {
-        this.keys = ImmutableHashSet.<K>of(keys);
+        this.keys = ImmutableLinkedHashSet.<K>of(keys);
         this.matrix = array;
     }
 
     protected Matrix(K[] keys, int rows) {
-        this.keys = ImmutableHashSet.of(keys);
+        this.keys = ImmutableLinkedHashSet.of(keys);
         matrix = (V[][]) new Object[keys.length][rows];
     }
 
-    protected Matrix(ImmutableHashSet<K> keys, V[][] array) {
+    protected Matrix(ImmutableLinkedHashSet<K> keys, V[][] array) {
         this.keys = keys;
         this.matrix = array;
     }
 
-    public Matrix(ImmutableHashSet<K> keys, int rows) {
+    public Matrix(ImmutableLinkedHashSet<K> keys, int rows) {
         this.keys = keys;
         matrix = (V[][]) new Object[keys.size()][rows];
     }
@@ -263,18 +263,18 @@ public class Matrix<K, V> {
      * Transforms a map in a mono-dimensional matrix where K are keys and V are values.
      */
     public Matrix(Map<K, V> map) {
-        keys = ImmutableHashSet.of((K[]) map.keySet().toArray());
+        keys = ImmutableLinkedHashSet.of((K[]) map.keySet().toArray());
         matrix = (V[][]) new Object[1][];
         matrix[0] = map.values().toArray();
     }
 
-    public Matrix(ImmutableHashSet<K> keys, Matrix<?, ? extends V> copy) {
+    public Matrix(ImmutableLinkedHashSet<K> keys, Matrix<?, ? extends V> copy) {
         this.keys = keys;
         this.matrix = copyFromMatrix(copy);
     }
 
     public Matrix(Matrix<? extends K, ? extends V> copy) {
-        this.keys = (ImmutableHashSet<K>) copy.keys;
+        this.keys = (ImmutableLinkedHashSet<K>) copy.keys;
         this.matrix = copyFromMatrix(copy);
     }
 
