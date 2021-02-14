@@ -268,6 +268,11 @@ public class Matrix<K, V> {
         matrix[0] = map.values().toArray();
     }
 
+    /**
+     * Substitutes the passed keys to the ones present in copy.
+     * @param keys  new set of keys (the order is important)
+     * @param copy  the source of the matrix data
+     */
     public Matrix(ImmutableLinkedHashSet<K> keys, Matrix<?, ? extends V> copy) {
         this.keys = keys;
         this.matrix = copyFromMatrix(copy);
