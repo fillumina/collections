@@ -17,13 +17,73 @@ import org.junit.jupiter.api.Test;
 public class BiMapTest {
 
     @Test
+    public void testImmutableStaticCreator() {
+        BiMap<String, Integer> biMap = BiMap.<String, Integer>immutable(
+                "one", 1, "two", 2, "three", 3);
+
+        assertEquals(3, biMap.size());
+        assertEquals(1, biMap.get("one"));
+        assertEquals(2, biMap.get("two"));
+        assertEquals(3, biMap.get("three"));
+
+        assertEquals(3, biMap.inverse().size());
+        assertEquals("one", biMap.inverse().get(1));
+        assertEquals("two", biMap.inverse().get(2));
+        assertEquals("three", biMap.inverse().get(3));
+    }
+
+    @Test
+    public void testBuilder() {
+        BiMap<String, Integer> biMap = BiMap.<String, Integer>builder()
+                .put("one", 1)
+                .put("two", 2)
+                .put("three", 3)
+                .build();
+
+        assertEquals(3, biMap.size());
+        assertEquals(1, biMap.get("one"));
+        assertEquals(2, biMap.get("two"));
+        assertEquals(3, biMap.get("three"));
+
+        assertEquals(3, biMap.inverse().size());
+        assertEquals("one", biMap.inverse().get(1));
+        assertEquals("two", biMap.inverse().get(2));
+        assertEquals("three", biMap.inverse().get(3));
+    }
+
+    @Test
+    public void testImmutableBuilder() {
+        BiMap<String, Integer> biMap = BiMap.<String, Integer>immutableBuilder()
+                .put("one", 1)
+                .put("two", 2)
+                .put("three", 3)
+                .build();
+
+        assertThrows(UnsupportedOperationException.class, 
+                () -> biMap.put("four", 4));
+
+        assertThrows(UnsupportedOperationException.class, 
+                () -> biMap.inverse().put(4, "four"));
+        
+        assertEquals(3, biMap.size());
+        assertEquals(1, biMap.get("one"));
+        assertEquals(2, biMap.get("two"));
+        assertEquals(3, biMap.get("three"));
+
+        assertEquals(3, biMap.inverse().size());
+        assertEquals("one", biMap.inverse().get(1));
+        assertEquals("two", biMap.inverse().get(2));
+        assertEquals("three", biMap.inverse().get(3));
+    }
+
+    @Test
     public void shouldCloneArray() {
         int[] array = new int[]{1, 2, 3};
         int[] clone = array.clone();
         array[0] = 0;
         assertEquals(1, clone[0]);
     }
-    
+
     @Test
     public void shouldGetAnImmutableView() {
         BiMap<String, Integer> biMap = new BiMap<>();
@@ -34,7 +94,7 @@ public class BiMapTest {
         BiMap<String, Integer> view = biMap.immutableView();
 
         biMap.put("one", 11);
-        
+
         assertEquals(3, view.size());
         assertEquals(11, view.get("one")); // <-- the view changes too
         assertEquals(2, view.get("two"));
@@ -44,12 +104,12 @@ public class BiMapTest {
         assertEquals("one", view.inverse().get(11)); // <-- the view changes too
         assertEquals("two", view.inverse().get(2));
         assertEquals("three", view.inverse().get(3));
-        
-        assertThrows(UnsupportedOperationException.class, 
+
+        assertThrows(UnsupportedOperationException.class,
                 () -> view.put("wrong", 666));
-        
+
     }
-    
+
     @Test
     public void shouldUseCopyConstructor() {
         BiMap<String, Integer> biMap = new BiMap<>();
@@ -60,7 +120,7 @@ public class BiMapTest {
         BiMap<String, Integer> copy = new BiMap<>(biMap);
 
         biMap.put("one", 11);
-        
+
         assertEquals(3, copy.size());
         assertEquals(1, copy.get("one"));
         assertEquals(2, copy.get("two"));
@@ -80,9 +140,9 @@ public class BiMapTest {
         biMap.put("three", 3);
 
         BiMap<String, Integer> clone = biMap.clone();
-        
+
         biMap.put("one", 11);
-        
+
         assertEquals(3, clone.size());
         assertEquals(1, clone.get("one"));
         assertEquals(2, clone.get("two"));
@@ -102,7 +162,7 @@ public class BiMapTest {
         biMap.put("three", 3);
 
         BiMap<String, Integer> immutable = biMap.immutableClone();
-        
+
         biMap.put("one", 11);
 
         assertEquals(3, immutable.size());
@@ -114,11 +174,11 @@ public class BiMapTest {
         assertEquals("one", immutable.inverse().get(1));
         assertEquals("two", immutable.inverse().get(2));
         assertEquals("three", immutable.inverse().get(3));
-        
-        assertThrows(UnsupportedOperationException.class, 
+
+        assertThrows(UnsupportedOperationException.class,
                 () -> immutable.put("wrong", 666));
     }
-    
+
     @Test
     public void shouldPutItems() {
         BiMap<String, Integer> biMap = new BiMap<>();
@@ -136,7 +196,7 @@ public class BiMapTest {
         assertEquals("two", biMap.inverse().get(2));
         assertEquals("three", biMap.inverse().get(3));
     }
-    
+
     @Test
     public void shouldReplaceRelation() {
         BiMap<String, Integer> biMap = new BiMap<>();
@@ -147,7 +207,7 @@ public class BiMapTest {
         assertEquals(1, biMap.inverse().size());
         assertTrue(biMap.containsEntry("one", 11));
     }
-    
+
     @Test
     public void shouldReplaceInverseRelation() {
         BiMap<String, Integer> biMap = new BiMap<>();
@@ -200,14 +260,14 @@ public class BiMapTest {
         biMap.put("three", 3);
 
         assertTrue(biMap.keySet().containsAll(
-            biMap.inverse().values()));
+                biMap.inverse().values()));
         assertTrue(biMap.inverse().values().containsAll(
-            biMap.keySet()));
+                biMap.keySet()));
 
         assertTrue(biMap.values().containsAll(
-            biMap.inverse().keySet()));
+                biMap.inverse().keySet()));
         assertTrue(biMap.inverse().keySet().containsAll(
-            biMap.values()));
+                biMap.values()));
     }
 
     @Test
@@ -318,7 +378,7 @@ public class BiMapTest {
     @Test
     public void shouldInitWithExistingMap() {
         BiMap<String, Integer> biMap = new BiMap<>(
-            Map.of("one", 1, "two", 2, "three", 3));
+                Map.of("one", 1, "two", 2, "three", 3));
 
         assertEquals(3, biMap.size());
         assertEquals(1, biMap.get("one"));
@@ -344,32 +404,16 @@ public class BiMapTest {
     @Test
     public void shouldInitWithExistingUncorrectMap() {
         BiMap<String, Integer> biMap = new BiMap<>(
-            Map.of("one", 1, "two", 1, "three", 3));
+                Map.of("one", 1, "two", 1, "three", 3));
 
         assertEquals(2, biMap.size());
         assertEquals(3, biMap.get("three"));
     }
 
     @Test
-    public void shouldImmutableBeInitializedWithArray() {
-        BiMap<String, Integer> biMap = BiMap.immutable(
-            "one", 1, "two", 2, "three", 3);
-
-        assertEquals(3, biMap.size());
-        assertEquals("one", biMap.get(1));
-        assertEquals("two", biMap.get(2));
-        assertEquals("three", biMap.get(3));
-
-        assertEquals(3, biMap.inverse().size());
-        assertEquals(1, biMap.inverse().get("one"));
-        assertEquals(2, biMap.inverse().get("two"));
-        assertEquals(3, biMap.inverse().get("three"));
-    }
-
-    @Test
     public void shouldImmutableBeInitializedWithMap() {
         BiMap<String, Integer> biMap = BiMap.immutable(
-            Map.of("one", 1, "two", 2, "three", 3));
+                Map.of("one", 1, "two", 2, "three", 3));
 
         assertEquals(3, biMap.size());
         assertEquals("one", biMap.get(1));
@@ -385,43 +429,43 @@ public class BiMapTest {
     @Test
     public void shouldBeImmutable() {
         BiMap<String, Integer> biMap = BiMap.immutable(
-            Map.of("one", 1, "two", 2, "three", 3));
+                Map.of("one", 1, "two", 2, "three", 3));
 
         assertThrows(UnsupportedOperationException.class,
-            () -> biMap.put("four", 4));
+                () -> biMap.put("four", 4));
 
         assertThrows(UnsupportedOperationException.class,
-            () -> biMap.inverse().put(4, "four"));
+                () -> biMap.inverse().put(4, "four"));
 
         assertThrows(UnsupportedOperationException.class,
-            () -> biMap.remove("two"));
+                () -> biMap.remove("two"));
 
         assertThrows(UnsupportedOperationException.class,
-            () -> biMap.inverse().remove(2));
+                () -> biMap.inverse().remove(2));
 
         assertThrows(UnsupportedOperationException.class,
-            () -> {
+                () -> {
             final Iterator<Integer> it = biMap.values().iterator();
             it.next();
             it.remove();
         });
 
         assertThrows(UnsupportedOperationException.class,
-            () -> {
+                () -> {
             final Iterator<String> it = biMap.keySet().iterator();
             it.next();
             it.remove();
         });
 
         assertThrows(UnsupportedOperationException.class,
-            () -> {
+                () -> {
             final Iterator<String> it = biMap.inverse().values().iterator();
             it.next();
             it.remove();
         });
 
         assertThrows(UnsupportedOperationException.class,
-            () -> {
+                () -> {
             final Iterator<Integer> it = biMap.inverse().keySet().iterator();
             it.next();
             it.remove();

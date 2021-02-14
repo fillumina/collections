@@ -13,11 +13,11 @@ import java.util.Set;
  */
 public class BiMap<K, V> extends TableMap<K, V> {
 
-    public static BiMap<?, ?> EMPTY = immutable();
+    public static BiMap<?, ?> EMPTY_MAP = immutable();
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     public static <K, V> BiMap<K, V> empty() {
-        return (BiMap<K, V>) EMPTY;
+        return (BiMap<K, V>) EMPTY_MAP;
     }
 
     public static <K, V> BiMap<K, V> immutable(Map<K, V> map) {
@@ -28,6 +28,14 @@ public class BiMap<K, V> extends TableMap<K, V> {
         return new BiMap<>(true, array);
     }
 
+    public static <K, V> MapBuilder<BiMap<K,V>, K,V> builder() {
+        return new MapBuilder<>(l -> new BiMap(false, l.toArray()));
+    }
+
+    public static <K, V> MapBuilder<BiMap<K,V>, K,V> immutableBuilder() {
+        return new MapBuilder<>(l -> new BiMap(true, l.toArray()));
+    }
+    
     private final BiMap<V, K> inverseMap;
     private final boolean immutable;
 
@@ -87,7 +95,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
         this.inverseMap = inverseMap;
         if (array.length > 0) {
             for (int i = 0; i < array.length; i += 2) {
-                put((K) array[i], (V) array[i + 1]);
+                put((K) array[i + 1], (V) array[i]);
             }
         }
         this.immutable = immutable;

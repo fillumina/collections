@@ -402,6 +402,7 @@ public class MultiMap<T> {
     /**
      * Adds a value to all the sets corresponding to the given keys. The position of the key is
      * important and equal keys on different position are considered different.
+     * This method can be executed concurrently (i.e. in a parallel stream).
      *
      * @return true if the value has been added (was not already present).
      */
