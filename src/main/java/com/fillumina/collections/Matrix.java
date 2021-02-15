@@ -490,9 +490,9 @@ public class Matrix<K, V> {
         return get(row, col);
     }
 
-    public List<V> getColumnAsList(K key) {
-        int srcColIdx = keys.get(key);
-        return getColumnAsListByIndex(srcColIdx);
+    public List<V> getColumnAsListByKey(K key) {
+        int col = keys.get(key);
+        return getColumnAsListByIndex(col);
     }
 
     public Iterator<V> getColumnIteratorByKey(K key) {
@@ -500,7 +500,7 @@ public class Matrix<K, V> {
         return new ColumnIterator(col);
     }
 
-    public Iterator<V> getColumnIterator(int col) {
+    public Iterator<V> getColumnIteratorByIndex(int col) {
         return new ColumnIterator(col);
     }
     
@@ -588,7 +588,7 @@ public class Matrix<K, V> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<V> getRowAsList(int row) {
+    public List<V> getRowAsListByIndex(int row) {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {

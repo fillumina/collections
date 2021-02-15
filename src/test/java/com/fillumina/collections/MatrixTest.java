@@ -35,6 +35,26 @@ public class MatrixTest {
     }
 
     @Test
+    public void shouldReturnRowListWithNullIfMatrixIsIncomplete() {
+        Matrix<Integer, String> mtx = new Matrix<>();
+        mtx.set(0, 0, "00");
+        mtx.set(1, 1, "11");
+        
+        assertEquals(Arrays.asList("00", null), mtx.getRowAsListByIndex(0));
+        assertEquals(Arrays.asList(null, "11"), mtx.getRowAsListByIndex(1));
+    }
+
+    @Test
+    public void shouldReturnColumnListWithNullIfMatrixIsIncomplete() {
+        Matrix<Integer, String> mtx = new Matrix<>();
+        mtx.set(0, 0, "00");
+        mtx.set(1, 1, "11");
+        
+        assertEquals(Arrays.asList("00", null), mtx.getColumnAsListByIndex(0));
+        assertEquals(Arrays.asList(null, "11"), mtx.getColumnAsListByIndex(1));
+    }
+    
+    @Test
     public void shouldBeEquals() {
         Matrix<Character, String> mtxBySet = new Matrix<Character, String>()
                 .addKeys('A', 'B', 'C')
@@ -323,8 +343,8 @@ public class MatrixTest {
         assertEquals(13, mtx.get(0, 2));
         assertEquals(23, mtx.get(1, 2));
 
-        assertEquals(List.of(11, 12, 13), mtx.getRowAsList(0));
-        assertEquals(List.of(21, 22, 23), mtx.getRowAsList(1));
+        assertEquals(List.of(11, 12, 13), mtx.getRowAsListByIndex(0));
+        assertEquals(List.of(21, 22, 23), mtx.getRowAsListByIndex(1));
 
         assertEquals(List.of(11, 21), mtx.getColumnAsListByIndex(0));
         assertEquals(List.of(12, 22), mtx.getColumnAsListByIndex(1));
@@ -362,7 +382,7 @@ public class MatrixTest {
         mtx.set(1, 0, 3);
         mtx.set(1, 1, 4);
 
-        List<Integer> row = mtx.getRowAsList(1);
+        List<Integer> row = mtx.getRowAsListByIndex(1);
 
         assertEquals(3, row.get(0));
         assertEquals(4, row.get(1));
