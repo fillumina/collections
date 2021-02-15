@@ -663,7 +663,7 @@ public class Matrix<K, V> {
     }
 
     public void writeTo(List<?> headers, Consumer<String> consumer) {
-        int[] sizes = new int[matrix.length];
+        int[] sizes = new int[matrix[0].length];
         if (!headers.isEmpty()) {
             for (int i = Math.min(headers.size(), matrix.length) - 1; i >= 0; i--) {
                 sizes[i] = Objects.toString(headers.get(i)).length();
@@ -671,13 +671,13 @@ public class Matrix<K, V> {
         }
 
         String[][] table = new String[matrix.length][matrix[0].length];
-        for (int i = 0, li = matrix.length; i < li; i++) {
-            for (int j = 0, lj = matrix[0].length; j < lj; j++) {
-                final String str = Objects.toString(matrix[i][j], "");
-                table[i][j] = str;
+        for (int row = 0, lrow = matrix.length; row < lrow; row++) {
+            for (int col = 0, lcol = matrix[0].length; col < lcol; col++) {
+                final String str = Objects.toString(matrix[row][col], "");
+                table[row][col] = str;
                 int length = str.length();
-                if (sizes[i] < length) {
-                    sizes[i] = length;
+                if (sizes[col] < length) {
+                    sizes[col] = length;
                 }
             }
         }
@@ -700,10 +700,10 @@ public class Matrix<K, V> {
             consumer.accept(System.lineSeparator());
         }
 
-        for (int j = 0, lj = table[0].length; j < lj; j++) {
-            for (int i = 0, li = table.length; i < li; i++) {
-                String str = table[i][j];
-                int align = sizes[i] - str.length();
+        for (int row = 0, lrow = table.length; row < lrow; row++) {
+            for (int col = 0, lcol = table[0].length; col < lcol; col++) {
+                String str = table[row][col];
+                int align = sizes[col] - str.length();
                 String separator = getSeparator(spaces, align);
                 consumer.accept(str + separator);
             }
