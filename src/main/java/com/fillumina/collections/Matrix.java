@@ -353,6 +353,7 @@ public class Matrix<K, V> {
     
     /** @return the old key */
     public K setKeyAtColumn(K key, int col) {
+        readOnlyCheck();
         if (keys == null) {
             keys = new BiMap<>();
         } else if (keys.containsKey(key)) {
@@ -366,6 +367,7 @@ public class Matrix<K, V> {
     }
 
     public Matrix<K, V> addColumn(K key, Collection<? extends V> column) {
+        readOnlyCheck();
         if (keys == null) {
             keys = new BiMap<>();
         }
@@ -380,6 +382,30 @@ public class Matrix<K, V> {
             set(row, col, v);
             row++;
         }
+        return this;
+    }
+    
+    public Matrix<K, V> removeColumn(K key) {
+        readOnlyCheck();
+        Integer col = keys.get(key);
+        if (col == null) {
+            throw new IllegalArgumentException("key '" + key + "' not found");
+        }
+        matrixRemoveColumnAtIndex(col);
+        return this;
+    }
+    
+    public Matrix<K, V> removeColumnAtIndex(int index) {
+        readOnlyCheck();
+        if (keys != null) {
+            BiMap<K,Integer> newkeys = new BiMap<>();
+            for (int i=0,l=keys.size()-1; i<l; i++) {
+                newkeys.inverse().put(i, 
+                        i < index ? keys.inverse().get(i) : keys.inverse().get(i-1));
+            }
+            keys = newkeys;
+        }
+        matrixRemoveColumnAtIndex(index);
         return this;
     }
     
@@ -413,7 +439,7 @@ public class Matrix<K, V> {
     }
 
     public Set<K> getKeys() {
-        return keys.immutableView().keySet();
+        return keys == null ? Set.of() : keys.immutableView().keySet();
     }
 
     public Map<K, V> getRowMap(int row) {
@@ -466,7 +492,7 @@ public class Matrix<K, V> {
 
     public List<V> getColumnAsList(K key) {
         int srcColIdx = keys.get(key);
-        return getColumnAsList(srcColIdx);
+        return getColumnAsListByIndex(srcColIdx);
     }
 
     public Iterator<V> getColumnIteratorByKey(K key) {
@@ -504,8 +530,7 @@ public class Matrix<K, V> {
         matrix = newmtx;
     }
 
-    public void insertColumnAtIndex(int index) {
-        readOnlyCheck();
+    void insertColumnAtIndex(int index) {
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
             V[] array = (V[]) new Object[length + 1];
@@ -528,8 +553,7 @@ public class Matrix<K, V> {
         matrix = newmtx;
     }
 
-    public void removeColumnAtIndex(int index) {
-        readOnlyCheck();
+    void matrixRemoveColumnAtIndex(int index) {
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
             V[] array = (V[]) new Object[length - 1];
@@ -581,7 +605,7 @@ public class Matrix<K, V> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<V> getColumnAsList(int col) {
+    public List<V> getColumnAsListByIndex(int col) {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {
