@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -624,10 +625,17 @@ public class MatrixTest {
                 .row("tre", "three", "trois")
                 .buildImmutable();
 
-        ImmutableLinkedTableSet<MyEnum> newKeys = ImmutableLinkedTableSet.of(MyEnum.values());
-        Matrix<MyEnum, String> newMtx = new Matrix<>(newKeys, mtx);
+        Map<String,Locale> map = Map.of(
+                "IT", Locale.ITALY,
+                "EN", Locale.UK,
+                "FR", Locale.FRANCE
+        );
+        
+        Matrix<Locale, String> newMtx = mtx.changeKeys(t -> map.get(t));
 
-        assertEquals("two", newMtx.getByKey(MyEnum.B, 1));
+        assertEquals("due", newMtx.getByKey(Locale.ITALY, 1));
+        assertEquals("two", newMtx.getByKey(Locale.UK, 1));
+        assertEquals("deux", newMtx.getByKey(Locale.FRANCE, 1));
     }
 
     @Test

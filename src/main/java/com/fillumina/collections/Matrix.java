@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * It's a bi-dimensional array with the columns mapped by a set of immutable keys. It is possible to
@@ -298,22 +299,12 @@ public class Matrix<K, V> {
         matrix[0] = map.values().toArray();
     }
 
-    /**
-     * Substitutes the passed keys to the ones present in copy.
-     * @param keys  new set of keys (the order is important)
-     * @param copy  the source of the matrix data
-     */
-    public Matrix(Collection<? extends K> keys, Matrix<?, ? extends V> copy) {
-        this.keys = createKeys(keys);
-        this.matrix = copyFromMatrix(copy);
-    }
-
     public Matrix(Matrix<? extends K, ? extends V> copy) {
         this.keys = copy.keys == null ? null : (BiMap<K, Integer>) copy.keys.clone();
-        this.matrix = copyFromMatrix(copy);
+        this.matrix = cloneMatrixArray(copy);
     }
 
-    private static <V> V[][] copyFromMatrix(Matrix<?, ? extends V> copy) {
+    private static <V> V[][] cloneMatrixArray(Matrix<?, ? extends V> copy) {
         if (copy.matrix == null) {
             return null;
         } else {
@@ -327,6 +318,23 @@ public class Matrix<K, V> {
 
     protected Matrix(V[][] array) {
         this((K[]) null, array);
+    }
+
+    private Matrix(BiMap<K, Integer> keys, Object[][] matrix) {
+        this.keys = keys;
+        this.matrix = matrix;
+    }
+    
+    /**
+     * Substitutes the passed keys to the ones present in copy.
+     * @param keys  new set of keys (the order is important)
+     * @param copy  the source of the matrix data
+     */
+    public <T> Matrix<T,V> changeKeys(Function<K,T> transformer) {
+        BiMap<T,Integer> biMap = new BiMap<>();
+        keys.forEach((k,v) -> biMap.put(transformer.apply(k), v));
+        V[][] m = cloneMatrixArray(this);
+        return new Matrix<T,V>(biMap, m);
     }
 
     protected void resizeCheck() {
