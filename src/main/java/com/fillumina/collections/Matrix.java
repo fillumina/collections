@@ -335,6 +335,24 @@ public class Matrix<K, V> {
     protected void readOnlyCheck() {
     }
 
+    public K getKeyAtColumn(int column) {
+        return keys.inverse().get(column);
+    }
+    
+    /** @return the old key */
+    public K setKeyAtColumn(K key, int col) {
+        if (keys == null) {
+            keys = new BiMap<>();
+        } else if (keys.containsKey(key)) {
+            throw new IllegalArgumentException("cannot update keys");
+        }
+        return keys.inverse().put(col, key);
+    }
+    
+    public Matrix<K, V> addColumn(K key, V... column) {
+        return addColumn(key, Arrays.asList(column));
+    }
+
     public Matrix<K, V> addColumn(K key, Collection<? extends V> column) {
         if (keys == null) {
             keys = new BiMap<>();
@@ -464,7 +482,7 @@ public class Matrix<K, V> {
         }
     }
 
-    public void insertColumnAtIndex(int index) {
+    public void insertRowAtIndex(int index) {
         readOnlyCheck();
         int length = matrix.length;
         V[][] newmtx = (V[][]) new Object[length + 1][];
@@ -474,7 +492,7 @@ public class Matrix<K, V> {
         matrix = newmtx;
     }
 
-    public void insertRowAtIndex(int index) {
+    public void insertColumnAtIndex(int index) {
         readOnlyCheck();
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
@@ -485,7 +503,7 @@ public class Matrix<K, V> {
         }
     }
 
-    public void removeColumnAtIndex(int index) {
+    public void removeRowAtIndex(int index) {
         readOnlyCheck();
         int length = matrix.length;
         V[][] newmtx = (V[][]) new Object[length - 1][];
@@ -498,7 +516,7 @@ public class Matrix<K, V> {
         matrix = newmtx;
     }
 
-    public void removeRowAtIndex(int index) {
+    public void removeColumnAtIndex(int index) {
         readOnlyCheck();
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
@@ -588,13 +606,18 @@ public class Matrix<K, V> {
 
     @Override
     public String toString() {
+        List<String> headers = keys == null ? null : createHeaders();
+        return toString(headers);
+    }
+
+    private List<String> createHeaders() {
         List<String> headers = new ArrayList<>();
         for (int i=0,l=keys.size(); i<l; i++) {
             K k = keys.inverse().get(i);
             String str = Objects.toString(k);
             headers.add(str);
         }
-        return toString(headers);
+        return headers;
     }
 
     public String toString(Collection<?> headers) {

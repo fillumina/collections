@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -36,12 +38,12 @@ public class MatrixTest {
 
     @Test
     public void testEmpty() {
-        Matrix<String,Integer> matrix = Matrix.empty();
+        Matrix<String, Integer> matrix = Matrix.empty();
         assertEquals(0, matrix.colSize());
         assertEquals(0, matrix.rowSize());
         assertTrue(matrix.isEmpty());
     }
-    
+
     @Test
     public void shouldCopy() {
         Matrix<Integer, String> mtx = Matrix.<Integer, String>rowBuilder()
@@ -50,14 +52,36 @@ public class MatrixTest {
                 .row("two", "five")
                 .row("three", "six")
                 .build();
-        
-        Matrix<Integer, String> copy  = mtx.clone();
+
+        Matrix<Integer, String> copy = mtx.clone();
         mtx.set(1, 1, "5555");
-        
+
         assertEquals("five", copy.get(1, 1));
         assertEquals("5555", mtx.get(1, 1));
     }
-    
+
+    @Test
+    public void shouldAddColumn() {
+        Matrix<Integer, String> mtx = Matrix.<Integer, String>rowBuilder()
+                .keys(1, 2)
+                .row("one", "four")
+                .row("two", "five")
+                .row("three", "six")
+                .build();
+
+        mtx.addColumn(3, "a", "b");
+
+        assertEquals("a", mtx.get(0, 2));
+        assertEquals("a", mtx.getByKey(3, 0));
+        assertEquals("b", mtx.get(1, 2));
+        assertEquals("b", mtx.getByKey(3, 1));
+        assertNull(mtx.get(2, 2));
+        assertNull(mtx.getByKey(3, 2));
+
+        List<String> list = mtx.getColumnAsList(2);
+        assertEquals(Arrays.asList("a", "b", null), list);
+    }
+
     @Test
     public void shouldUseBuilder() {
         Matrix<Void, String> mtx = Matrix.<Void, String>rowBuilder()
@@ -97,8 +121,9 @@ public class MatrixTest {
     }
 
     @Test
-    public void shouldCreateMatrix() {
+    public void shouldCreateEmptyMatrix() {
         Matrix<Void, Integer> mtx = new Matrix<>();
+        assertTrue(mtx.isEmpty());
     }
 
     @Test
@@ -158,6 +183,25 @@ public class MatrixTest {
     }
 
     @Test
+    public void shouldSetKeyAtColumn() {
+        Matrix<Character, String> mtx = Matrix.<Character, String>rowBuilder()
+                .keys('A', 'B')
+                .row("one", "four")
+                .row("two", "five")
+                .row("three", "six")
+                .build();
+
+        assertEquals('A', mtx.getKeyAtColumn(0));
+        assertEquals('B', mtx.getKeyAtColumn(1));
+        
+        mtx.setKeyAtColumn('a', 0);
+        mtx.setKeyAtColumn('b', 1);
+
+        assertEquals('a', mtx.getKeyAtColumn(0));
+        assertEquals('b', mtx.getKeyAtColumn(1));
+    }
+
+    @Test
     public void shouldBuildByColumn() {
         Matrix<String, Integer> mtx = Matrix.<String, Integer>columnBuilder()
                 .col("A", 11, 21)
@@ -201,7 +245,7 @@ public class MatrixTest {
         assertEquals(11, map.get("A"));
         assertEquals(12, map.get("B"));
         assertEquals(13, map.get("C"));
-        
+
         assertEquals(13, mtx.get(0, 2));
         mtx.set(0, 2, 666);
         assertEquals(666, mtx.get(0, 2));
@@ -247,90 +291,118 @@ public class MatrixTest {
 
         assertThrows(UnsupportedOperationException.class,
                 () -> immutable.set(0, 3, 666));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> immutable.removeColumnAtIndex(1));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> immutable.removeRowAtIndex(1));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> immutable.insertColumnAtIndex(1));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> immutable.insertRowAtIndex(1));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> immutable.set(0, 3, 666));
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> immutable.set(0, 3, 666));
+
     }
 
     @Test
     public void shouldInsertColumnAtIndex() {
-        Matrix<Void, Integer> mtx = new Matrix<>();
-        mtx.set(0, 0, 1);
-        mtx.set(0, 1, 2);
-        mtx.set(1, 0, 3);
-        mtx.set(1, 1, 4);
+        Matrix<Void, Integer> mtx = Matrix.<Void, Integer>columnBuilder()
+                .col(null, 1, 3)
+                .col(null, 2, 4)
+                .build();
 
-        mtx.insertColumnAtIndex(0);
+        mtx.insertColumnAtIndex(1);
+
+        assertEquals(null, mtx.get(0, 1));
+        assertEquals(null, mtx.get(1, 1));
+    }
+
+    @Test
+    public void shouldInsertRowAtIndex() {
+        Matrix<Void, Integer> mtx = Matrix.<Void, Integer>rowBuilder()
+                .row(1, 2)
+                .row(3, 4)
+                .build();
+
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(2, mtx.get(0, 1));
+
+        mtx.insertRowAtIndex(0);
 
         assertEquals(null, mtx.get(0, 0));
         assertEquals(null, mtx.get(0, 1));
     }
 
     @Test
-    public void shouldInsertRowAtIndex() {
-        Matrix<Void, Integer> mtx = new Matrix<>();
-        mtx.set(0, 0, 1);
-        mtx.set(0, 1, 2);
-        mtx.set(1, 0, 3);
-        mtx.set(1, 1, 4);
-
-        mtx.insertRowAtIndex(0);
-
-        assertEquals(null, mtx.get(0, 0));
-        assertEquals(null, mtx.get(1, 0));
-    }
-
-    @Test
     public void shouldRemoveColumnAtIndex0() {
-        Matrix<Void, Integer> mtx = new Matrix<>();
-        mtx.set(0, 0, 1);
-        mtx.set(0, 1, 2);
-        mtx.set(1, 0, 3);
-        mtx.set(1, 1, 4);
-
-        mtx.removeColumnAtIndex(0);
-
-        assertEquals(3, mtx.get(0, 0));
-        assertEquals(4, mtx.get(0, 1));
-    }
-
-    @Test
-    public void shouldRemoveColumnAtIndex1() {
-        Matrix<Void, Integer> mtx = new Matrix<>();
-        mtx.set(0, 0, 1);
-        mtx.set(0, 1, 2);
-        mtx.set(1, 0, 3);
-        mtx.set(1, 1, 4);
-
-        mtx.removeColumnAtIndex(1);
+        Matrix<Void, Integer> mtx = Matrix.<Void, Integer>columnBuilder()
+                .col(null, 1, 3)
+                .col(null, 2, 4)
+                .build();
 
         assertEquals(1, mtx.get(0, 0));
-        assertEquals(2, mtx.get(0, 1));
-    }
+        assertEquals(3, mtx.get(1, 0));
 
-    @Test
-    public void shouldRemoveRowAtIndex0() {
-        Matrix<Void, Integer> mtx = new Matrix<>();
-        mtx.set(0, 0, 1);
-        mtx.set(0, 1, 2);
-        mtx.set(1, 0, 3);
-        mtx.set(1, 1, 4);
-
-        mtx.removeRowAtIndex(0);
+        mtx.removeColumnAtIndex(0);
 
         assertEquals(2, mtx.get(0, 0));
         assertEquals(4, mtx.get(1, 0));
     }
 
     @Test
+    public void shouldRemoveColumnAtIndex1() {
+        Matrix<Void, Integer> mtx = Matrix.<Void, Integer>rowBuilder()
+                .row(1, 2)
+                .row(3, 4)
+                .build();
+
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(3, mtx.get(1, 0));
+
+        mtx.removeColumnAtIndex(1);
+
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(3, mtx.get(1, 0));
+    }
+
+    @Test
+    public void shouldRemoveRowAtIndex0() {
+        Matrix<Void, Integer> mtx = Matrix.<Void, Integer>rowBuilder()
+                .row(1, 2)
+                .row(3, 4)
+                .build();
+
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(2, mtx.get(0, 1));
+
+        mtx.removeRowAtIndex(0);
+
+        assertEquals(3, mtx.get(0, 0));
+        assertEquals(4, mtx.get(0, 1));
+    }
+
+    @Test
     public void shouldRemoveRowAtIndex1() {
-        Matrix<Void, Integer> mtx = new Matrix<>();
-        mtx.set(0, 0, 1);
-        mtx.set(0, 1, 2);
-        mtx.set(1, 0, 3);
-        mtx.set(1, 1, 4);
+        Matrix<Void, Integer> mtx = Matrix.<Void, Integer>rowBuilder()
+                .row(1, 2)
+                .row(3, 4)
+                .build();
+
+        assertEquals(1, mtx.get(0, 0));
+        assertEquals(2, mtx.get(0, 1));
 
         mtx.removeRowAtIndex(1);
 
         assertEquals(1, mtx.get(0, 0));
-        assertEquals(3, mtx.get(1, 0));
+        assertEquals(2, mtx.get(0, 1));
     }
 
     @Test
@@ -414,33 +486,35 @@ public class MatrixTest {
                 .row("due", "two", "deux")
                 .row("tre", "three", "trois")
                 .buildImmutable();
-        
+
         assertEquals(0, mtx.rowIndexOf("FR", "une"));
         assertEquals(1, mtx.rowIndexOf("IT", "due"));
         assertEquals(2, mtx.rowIndexOf("EN", "three"));
-    }    
+    }
 
-    enum MyEnum { A, B, C};
+    enum MyEnum {
+        A, B, C
+    };
 
     @Test
     public void shouldChangeKey() {
-        
+
         Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
                 .keys("IT", "EN", "FR")
                 .row("uno", "one", "une")
                 .row("due", "two", "deux")
                 .row("tre", "three", "trois")
                 .buildImmutable();
-        
+
         ImmutableLinkedTableSet<MyEnum> newKeys = ImmutableLinkedTableSet.of(MyEnum.values());
         Matrix<MyEnum, String> newMtx = new Matrix<>(newKeys, mtx);
-        
+
         assertEquals("two", newMtx.getByKey(MyEnum.B, 1));
     }
-    
+
     @Test
     public void shouldGetColumnIterator() {
-        
+
         Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
                 .keys("IT", "EN", "FR")
                 .row("uno", "one", "une")
