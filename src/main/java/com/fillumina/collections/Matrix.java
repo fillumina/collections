@@ -339,6 +339,18 @@ public class Matrix<K, V> {
         return keys.inverse().get(column);
     }
     
+    public Matrix<K,V> addKeys(K... keys) {
+        for (K k : keys) {
+            addKey(k);
+        }
+        return this;
+    }
+    
+    public Matrix<K,V> addKey(K key) {
+        setKeyAtColumn(key, keys == null ? 0 : keys.size());
+        return this;
+    }
+    
     /** @return the old key */
     public K setKeyAtColumn(K key, int col) {
         if (keys == null) {
@@ -691,4 +703,33 @@ public class Matrix<K, V> {
         return separator;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + Objects.hashCode(this.keys);
+        hash = 43 * hash + Arrays.deepHashCode(this.matrix);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Matrix<?, ?> other = (Matrix<?, ?>) obj;
+        if (!Objects.equals(this.keys, other.keys)) {
+            return false;
+        }
+        if (!Arrays.deepEquals(this.matrix, other.matrix)) {
+            return false;
+        }
+        return true;
+    }
+    
 }

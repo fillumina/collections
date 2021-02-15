@@ -26,16 +26,46 @@ public class MatrixTest {
 //    2 |3 6
 //  row V
     public static void main(String[] args) {
-        Matrix<Integer, String> mtx = new Matrix<Integer, String>()
+        Matrix<Integer, String> mtx = Matrix.<Integer,String>rowBuilder()
+                .row("one", "two two", "three")
+                .row("four four four", "", "six")
+                .build();
+        
+        System.out.println(mtx.toString());
+    }
+
+    @Test
+    public void shouldBeEquals() {
+        Matrix<Character, String> mtxBySet = new Matrix<Character, String>()
+                .addKeys('A', 'B', 'C')
                 .set(0, 0, "one")
                 .set(0, 1, "two two")
                 .set(0, 2, "three")
                 .set(1, 0, "four four four")
                 .set(1, 1, "")
                 .set(1, 2, "six");
-        System.out.println(mtx.toString());
-    }
 
+        Matrix<Character, String> mtxByRows = Matrix.<Character,String>rowBuilder()
+                .keys('A', 'B', 'C')
+                .row("one", "two two", "three")
+                .row("four four four", "", "six")
+                .build();
+
+        Matrix<Character, String> mtxByCols = Matrix.<Character,String>columnBuilder()
+                .col('A', "one", "four four four")
+                .col('B', "two two", "")
+                .col('C', "three", "six")
+                .build();
+        
+        assertEquals(mtxByRows, mtxByRows);
+        assertEquals(mtxByCols, mtxByCols);
+        assertEquals(mtxBySet, mtxBySet);
+
+        assertEquals(mtxBySet, mtxByRows);
+        assertEquals(mtxByCols, mtxByRows);
+        assertEquals(mtxBySet, mtxByCols);
+    }
+    
     @Test
     public void testEmpty() {
         Matrix<String, Integer> matrix = Matrix.empty();
