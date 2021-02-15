@@ -743,7 +743,9 @@ public class Matrix<K, V> {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        // it takes into consideration derived classes like Immutable
+        if (!obj.getClass().isAssignableFrom(getClass()) &&
+                !getClass().isAssignableFrom(obj.getClass())) {
             return false;
         }
         final Matrix<?, ?> other = (Matrix<?, ?>) obj;

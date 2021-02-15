@@ -87,6 +87,15 @@ public class MatrixTest {
     }
     
     @Test
+    public void testEqualityWithImmutable() {
+        Matrix<String, Integer> matrix = new Matrix<>();
+        Matrix.Immutable<String, Integer> immutable = matrix.immutable();
+        
+        assertTrue(matrix.equals(immutable));
+        assertTrue(immutable.equals(matrix));
+    }
+    
+    @Test
     public void testEmpty() {
         Matrix<String, Integer> matrix = Matrix.empty();
         assertEquals(0, matrix.colSize());
