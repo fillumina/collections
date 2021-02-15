@@ -177,7 +177,7 @@ public class Matrix<K, V> {
 
         @Override
         public boolean hasNext() {
-            return col < keys.size();
+            return col + 1 < matrix[row].length;
         }
 
         @Override
@@ -202,6 +202,26 @@ public class Matrix<K, V> {
             V old = get(row, col);
             set(row, col, value);
             return old;
+        }
+    }
+
+    private class ColumnIterator implements Iterator<V> {
+        private final int col;
+        private int row = -1;
+
+        public ColumnIterator(int col) {
+            this.col = col;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return row + 1 < matrix.length;
+        }
+
+        @Override
+        public V next() {
+            row++;
+            return get(row, col);
         }
     }
 
@@ -386,11 +406,20 @@ public class Matrix<K, V> {
         return get(row, col);
     }
 
-    public List<V> getList(K key) {
+    public List<V> getColumnList(K key) {
         int srcColIdx = keys.indexOf(key);
-        return getColAsList(srcColIdx);
+        return getColumnAsList(srcColIdx);
     }
 
+    public Iterator<V> getColumnIteratorByKey(K key) {
+        int col = keys.indexOf(key);
+        return new ColumnIterator(col);
+    }
+
+    public Iterator<V> getColumnIterator(int col) {
+        return new ColumnIterator(col);
+    }
+    
     public void forEachElement(Consumer<V> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
@@ -486,7 +515,7 @@ public class Matrix<K, V> {
     /**
      * @return a read only list backed by the matrix.
      */
-    public List<V> getColAsList(int col) {
+    public List<V> getColumnAsList(int col) {
         return new AbstractList<V>() {
             @Override
             public V get(int index) {

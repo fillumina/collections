@@ -1,11 +1,14 @@
 package com.fillumina.collections;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -19,7 +22,7 @@ public class MatrixTest {
 //    0 |1 4
 //    1 |2 5
 //    2 |3 6
-//  getColAsList V
+//  row V
     public static void main(String[] args) {
         Matrix<Integer, String> mtx = new Matrix<Integer, String>(ImmutableLinkedHashSet.of(1, 2))
                 .set(0, 0, "one")
@@ -166,15 +169,15 @@ public class MatrixTest {
         assertEquals(List.of(11, 12, 13), mtx.getRowAsList(0));
         assertEquals(List.of(21, 22, 23), mtx.getRowAsList(1));
 
-        assertEquals(List.of(11, 21), mtx.getColAsList(0));
-        assertEquals(List.of(12, 22), mtx.getColAsList(1));
-        assertEquals(List.of(13, 23), mtx.getColAsList(2));
+        assertEquals(List.of(11, 21), mtx.getColumnAsList(0));
+        assertEquals(List.of(12, 22), mtx.getColumnAsList(1));
+        assertEquals(List.of(13, 23), mtx.getColumnAsList(2));
 
         Map<String, Integer> map = mtx.getRowMap(0);
         assertEquals(11, map.get("A"));
         assertEquals(12, map.get("B"));
         assertEquals(13, map.get("C"));
-
+        
         assertEquals(13, mtx.get(0, 2));
         mtx.set(0, 2, 666);
         assertEquals(666, mtx.get(0, 2));
@@ -188,7 +191,7 @@ public class MatrixTest {
         mtx.set(1, 0, 3);
         mtx.set(1, 1, 4);
 
-        List<Integer> col = mtx.getColAsList(1);
+        List<Integer> col = mtx.getColumnAsList(1);
 
         assertEquals(2, col.get(0));
         assertEquals(4, col.get(1));
@@ -409,5 +412,25 @@ public class MatrixTest {
         Matrix<MyEnum, String> newMtx = new Matrix<>(newKeys, mtx);
         
         assertEquals("two", newMtx.getByKey(MyEnum.B, 1));
+    }
+    
+    @Test
+    public void shouldGetColumnIterator() {
+        
+        Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
+                .keys("IT", "EN", "FR")
+                .row("uno", "one", "une")
+                .row("due", "two", "deux")
+                .row("tre", "three", "trois")
+                .buildImmutable();
+
+        Iterator<String> it = mtx.getColumnIteratorByKey("EN");
+        assertTrue(it.hasNext());
+        assertEquals("one", it.next());
+        assertTrue(it.hasNext());
+        assertEquals("two", it.next());
+        assertTrue(it.hasNext());
+        assertEquals("three", it.next());
+        assertFalse(it.hasNext());
     }
 }
