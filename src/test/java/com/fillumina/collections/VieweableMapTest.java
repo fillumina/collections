@@ -50,7 +50,7 @@ public class VieweableMapTest {
                 () -> entry.setValue("aa") );
         
         
-        ImmutableHashMap<String,String> roMap = map.immutable();
+        ImmutableTableMap<String,String> roMap = map.immutable();
         
         assertEquals(3, roMap.size());
         assertTrue(roMap.containsKey("1"));       
@@ -87,7 +87,7 @@ public class VieweableMapTest {
                 () -> entry.setValue("aa") );
         
         
-        UnmodifiableHashMap<String,String> roMap = map.unmodifiable();
+        UnmodifiableTableMap<String,String> roMap = map.unmodifiable();
         
         assertEquals(3, roMap.size());
         assertTrue(roMap.containsKey("1"));       

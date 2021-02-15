@@ -52,12 +52,12 @@ public class BiMap<K, V> extends TableMap<K, V> {
     }
 
     /** Usual copy constructor from other kind of {@link java.util.Map}. */
-    public BiMap(Map<K, V> map) {
+    public BiMap(Map<? extends K, ? extends V> map) {
         this();
         map.forEach((k, v) -> put(k, v));
     }
 
-    public BiMap(BiMap<K,V> copy) {
+    public BiMap(BiMap<K, V> copy) {
         this(copy, null, false);
     }
     

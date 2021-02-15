@@ -15,7 +15,7 @@ public class VieweableMap<K, V>
         extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
 
     // cache the view
-    private transient UnmodifiableHashMap<K, V> readOnlyView;
+    private transient UnmodifiableTableMap<K, V> readOnlyView;
 
     public VieweableMap() {
         super();
@@ -61,16 +61,16 @@ public class VieweableMap<K, V>
     }
 
     /** @return a read-only <i>view<i> of this map. */
-    public UnmodifiableHashMap<K, V> unmodifiable() {
+    public UnmodifiableTableMap<K, V> unmodifiable() {
         if (readOnlyView != null) {
             return readOnlyView;
         }
-        return readOnlyView = new UnmodifiableHashMap<K, V>(getInternalState());
+        return readOnlyView = new UnmodifiableTableMap<K, V>(getInternalState());
     }
 
     /** @return an immutable <i>clone<i> of this map. */
-    public ImmutableHashMap<K, V> immutable() {
-        return new ImmutableHashMap<K, V>(this);
+    public ImmutableTableMap<K, V> immutable() {
+        return new ImmutableTableMap<K, V>(this);
     }
 
     @Override

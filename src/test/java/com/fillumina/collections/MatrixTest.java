@@ -24,7 +24,7 @@ public class MatrixTest {
 //    2 |3 6
 //  row V
     public static void main(String[] args) {
-        Matrix<Integer, String> mtx = new Matrix<Integer, String>(ImmutableLinkedHashSet.of(1, 2))
+        Matrix<Integer, String> mtx = new Matrix<Integer, String>()
                 .set(0, 0, "one")
                 .set(0, 1, "two two")
                 .set(0, 2, "three")
@@ -34,6 +34,30 @@ public class MatrixTest {
         System.out.println(mtx.toString());
     }
 
+    @Test
+    public void testEmpty() {
+        Matrix<String,Integer> matrix = Matrix.empty();
+        assertEquals(0, matrix.colSize());
+        assertEquals(0, matrix.rowSize());
+        assertTrue(matrix.isEmpty());
+    }
+    
+    @Test
+    public void shouldCopy() {
+        Matrix<Integer, String> mtx = Matrix.<Integer, String>rowBuilder()
+                .keys(1, 2)
+                .row("one", "four")
+                .row("two", "five")
+                .row("three", "six")
+                .build();
+        
+        Matrix<Integer, String> copy  = mtx.clone();
+        mtx.set(1, 1, "5555");
+        
+        assertEquals("five", copy.get(1, 1));
+        assertEquals("5555", mtx.get(1, 1));
+    }
+    
     @Test
     public void shouldUseBuilder() {
         Matrix<Void, String> mtx = Matrix.<Void, String>rowBuilder()
@@ -377,9 +401,9 @@ public class MatrixTest {
                 .row("tre", "three", "trois")
                 .buildImmutable();
 
-        assertEquals("une", mtx.getTranslation("IT", "FR", "uno"));
-        assertEquals("two", mtx.getTranslation("IT", "EN", "due"));
-        assertEquals("trois", mtx.getTranslation("EN", "FR", "three"));
+        assertEquals("une", mtx.getRelationValue("IT", "FR", "uno"));
+        assertEquals("two", mtx.getRelationValue("IT", "EN", "due"));
+        assertEquals("trois", mtx.getRelationValue("EN", "FR", "three"));
     }
 
     @Test
@@ -408,7 +432,7 @@ public class MatrixTest {
                 .row("tre", "three", "trois")
                 .buildImmutable();
         
-        ImmutableLinkedHashSet<MyEnum> newKeys = ImmutableLinkedHashSet.of(MyEnum.values());
+        ImmutableLinkedTableSet<MyEnum> newKeys = ImmutableLinkedTableSet.of(MyEnum.values());
         Matrix<MyEnum, String> newMtx = new Matrix<>(newKeys, mtx);
         
         assertEquals("two", newMtx.getByKey(MyEnum.B, 1));

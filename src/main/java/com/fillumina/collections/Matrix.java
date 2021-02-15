@@ -28,16 +28,22 @@ public class Matrix<K, V> {
 
     private static final int COLUMN_SEPARATION = 2;
 
+    public static final Matrix<?,?> EMPTY = new Immutable<Object,Object>();
+    
+    public static <K,V> Matrix<K,V> empty() {
+        return (Matrix<K, V>) EMPTY;
+    }
+    
     public static class Immutable<K, V> extends Matrix<K, V> {
 
-        public Immutable() {
+        private Immutable() {
         }
 
-        public Immutable(ImmutableLinkedHashSet<K> keys, V[][] array) {
+        public Immutable(Collection<? extends K> keys, V[][] array) {
             super(keys, array);
         }
 
-        public Immutable(ImmutableLinkedHashSet<K> keys, int rows) {
+        public Immutable(Collection<? extends K> keys, int rows) {
             super(keys, rows);
         }
 
@@ -66,7 +72,7 @@ public class Matrix<K, V> {
             super(rows, cols);
         }
 
-        public Immutable(Matrix copy) {
+        public Immutable(Matrix<? extends K, ? extends V> copy) {
             super(copy);
         }
 
@@ -154,7 +160,7 @@ public class Matrix<K, V> {
                     array[j][i] = columns.get(i)[j];
                 }
             }
-            return new Matrix<>(ImmutableLinkedHashSet.of(keys), array);
+            return new Matrix<>(ImmutableLinkedTableSet.of(keys), array);
         }
 
         public Immutable<K, V> buildImmutable() {
@@ -162,7 +168,7 @@ public class Matrix<K, V> {
             for (int i = 0, l = columns.size(); i < l; i++) {
                 array[i] = columns.get(i);
             }
-            return new Immutable<>(ImmutableLinkedHashSet.of(keys), array);
+            return new Immutable<>(ImmutableLinkedTableSet.of(keys), array);
         }
     }
 
@@ -188,7 +194,7 @@ public class Matrix<K, V> {
 
         @Override
         public K getKey() {
-            return keys.get(col);
+            return keys.inverse().get(col);
         }
 
         @Override
@@ -233,7 +239,7 @@ public class Matrix<K, V> {
         return new ColBuilder<>();
     }
 
-    private ImmutableLinkedHashSet<K> keys;
+    private BiMap<K,Integer> keys;
 
     // using T[][] interferes with Kryo
     private Object[][] matrix;
@@ -243,34 +249,38 @@ public class Matrix<K, V> {
         matrix = null;
     }
 
-    public Matrix(ImmutableLinkedHashSet<K> keys) {
-        this.keys = keys;
-    }
-
-    public Matrix(K... keys) {
-        this.keys = ImmutableLinkedHashSet.<K>of(keys);
-    }
-
     protected Matrix(K[] keys, V[][] array) {
-        this.keys = ImmutableLinkedHashSet.<K>of(keys);
+        this.keys = keys == null ? null : createKeys(Arrays.asList(keys));
         this.matrix = array;
     }
 
     protected Matrix(K[] keys, int rows) {
-        this.keys = ImmutableLinkedHashSet.of(keys);
+        this.keys = keys == null ? null : createKeys(Arrays.asList(keys));
         matrix = (V[][]) new Object[keys.length][rows];
     }
 
-    protected Matrix(ImmutableLinkedHashSet<K> keys, V[][] array) {
-        this.keys = keys;
+    protected Matrix(Collection<? extends K> keys, V[][] array) {
+        this.keys = keys == null ? null : createKeys(keys);
         this.matrix = array;
     }
 
-    public Matrix(ImmutableLinkedHashSet<K> keys, int rows) {
-        this.keys = keys;
+    public Matrix(Collection<? extends K> keys, int rows) {
+        this.keys = keys == null ? null : createKeys(keys);
         matrix = (V[][]) new Object[keys.size()][rows];
     }
 
+    private static <K> BiMap<K,Integer> createKeys(Collection<? extends K> collection) {
+        BiMap<K,Integer> bimap = new BiMap<>(collection.size());
+        int index = 0;
+        for (K k : collection) {
+            if (!bimap.containsKey(k)) {
+                bimap.put(k, index);
+                index++;
+            }
+        }
+        return bimap;
+    }
+    
     /**
      * Sizes the array with predefined length
      */
@@ -283,7 +293,7 @@ public class Matrix<K, V> {
      * Transforms a map in a mono-dimensional matrix where K are keys and V are values.
      */
     public Matrix(Map<K, V> map) {
-        keys = ImmutableLinkedHashSet.of((K[]) map.keySet().toArray());
+        keys = createKeys(map.keySet());
         matrix = (V[][]) new Object[1][];
         matrix[0] = map.values().toArray();
     }
@@ -293,13 +303,13 @@ public class Matrix<K, V> {
      * @param keys  new set of keys (the order is important)
      * @param copy  the source of the matrix data
      */
-    public Matrix(ImmutableLinkedHashSet<K> keys, Matrix<?, ? extends V> copy) {
-        this.keys = keys;
+    public Matrix(Collection<? extends K> keys, Matrix<?, ? extends V> copy) {
+        this.keys = createKeys(keys);
         this.matrix = copyFromMatrix(copy);
     }
 
     public Matrix(Matrix<? extends K, ? extends V> copy) {
-        this.keys = (ImmutableLinkedHashSet<K>) copy.keys;
+        this.keys = copy.keys == null ? null : (BiMap<K, Integer>) copy.keys.clone();
         this.matrix = copyFromMatrix(copy);
     }
 
@@ -325,6 +335,24 @@ public class Matrix<K, V> {
     protected void readOnlyCheck() {
     }
 
+    public Matrix<K, V> addColumn(K key, Collection<? extends V> column) {
+        if (keys == null) {
+            keys = new BiMap<>();
+        }
+        Integer col = keys.get(key);
+        if (col == null) {
+            col = keys.size();
+            keys.put(key, col);
+        }
+        insertColumnAtIndex(col);
+        int row = 0;
+        for (V v : column) {
+            set(row, col, v);
+            row++;
+        }
+        return this;
+    }
+    
     public Matrix<K, V> set(int row, int col, V value) {
         readOnlyCheck();
         if (matrix == null) {
@@ -350,12 +378,12 @@ public class Matrix<K, V> {
     }
 
     public V getByKey(K key, int rowIndex) {
-        int col = keys.indexOf(key);
+        int col = keys.get(key);
         return (V) matrix[rowIndex][col];
     }
 
     public Set<K> getKeys() {
-        return keys;
+        return keys.immutableView().keySet();
     }
 
     public Map<K, V> getRowMap(int row) {
@@ -381,7 +409,7 @@ public class Matrix<K, V> {
      * @return the row index at which the given pair of key, value is found.
      */
     public int rowIndexOf(K key, V value) {
-        int col = keys.indexOf(key);
+        int col = keys.get(key);
         return rowIndexOf(col, value);
     }
 
@@ -389,7 +417,7 @@ public class Matrix<K, V> {
      * @return true if the given pair of key, value is found.
      */
     public boolean contains(K key, V value) {
-        int col = keys.indexOf(key);
+        int col = keys.get(key);
         return rowIndexOf(col, value) != -1;
     }
 
@@ -400,19 +428,19 @@ public class Matrix<K, V> {
         return this;
     }
 
-    public V getTranslation(K srcKey, K dstKey, V srcValue) {
-        int col = keys.indexOf(dstKey);
+    public V getRelationValue(K srcKey, K dstKey, V srcValue) {
+        int col = keys.get(dstKey);
         int row = rowIndexOf(srcKey, srcValue);
         return get(row, col);
     }
 
-    public List<V> getColumnList(K key) {
-        int srcColIdx = keys.indexOf(key);
+    public List<V> getColumnAsList(K key) {
+        int srcColIdx = keys.get(key);
         return getColumnAsList(srcColIdx);
     }
 
     public Iterator<V> getColumnIteratorByKey(K key) {
-        int col = keys.indexOf(key);
+        int col = keys.get(key);
         return new ColumnIterator(col);
     }
 
@@ -437,6 +465,7 @@ public class Matrix<K, V> {
     }
 
     public void insertColumnAtIndex(int index) {
+        readOnlyCheck();
         int length = matrix.length;
         V[][] newmtx = (V[][]) new Object[length + 1][];
         System.arraycopy(matrix, 0, newmtx, 0, index);
@@ -446,6 +475,7 @@ public class Matrix<K, V> {
     }
 
     public void insertRowAtIndex(int index) {
+        readOnlyCheck();
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
             V[] array = (V[]) new Object[length + 1];
@@ -456,6 +486,7 @@ public class Matrix<K, V> {
     }
 
     public void removeColumnAtIndex(int index) {
+        readOnlyCheck();
         int length = matrix.length;
         V[][] newmtx = (V[][]) new Object[length - 1][];
         if (index > 0) {
@@ -468,6 +499,7 @@ public class Matrix<K, V> {
     }
 
     public void removeRowAtIndex(int index) {
+        readOnlyCheck();
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
             V[] array = (V[]) new Object[length - 1];
@@ -481,18 +513,22 @@ public class Matrix<K, V> {
         }
     }
 
+    public boolean isEmpty() {
+        return rowSize() == 0 && colSize() == 0 && (keys == null || keys.isEmpty());
+    }
+    
     /**
      * X
      */
     public int rowSize() {
-        return matrix.length;
+        return matrix == null ? 0 : matrix.length;
     }
 
     /**
      * Y
      */
     public int colSize() {
-        return matrix[0].length;
+        return matrix == null || matrix[0] == null ? 0 : matrix[0].length;
     }
 
     /**
@@ -552,7 +588,13 @@ public class Matrix<K, V> {
 
     @Override
     public String toString() {
-        return toString(keys);
+        List<String> headers = new ArrayList<>();
+        for (int i=0,l=keys.size(); i<l; i++) {
+            K k = keys.inverse().get(i);
+            String str = Objects.toString(k);
+            headers.add(str);
+        }
+        return toString(headers);
     }
 
     public String toString(Collection<?> headers) {
