@@ -17,11 +17,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * It's a bi-dimensional array with the columns mapped by a set of immutable keys. It is possible to
+ * It's a multi value map backed by a 2-dimensional array. It is possible to
  * retrieve the value of a cell by using coordinates or by indicating its key and the row number and
  * it's possible to "translate" from one cell to another on the same row with a different key. Key
- * access is quite fast being based on an hash set making the mapping performances an O(1). Cell
- * access performances are also O(1) with the exception of searching of values which is linear.
+ * access and cell access are all O(1). Searching of values is linear.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
