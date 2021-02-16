@@ -331,7 +331,9 @@ public class Matrix<K, V> {
      */
     public <T> Matrix<T,V> changeKeys(Function<K,T> transformer) {
         BiMap<T,Integer> biMap = new BiMap<>();
-        keys.forEach((k,v) -> biMap.put(transformer.apply(k), v));
+        if (keys != null && !keys.isEmpty()) {
+            keys.forEach((k,v) -> biMap.put(transformer.apply(k), v));
+        }
         V[][] m = cloneMatrixArray(this);
         return new Matrix<T,V>(biMap, m);
     }
