@@ -302,7 +302,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     }
 
     public Object[] toArray() {
-        return array.clone();
+        return array == null ? null : array.clone();
     }
 
     @Override
