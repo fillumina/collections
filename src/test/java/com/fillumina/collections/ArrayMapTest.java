@@ -180,4 +180,23 @@ public class ArrayMapTest extends AbstractArrayMapTestHelper {
         assertTrue(anotherImmutable == immutable);
     }
 
+    @Test
+    public void shouldNotPutTheSameKeyTwice() {
+        ArrayMap<Integer,String> map = new ArrayMap<>();
+        map.put(1, "one");
+        map.put(1, "another one");
+        map.put(1, "third one");
+        
+        assertEquals(1, map.size());
+    }
+    
+    @Test
+    public void toStringTest() {
+        ArrayMap<Integer,String> map = new ArrayMap<>();
+        map.put(1, "one");
+        map.put(2, "two");
+        map.put(3, "three");
+        
+        assertEquals("{1=one, 2=two, 3=three}", map.toString());
+    }
 }

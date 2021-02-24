@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * {@link AbstractArrayMap} implementation.
- * 
+ * {@link AbstractArrayMap} implementation. Be aware that entries are shown having all the same
+ * value in IDE debuggers because of the use of a single cursor instead of the usual different
+ * entry for each mapping.
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
@@ -49,7 +51,7 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
             array[0] = key;
             array[1] = value;
             return null;
-        } 
+        }
         int index = getIndexOfKey(key);
         if (index == -1) {
             index = array.length;
@@ -66,7 +68,9 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
         }
     }
 
-    /** @return an immutable <b>clone</b>. */
+    /**
+     * @return an immutable <b>clone</b>.
+     */
     public ArrayMap<K, V> immutable() {
         if (this instanceof ImmutableArrayMap) {
             return this;
