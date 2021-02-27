@@ -482,8 +482,7 @@ public class Matrix<K, V> {
      * @return true if the given pair of key, value is found.
      */
     public boolean contains(K key, V value) {
-        int col = keys.get(key);
-        return rowIndexOf(col, value) != -1;
+        return rowIndexOf(key, value) != -1;
     }
 
     public Matrix<K, V> assertContains(K key, V value) {

@@ -598,7 +598,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void shouldContainTheGivenPair() {
+    public void shouldContainTheGivenPairAtIndex() {
         Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
                 .keys("IT", "EN", "FR")
                 .row("uno", "one", "une")
@@ -609,6 +609,28 @@ public class MatrixTest {
         assertEquals(0, mtx.rowIndexOf("FR", "une"));
         assertEquals(1, mtx.rowIndexOf("IT", "due"));
         assertEquals(2, mtx.rowIndexOf("EN", "three"));
+
+        assertEquals(-1, mtx.rowIndexOf("FR", "uno"));
+        assertEquals(-1, mtx.rowIndexOf("IT", "two"));
+        assertEquals(-1, mtx.rowIndexOf("EN", "tre"));
+    }
+
+    @Test
+    public void shouldContainTheGivenPair() {
+        Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
+                .keys("IT", "EN", "FR")
+                .row("uno", "one", "une")
+                .row("due", "two", "deux")
+                .row("tre", "three", "trois")
+                .buildImmutable();
+
+        assertTrue(mtx.contains("FR", "une"));
+        assertTrue(mtx.contains("IT", "due"));
+        assertTrue(mtx.contains("EN", "three"));
+
+        assertFalse(mtx.contains("FR", "uno"));
+        assertFalse(mtx.contains("IT", "two"));
+        assertFalse(mtx.contains("EN", "tre"));
     }
 
     enum MyEnum {
