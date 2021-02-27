@@ -1,5 +1,7 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.Matrix.ColBuilder;
+import com.fillumina.collections.Matrix.RowBuilder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -678,5 +680,32 @@ public class MatrixTest {
         assertTrue(it.hasNext());
         assertEquals("three", it.next());
         assertFalse(it.hasNext());
+    }
+    
+    @Test
+    public void testColumnVsRowBuilder() {
+
+        RowBuilder<String,Integer> rowBuilder = Matrix.<String, Integer>rowBuilder()
+                .keys("A", "B")
+                .row(11, 12)
+                .row(21, 22)
+                .row(31, 32);
+        
+        Matrix<String, Integer> rows = rowBuilder.build();
+        Matrix<String, Integer> rowsImmutable = rowBuilder.buildImmutable();
+
+        ColBuilder<String, Integer> colBuilder = Matrix.<String, Integer>columnBuilder()
+                .col("A", 11, 21, 31)
+                .col("B", 12, 22, 32);
+
+        Matrix<String, Integer> cols = colBuilder.build();
+        Matrix<String, Integer> colsImmutable = colBuilder.buildImmutable();
+        
+        assertEquals(rows, rowsImmutable);
+        assertEquals(cols, colsImmutable);
+        assertEquals(rows, cols);
+        assertEquals(rowsImmutable, colsImmutable);
+        assertEquals(rows, colsImmutable);
+        assertEquals(rowsImmutable, cols);
     }
 }

@@ -164,9 +164,12 @@ public class Matrix<K, V> {
         }
 
         public Immutable<K, V> buildImmutable() {
-            V[][] array = (V[][]) new Object[columns.size()][];
-            for (int i = 0, l = columns.size(); i < l; i++) {
-                array[i] = columns.get(i);
+            final int rows = columns.size();
+            V[][] array = (V[][]) new Object[colLength][rows];
+            for (int i = 0, il = rows; i < il; i++) {
+                for (int j = 0; j < colLength; j++) {
+                    array[j][i] = columns.get(i)[j];
+                }
             }
             return new Immutable<>(ImmutableLinkedTableSet.of(keys), array);
         }
