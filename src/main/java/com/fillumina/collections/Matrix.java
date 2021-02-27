@@ -117,19 +117,21 @@ public class Matrix<K, V> {
         }
 
         public Matrix<K, V> build() {
-            V[][] array = (V[][]) new Object[rows.size()][];
-            for (int i = 0, l = rows.size(); i < l; i++) {
-                array[i] = rows.get(i);
-            }
+            V[][] array = createMatrix();
             return new Matrix<>(keys, array);
         }
 
         public Immutable<K, V> buildImmutable() {
+            V[][] array = createMatrix();
+            return new Immutable<>(keys, array);
+        }
+
+        private V[][] createMatrix() {
             V[][] array = (V[][]) new Object[rows.size()][];
             for (int i = 0, l = rows.size(); i < l; i++) {
                 array[i] = rows.get(i);
             }
-            return new Immutable<>(keys, array);
+            return array;
         }
     }
 
@@ -153,17 +155,16 @@ public class Matrix<K, V> {
         }
 
         public Matrix<K, V> build() {
-            final int rows = columns.size();
-            V[][] array = (V[][]) new Object[colLength][rows];
-            for (int i = 0, il = rows; i < il; i++) {
-                for (int j = 0; j < colLength; j++) {
-                    array[j][i] = columns.get(i)[j];
-                }
-            }
+            V[][] array = createMatrix();
             return new Matrix<>(ImmutableLinkedTableSet.of(keys), array);
         }
 
         public Immutable<K, V> buildImmutable() {
+            V[][] array = createMatrix();
+            return new Immutable<>(ImmutableLinkedTableSet.of(keys), array);
+        }
+
+        private V[][] createMatrix() {
             final int rows = columns.size();
             V[][] array = (V[][]) new Object[colLength][rows];
             for (int i = 0, il = rows; i < il; i++) {
@@ -171,7 +172,7 @@ public class Matrix<K, V> {
                     array[j][i] = columns.get(i)[j];
                 }
             }
-            return new Immutable<>(ImmutableLinkedTableSet.of(keys), array);
+            return array;
         }
     }
 
