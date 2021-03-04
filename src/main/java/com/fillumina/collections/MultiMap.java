@@ -368,7 +368,22 @@ public class MultiMap<T> {
      * @return the values associated with the key at the given index (position).
      */
     private Set<Container<T>> getSetAtIndex(int index, Object key) {
-        return mapList.get(index).get(key);
+        if (mapList == null || index >= mapList.size() || index < 0) {
+            return null;
+        }
+        final Map<Object, Set<Container<T>>> map = mapList.get(index);
+        return map == null ? null : map.get(key);
+    }
+
+    /**
+     * @return the first value associated to all passed keys.
+     */
+    public T getFirst(Collection<Object> keys) {
+        Set<T> set = get(keys);
+        if (set == null || set.isEmpty()) {
+            return null;
+        }
+        return set.iterator().next();
     }
 
     /**
@@ -376,6 +391,17 @@ public class MultiMap<T> {
      */
     public Set<T> get(Collection<Object> keys) {
         return get(keys.toArray());
+    }
+
+    /**
+     * @return the first value associated to all passed keys.
+     */
+    public T getFirst(Object... keys) {
+        Set<T> set = get(keys);
+        if (set == null || set.isEmpty()) {
+            return null;
+        }
+        return set.iterator().next();
     }
 
     /**
@@ -396,9 +422,9 @@ public class MultiMap<T> {
                 }
             }
         }
-        return result.stream().map(s -> s.value).collect(Collectors.toSet());
+        return result == null ? null : result.stream().map(s -> s.value).collect(Collectors.toSet());
     }
-
+    
     /**
      * Adds a value to all the sets corresponding to the given keys. The position of the key is
      * important and equal keys on different position are considered different.
