@@ -368,7 +368,7 @@ public class MultiMap<T> {
      * @return the values associated with the key at the given index (position).
      */
     private Set<Container<T>> getSetAtIndex(int index, Object key) {
-        if (mapList == null || index >= mapList.size() || index < 0) {
+        if (mapList == null || mapList.isEmpty() || index >= mapList.size() || index < 0) {
             return null;
         }
         final Map<Object, Set<Container<T>>> map = mapList.get(index);
@@ -424,7 +424,7 @@ public class MultiMap<T> {
         }
         return result == null ? null : result.stream().map(s -> s.value).collect(Collectors.toSet());
     }
-    
+
     /**
      * Adds a value to all the sets corresponding to the given keys. The position of the key is
      * important and equal keys on different position are considered different.
