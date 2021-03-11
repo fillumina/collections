@@ -17,14 +17,14 @@ import java.util.Objects;
  * using its own in place {@link #sort()} implementation. It's not thread safe.
  * <p>
  * NOTE: it doesn't work with Kryo persister because of its use of Object.
- *  
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     public static final ArraySet<?> EMPTY = new ImmutableArraySet<Object>();
-    
+
     private T[] array;
 
     public ArraySet() {
@@ -34,11 +34,11 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         if (elements != null) {
             final int length = elements.length;
             switch (length) {
-                case 0: 
+                case 0:
                     // do nothing
                     break;
-                case 1: 
-                    array = elements; 
+                case 1:
+                    array = elements;
                     break;
                 default:
                     Object[] tmpArray = new Object[length];
@@ -81,7 +81,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     protected void readOnlyCheck() {
         // do nothing
     }
-    
+
     /**
      * Get the element at the given index.
      */
@@ -108,29 +108,31 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
             return -1;
         }
     }
-    
+
     /**
-     * In place sorting. Don't use 
+     * <b>In place</b> sorting. Don't use
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
-    public void sort(Comparator<T> comparator) {
+    public ArraySet<T> sort(Comparator<T> comparator) {
         readOnlyCheck();
         if (array != null) {
             Arrays.sort(array, comparator);
         }
+        return this;
     }
 
     /**
-     * In place sorting. Don't use 
+     * <b>In place</b> sorting. Don't use
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
-    public void sort() {
+    public ArraySet<T> sort() {
         readOnlyCheck();
         if (array != null) {
             Arrays.sort(array);
         }
+        return this;
     }
 
     @Override
@@ -213,7 +215,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         array = na;
         return oldValue;
     }
-    
+
     @Override
     public boolean contains(Object o) {
         if (array == null) {
@@ -326,7 +328,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         }
         return "[" + array.toString() + "]";
     }
-    
+
     /** @return immutable clone */
     public ImmutableArraySet<T> immutable() {
         return new ImmutableArraySet<>(this);
