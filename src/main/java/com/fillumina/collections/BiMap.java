@@ -35,7 +35,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     public static <K, V> MapBuilder<BiMap<K,V>, K,V> immutableBuilder() {
         return new MapBuilder<>(l -> new BiMap(true, l.toArray()));
     }
-    
+
     private final BiMap<V, K> inverseMap;
     private final boolean immutable;
 
@@ -60,7 +60,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     public BiMap(BiMap<K, V> copy) {
         this(copy, null, false);
     }
-    
+
     /** @param prepares the map to the expected size (avoid expensive resizing operation). */
     public BiMap(int initialSize) {
         super(initialSize);
@@ -117,8 +117,8 @@ public class BiMap<K, V> extends TableMap<K, V> {
     private BiMap(BiMap<K,V> copy, BiMap<V,K> inverse) {
         super(copy.getInternalState());
         this.immutable = true;
-        this.inverseMap = (inverse != null) ? 
-                inverse : 
+        this.inverseMap = (inverse != null) ?
+                inverse :
                 new BiMap(copy.inverseMap, this);
     }
 
@@ -129,11 +129,14 @@ public class BiMap<K, V> extends TableMap<K, V> {
     public BiMap<K, V> immutableClone() {
         return new BiMap<>(this, null, true);
     }
-    
+
     public BiMap<K, V> immutableView() {
+        if (immutable) {
+            return this;
+        }
         return new BiMap<>(this, null);
     }
-    
+
     /** It's a clone of the original biMap. */
     @Override
     public BiMap<K, V> clone() {
