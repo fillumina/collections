@@ -419,6 +419,8 @@ public class MultiMap<T> {
                     } else {
                         result.retainAll(set);
                     }
+                } else {
+                    return null;
                 }
             }
         }
