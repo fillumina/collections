@@ -6,6 +6,7 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,11 +30,11 @@ public class Matrix<K, V> {
     private static final int COLUMN_SEPARATION = 2;
 
     public static final Matrix<?,?> EMPTY = new Immutable<Object,Object>();
-    
+
     public static <K,V> Matrix<K,V> empty() {
         return (Matrix<K, V>) EMPTY;
     }
-    
+
     public static class Immutable<K, V> extends Matrix<K, V> {
 
         private Immutable() {
@@ -284,7 +285,7 @@ public class Matrix<K, V> {
         }
         return bimap;
     }
-    
+
     /**
      * Sizes the array with predefined length
      */
@@ -327,7 +328,7 @@ public class Matrix<K, V> {
         this.keys = keys;
         this.matrix = matrix;
     }
-    
+
     /**
      * Substitutes the passed keys to the ones present in copy.
      * @param keys  new set of keys (the order is important)
@@ -351,19 +352,19 @@ public class Matrix<K, V> {
     public K getKeyAtColumn(int column) {
         return keys.inverse().get(column);
     }
-    
+
     public Matrix<K,V> addKeys(K... keys) {
         for (K k : keys) {
             addKey(k);
         }
         return this;
     }
-    
+
     public Matrix<K,V> addKey(K key) {
         setKeyAtColumn(key, keys == null ? 0 : keys.size());
         return this;
     }
-    
+
     /** @return the old key */
     public K setKeyAtColumn(K key, int col) {
         readOnlyCheck();
@@ -374,7 +375,7 @@ public class Matrix<K, V> {
         }
         return keys.inverse().put(col, key);
     }
-    
+
     public Matrix<K, V> addColumn(K key, V... column) {
         return addColumn(key, Arrays.asList(column));
     }
@@ -397,7 +398,7 @@ public class Matrix<K, V> {
         }
         return this;
     }
-    
+
     public Matrix<K, V> removeColumn(K key) {
         readOnlyCheck();
         Integer col = keys.get(key);
@@ -407,13 +408,13 @@ public class Matrix<K, V> {
         matrixRemoveColumnAtIndex(col);
         return this;
     }
-    
+
     public Matrix<K, V> removeColumnAtIndex(int index) {
         readOnlyCheck();
         if (keys != null) {
             BiMap<K,Integer> newkeys = new BiMap<>();
             for (int i=0,l=keys.size()-1; i<l; i++) {
-                newkeys.inverse().put(i, 
+                newkeys.inverse().put(i,
                         i < index ? keys.inverse().get(i) : keys.inverse().get(i-1));
             }
             keys = newkeys;
@@ -421,7 +422,7 @@ public class Matrix<K, V> {
         matrixRemoveColumnAtIndex(index);
         return this;
     }
-    
+
     public Matrix<K, V> set(int row, int col, V value) {
         readOnlyCheck();
         if (matrix == null) {
@@ -452,7 +453,7 @@ public class Matrix<K, V> {
     }
 
     public Set<K> getKeys() {
-        return keys == null ? Set.of() : keys.immutableView().keySet();
+        return keys == null ? Collections.emptySet() : keys.immutableView().keySet();
     }
 
     public Map<K, V> getRowMap(int row) {
@@ -515,7 +516,7 @@ public class Matrix<K, V> {
     public Iterator<V> getColumnIteratorByIndex(int col) {
         return new ColumnIterator(col);
     }
-    
+
     public void forEachElement(Consumer<V> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
@@ -582,7 +583,7 @@ public class Matrix<K, V> {
     public boolean isEmpty() {
         return rowSize() == 0 && colSize() == 0 && (keys == null || keys.isEmpty());
     }
-    
+
     /**
      * X
      */
@@ -769,5 +770,5 @@ public class Matrix<K, V> {
         }
         return true;
     }
-    
+
 }

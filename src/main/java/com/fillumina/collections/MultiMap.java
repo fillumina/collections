@@ -3,6 +3,7 @@ package com.fillumina.collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -99,7 +100,7 @@ public class MultiMap<T> {
          * instead of {@code String}.
          */
         public Map<?, ?> flatToLevel(int level) {
-            return (Map<?, ?>) mapAtLevel(List.of(), level);
+            return (Map<?, ?>) mapAtLevel(Collections.emptyList(), level);
         }
 
         private Object mapAtLevel(List<Object> klist, int level) {
@@ -249,7 +250,7 @@ public class MultiMap<T> {
 
         public Map<Object, Tree<T>> mget(Object... keys) {
             if (keys.length == 1) {
-                return Map.of(keys[0], children.get(keys[0]));
+                return Collections.singletonMap(keys[0], children.get(keys[0]));
             }
             Map<Object, Tree<T>> map = new HashMap<>();
             for (Object k : keys) {
@@ -499,7 +500,7 @@ public class MultiMap<T> {
      * @return a tree from the given positions.
      */
     public Tree<T> treeFromIndexes(int... indexes) {
-        Tree<T> root = createTree(List.of(), null, indexes, 0,
+        Tree<T> root = createTree(Collections.emptyList(), null, indexes, 0,
                 null);
         return root;
     }
@@ -513,7 +514,7 @@ public class MultiMap<T> {
         final Set<Container<T>> currentSelection;
         if (key != null) {
             if (keys == null) {
-                keyList = List.of(key);
+                keyList = Collections.singletonList(key);
             } else {
                 keyList = createList(keys, key);
             }

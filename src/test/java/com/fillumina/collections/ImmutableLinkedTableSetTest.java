@@ -1,6 +1,8 @@
 package com.fillumina.collections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +17,7 @@ import org.junit.jupiter.api.Test;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class ImmutableLinkedTableSetTest {
-    
+
     @Test
     public void testEmpty() {
         ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.empty();
@@ -27,12 +29,12 @@ public class ImmutableLinkedTableSetTest {
     public void shouldMaintainOrderOfInsertion() {
         ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.of(
                 7, 3, 2, 1, 4, 0);
-        
+
         List<Integer> list = new ArrayList<>(set);
-        
-        assertEquals(List.of(7, 3, 2, 1, 4, 0), list);
+
+        assertEquals(Arrays.asList(7, 3, 2, 1, 4, 0), list);
     }
-    
+
     @Test
     public void testOf_GenericType() {
         ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.of(1, 2, 3);
@@ -51,7 +53,7 @@ public class ImmutableLinkedTableSetTest {
 
     @Test
     public void testOf_Collection() {
-        ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.of(List.of(1, 2, 3));
+        ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.of(Arrays.asList(1, 2, 3));
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(3, set.get(2));
@@ -109,7 +111,7 @@ public class ImmutableLinkedTableSetTest {
         assertEquals(2, array[1]);
         assertEquals(3, array[2]);
     }
-    
+
     @Test
     public void testToArrayWithOnly1Elem() {
         ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.of(1);
@@ -123,14 +125,14 @@ public class ImmutableLinkedTableSetTest {
         ImmutableLinkedTableSet<Integer> set = ImmutableLinkedTableSet.of(1, 2, 2);
         assertEquals(2, set.size());
     }
-    
+
     @Test
     public void testContainsAll() {
         assertTrue(ImmutableLinkedTableSet.of(1, 2, 3)
-                        .containsAll(List.of(1, 2, 3)) );
+                        .containsAll(Arrays.asList(1, 2, 3)) );
 
         assertFalse(ImmutableLinkedTableSet.of(1, 2, 3)
-                        .containsAll(List.of(1, 5, 3)) );
+                        .containsAll(Arrays.asList(1, 5, 3)) );
     }
 
     @Test
@@ -151,21 +153,21 @@ public class ImmutableLinkedTableSetTest {
     public void testAddAll() {
         assertThrows(UnsupportedOperationException.class,
                 () -> ImmutableLinkedTableSet.of(1, 2, 3)
-                        .addAll(List.of(4, 5, 6)));
+                        .addAll(Arrays.asList(4, 5, 6)));
     }
 
     @Test
     public void testRetainAll() {
         assertThrows(UnsupportedOperationException.class,
                 () -> ImmutableLinkedTableSet.of(1, 2, 3)
-                        .retainAll(List.of(1, 2, 6)));
+                        .retainAll(Arrays.asList(1, 2, 6)));
     }
 
     @Test
     public void testRemoveAll() {
         assertThrows(UnsupportedOperationException.class,
                 () -> ImmutableLinkedTableSet.of(1, 2, 3)
-                        .removeAll(List.of(1, 5, 3)));
+                        .removeAll(Arrays.asList(1, 5, 3)));
     }
 
     @Test
@@ -177,7 +179,8 @@ public class ImmutableLinkedTableSetTest {
 
     @Test
     public void testEquals() {
-        assertEquals(Set.of(1, 2, 3), ImmutableLinkedTableSet.of(1, 2, 3));
+        Set<Integer> set = new HashSet<>(Arrays.asList(1, 2, 3));
+        assertEquals(set, ImmutableLinkedTableSet.of(1, 2, 3));
     }
-    
+
 }

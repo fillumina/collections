@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -59,12 +60,12 @@ public class BiMapTest {
                 .put("three", 3)
                 .build();
 
-        assertThrows(UnsupportedOperationException.class, 
+        assertThrows(UnsupportedOperationException.class,
                 () -> biMap.put("four", 4));
 
-        assertThrows(UnsupportedOperationException.class, 
+        assertThrows(UnsupportedOperationException.class,
                 () -> biMap.inverse().put(4, "four"));
-        
+
         assertEquals(3, biMap.size());
         assertEquals(1, biMap.get("one"));
         assertEquals(2, biMap.get("two"));
@@ -377,8 +378,12 @@ public class BiMapTest {
 
     @Test
     public void shouldInitWithExistingMap() {
-        BiMap<String, Integer> biMap = new BiMap<>(
-                Map.of("one", 1, "two", 2, "three", 3));
+        Map<String, Integer> m = new HashMap<>();
+        m.put("one", 1);
+        m.put("two", 2);
+        m.put("three", 3);
+
+        BiMap<String, Integer> biMap = new BiMap<>(m);
 
         assertEquals(3, biMap.size());
         assertEquals(1, biMap.get("one"));
@@ -403,8 +408,12 @@ public class BiMapTest {
 
     @Test
     public void shouldInitWithExistingUncorrectMap() {
-        BiMap<String, Integer> biMap = new BiMap<>(
-                Map.of("one", 1, "two", 1, "three", 3));
+        Map<String, Integer> m = new HashMap<>();
+        m.put("one", 1);
+        m.put("two", 1);
+        m.put("three", 3);
+
+        BiMap<String, Integer> biMap = new BiMap<>(m);
 
         assertEquals(2, biMap.size());
         assertEquals(3, biMap.get("three"));
@@ -412,8 +421,12 @@ public class BiMapTest {
 
     @Test
     public void shouldImmutableBeInitializedWithMap() {
-        BiMap<String, Integer> biMap = BiMap.immutable(
-                Map.of("one", 1, "two", 2, "three", 3));
+        Map<String, Integer> m = new HashMap<>();
+        m.put("one", 1);
+        m.put("two", 2);
+        m.put("three", 3);
+
+        BiMap<String, Integer> biMap = BiMap.immutable(m);
 
         assertEquals(3, biMap.size());
         assertEquals("one", biMap.get(1));
@@ -428,8 +441,12 @@ public class BiMapTest {
 
     @Test
     public void shouldBeImmutable() {
-        BiMap<String, Integer> biMap = BiMap.immutable(
-                Map.of("one", 1, "two", 2, "three", 3));
+        Map<String, Integer> m = new HashMap<>();
+        m.put("one", 1);
+        m.put("two", 2);
+        m.put("three", 3);
+
+        BiMap<String, Integer> biMap = BiMap.immutable(m);
 
         assertThrows(UnsupportedOperationException.class,
                 () -> biMap.put("four", 4));

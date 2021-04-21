@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
  */
 public class MatrixTest {
 
-//       0 1 col    
-//      +---> 
+//       0 1 col
+//      +--->
 //    0 |1 4
 //    1 |2 5
 //    2 |3 6
@@ -33,7 +33,7 @@ public class MatrixTest {
                 .row("one", "two two", "three")
                 .row("four four four", "", "six")
                 .build();
-        
+
         System.out.println(mtx.toString());
     }
 
@@ -42,7 +42,7 @@ public class MatrixTest {
         Matrix<Integer, String> mtx = new Matrix<>();
         mtx.set(0, 0, "00");
         mtx.set(1, 1, "11");
-        
+
         assertEquals(Arrays.asList("00", null), mtx.getRowAsListByIndex(0));
         assertEquals(Arrays.asList(null, "11"), mtx.getRowAsListByIndex(1));
     }
@@ -52,11 +52,11 @@ public class MatrixTest {
         Matrix<Integer, String> mtx = new Matrix<>();
         mtx.set(0, 0, "00");
         mtx.set(1, 1, "11");
-        
+
         assertEquals(Arrays.asList("00", null), mtx.getColumnAsListByIndex(0));
         assertEquals(Arrays.asList(null, "11"), mtx.getColumnAsListByIndex(1));
     }
-    
+
     @Test
     public void shouldBeEquals() {
         Matrix<Character, String> mtxBySet = new Matrix<Character, String>()
@@ -79,7 +79,7 @@ public class MatrixTest {
                 .col('B', "two two", "")
                 .col('C', "three", "six")
                 .build();
-        
+
         assertEquals(mtxByRows, mtxByRows);
         assertEquals(mtxByCols, mtxByCols);
         assertEquals(mtxBySet, mtxBySet);
@@ -88,16 +88,16 @@ public class MatrixTest {
         assertEquals(mtxByCols, mtxByRows);
         assertEquals(mtxBySet, mtxByCols);
     }
-    
+
     @Test
     public void testEqualityWithImmutable() {
         Matrix<String, Integer> matrix = new Matrix<>();
         Matrix.Immutable<String, Integer> immutable = matrix.immutable();
-        
+
         assertTrue(matrix.equals(immutable));
         assertTrue(immutable.equals(matrix));
     }
-    
+
     @Test
     public void testEmpty() {
         Matrix<String, Integer> matrix = Matrix.empty();
@@ -129,18 +129,18 @@ public class MatrixTest {
                 .row("two", "five")
                 .row("three", "six")
                 .build();
-        
+
         assertTrue(mtx.getKeys().isEmpty());
-        
+
         mtx.addKey('A');
-        assertEquals(Set.of('A'), mtx.getKeys());
-        
+        assertEquals(Utils.setOf('A'), mtx.getKeys());
+
         mtx.addKey('B');
-        assertEquals(Set.of('A', 'B'), mtx.getKeys());
+        assertEquals(Utils.setOf('A', 'B'), mtx.getKeys());
         assertEquals('A', mtx.getKeyAtColumn(0));
         assertEquals('B', mtx.getKeyAtColumn(1));
     }
-    
+
     @Test
     public void shouldAddColumn() {
         Matrix<Integer, String> mtx = Matrix.<Integer, String>rowBuilder()
@@ -273,13 +273,13 @@ public class MatrixTest {
                 .build();
 
         assertEquals(2, mtx.colSize());
-        
+
         mtx.removeColumnAtIndex(0);
-        
+
         assertFalse(mtx.getKeys().contains('A'));
-        assertEquals(List.of("four", "five", "six"), 
+        assertEquals(Arrays.asList("four", "five", "six"),
                 mtx.getColumnAsListByIndex(0));
-        
+
         assertEquals(1, mtx.colSize());
     }
 
@@ -293,16 +293,16 @@ public class MatrixTest {
                 .build();
 
         assertEquals(2, mtx.colSize());
-        
+
         mtx.removeColumnAtIndex(1);
-        
+
         assertFalse(mtx.getKeys().contains('B'));
-        assertEquals(List.of("one", "two", "three"), 
+        assertEquals(Arrays.asList("one", "two", "three"),
                 mtx.getColumnAsListByIndex(0));
-        
+
         assertEquals(1, mtx.colSize());
     }
-    
+
     @Test
     public void shouldSetKeyAtColumn() {
         Matrix<Character, String> mtx = Matrix.<Character, String>rowBuilder()
@@ -314,7 +314,7 @@ public class MatrixTest {
 
         assertEquals('A', mtx.getKeyAtColumn(0));
         assertEquals('B', mtx.getKeyAtColumn(1));
-        
+
         mtx.setKeyAtColumn('a', 0);
         mtx.setKeyAtColumn('b', 1);
 
@@ -355,12 +355,12 @@ public class MatrixTest {
         assertEquals(13, mtx.get(0, 2));
         assertEquals(23, mtx.get(1, 2));
 
-        assertEquals(List.of(11, 12, 13), mtx.getRowAsListByIndex(0));
-        assertEquals(List.of(21, 22, 23), mtx.getRowAsListByIndex(1));
+        assertEquals(Arrays.asList(11, 12, 13), mtx.getRowAsListByIndex(0));
+        assertEquals(Arrays.asList(21, 22, 23), mtx.getRowAsListByIndex(1));
 
-        assertEquals(List.of(11, 21), mtx.getColumnAsListByIndex(0));
-        assertEquals(List.of(12, 22), mtx.getColumnAsListByIndex(1));
-        assertEquals(List.of(13, 23), mtx.getColumnAsListByIndex(2));
+        assertEquals(Arrays.asList(11, 21), mtx.getColumnAsListByIndex(0));
+        assertEquals(Arrays.asList(12, 22), mtx.getColumnAsListByIndex(1));
+        assertEquals(Arrays.asList(13, 23), mtx.getColumnAsListByIndex(2));
 
         Map<String, Integer> map = mtx.getRowMap(0);
         assertEquals(11, map.get("A"));
@@ -536,7 +536,7 @@ public class MatrixTest {
                 .buildImmutable();
 
         Set<Integer> keys = mtx.getKeys();
-        assertEquals(Set.of(1, 2, 3), keys);
+        assertEquals(Utils.setOf(1, 2, 3), keys);
         assertThrows(UnsupportedOperationException.class, () -> keys.add(4));
         assertThrows(UnsupportedOperationException.class, () -> keys.clear());
 
@@ -649,12 +649,12 @@ public class MatrixTest {
                 .row("tre", "three", "trois")
                 .buildImmutable();
 
-        Map<String,Locale> map = Map.of(
+        Map<String,Locale> map = Utils.mapOf(
                 "IT", Locale.ITALY,
                 "EN", Locale.UK,
                 "FR", Locale.FRANCE
         );
-        
+
         Matrix<Locale, String> newMtx = mtx.changeKeys(t -> map.get(t));
 
         assertEquals("due", newMtx.getByKey(Locale.ITALY, 1));
@@ -681,7 +681,7 @@ public class MatrixTest {
         assertEquals("three", it.next());
         assertFalse(it.hasNext());
     }
-    
+
     @Test
     public void testColumnVsRowBuilder() {
 
@@ -690,7 +690,7 @@ public class MatrixTest {
                 .row(11, 12)
                 .row(21, 22)
                 .row(31, 32);
-        
+
         Matrix<String, Integer> rows = rowBuilder.build();
         Matrix<String, Integer> rowsImmutable = rowBuilder.buildImmutable();
 
@@ -700,7 +700,7 @@ public class MatrixTest {
 
         Matrix<String, Integer> cols = colBuilder.build();
         Matrix<String, Integer> colsImmutable = colBuilder.buildImmutable();
-        
+
         assertEquals(rows, rowsImmutable);
         assertEquals(cols, colsImmutable);
         assertEquals(rows, cols);

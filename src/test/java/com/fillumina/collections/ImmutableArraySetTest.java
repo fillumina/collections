@@ -1,5 +1,7 @@
 package com.fillumina.collections;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -14,7 +16,7 @@ import org.junit.jupiter.api.Test;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class ImmutableArraySetTest {
-    
+
     @Test
     public void testEmpty() {
         ImmutableArraySet<Integer> set = ImmutableArraySet.empty();
@@ -40,7 +42,7 @@ public class ImmutableArraySetTest {
 
     @Test
     public void testOf_Collection() {
-        ImmutableArraySet<Integer> set = ImmutableArraySet.of(List.of(1, 2, 3));
+        ImmutableArraySet<Integer> set = ImmutableArraySet.of(Arrays.asList(1, 2, 3));
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(3, set.get(2));
@@ -104,14 +106,14 @@ public class ImmutableArraySetTest {
         ImmutableArraySet<Integer> set = ImmutableArraySet.of(1, 2, 2);
         assertEquals(2, set.size());
     }
-    
+
     @Test
     public void testContainsAll() {
         assertTrue(ImmutableArraySet.of(1, 2, 3)
-                        .containsAll(List.of(1, 2, 3)) );
+                        .containsAll(Arrays.asList(1, 2, 3)) );
 
         assertFalse(ImmutableArraySet.of(1, 2, 3)
-                        .containsAll(List.of(1, 5, 3)) );
+                        .containsAll(Arrays.asList(1, 5, 3)) );
     }
 
     @Test
@@ -132,21 +134,21 @@ public class ImmutableArraySetTest {
     public void testAddAll() {
         assertThrows(UnsupportedOperationException.class,
                 () -> ImmutableArraySet.of(1, 2, 3)
-                        .addAll(List.of(4, 5, 6)));
+                        .addAll(Arrays.asList(4, 5, 6)));
     }
 
     @Test
     public void testRetainAll() {
         assertThrows(UnsupportedOperationException.class,
                 () -> ImmutableArraySet.of(1, 2, 3)
-                        .retainAll(List.of(1, 2, 6)));
+                        .retainAll(Arrays.asList(1, 2, 6)));
     }
 
     @Test
     public void testRemoveAll() {
         assertThrows(UnsupportedOperationException.class,
                 () -> ImmutableArraySet.of(1, 2, 3)
-                        .removeAll(List.of(1, 5, 3)));
+                        .removeAll(Arrays.asList(1, 5, 3)));
     }
 
     @Test
@@ -158,7 +160,8 @@ public class ImmutableArraySetTest {
 
     @Test
     public void testEquals() {
-        assertEquals(Set.of(1, 2, 3), ImmutableArraySet.of(1, 2, 3));
+        Set<Integer> set = new HashSet<>(Arrays.asList(1, 2, 3));
+        assertEquals(set, ImmutableArraySet.of(1, 2, 3));
     }
-    
+
 }

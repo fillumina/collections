@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,12 +17,12 @@ public class ImmutableListTest {
     @Test
     public void testCreate_GenericType() {
         List<String> immutable = ImmutableList.of("one", "two", "three");
-        assertEquals(List.of("one", "two", "three"), immutable);
+        assertEquals(Arrays.asList("one", "two", "three"), immutable);
     }
 
     @Test
     public void testCreate_List() {
-        List<String> list = List.of("one", "two", "three");
+        List<String> list = Arrays.asList("one", "two", "three");
         List<String> immutable = ImmutableList.of(list);
         assertEquals(list, immutable);
     }
@@ -67,12 +68,12 @@ public class ImmutableListTest {
             it.remove();
         });
     }
-    
+
     @Test
     public void shouldReturnAnAlreadyImmutableListIfPassed() {
         List<String> immutable = ImmutableList.of("one", "two", "three");
         List<String> other = ImmutableList.of(immutable);
-        
+
         assertTrue(immutable == other);
     }
 }

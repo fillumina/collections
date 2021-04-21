@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import com.fillumina.collections.MultiMap.Tree;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,9 +55,9 @@ public class MultiMapTest {
 
 
 
-    private static final Set<String> A_SET = Set.of("IT", "FR", "ES");
-    private static final Set<Integer> B_SET = Set.of(1, 2, 3);
-    private static final Set<Character> C_SET = Set.of('a', 'b');
+    private static final Set<String> A_SET = Utils.setOf("IT", "FR", "ES");
+    private static final Set<Integer> B_SET = Utils.setOf(1, 2, 3);
+    private static final Set<Character> C_SET = Utils.setOf('a', 'b');
 
     private static MultiMap<String> MMAP;
     private static Tree<String> TREE;
@@ -103,7 +104,7 @@ public class MultiMapTest {
         assertTrue(alphaNumberSet.contains(1));
 
         Set<Integer> values = mmap.get(null, 13);
-        assertEquals(Set.of(2), values);
+        assertEquals(Utils.setOf(2), values);
     }
 
     @Test
@@ -147,8 +148,8 @@ public class MultiMapTest {
     }
 
     public void checkTree(Tree<String> tree, int...indexes) {
-        List<Set<?>> orderedSets = List.of(A_SET, B_SET, C_SET);
-        List<Set<?>> sets = List.of(
+        List<Set<?>> orderedSets = Arrays.asList(A_SET, B_SET, C_SET);
+        List<Set<?>> sets = Arrays.asList(
                 orderedSets.get(indexes[0]),
                 orderedSets.get(indexes[1]),
                 orderedSets.get(indexes[2]));
@@ -183,7 +184,7 @@ public class MultiMapTest {
                     assertEquals(t2, t3.getParent());
                     assertEquals(tree, t3.getRoot());
 
-                    List<?> l = List.of(x, y, z);
+                    List<?> l = Arrays.asList(x, y, z);
                     String value = "" + l.get(idxMap.get(0)) +
                             ":" + l.get(idxMap.get(1)) +
                             ":" + l.get(idxMap.get(2));
@@ -289,7 +290,7 @@ public class MultiMapTest {
         assertEquals(A_SET.size() * B_SET.size() * C_SET.size(),
                 leavesMap.size());
         assertEquals("FR:3:a",
-                leavesMap.get(List.of("FR", 3, 'a')));
+                leavesMap.get(Arrays.asList("FR", 3, 'a')));
     }
 
     @Test
@@ -303,10 +304,10 @@ public class MultiMapTest {
 
         assertEquals(1, mmap.size());
 
-        assertEquals(Set.of("one"), mmap.get('a', 1));
-        assertEquals(Set.of("one"), mmap.get('a', 2));
-        assertEquals(Set.of("one"), mmap.get('b', 1));
-        assertEquals(Set.of("one"), mmap.get('b', 2));
+        assertEquals(Utils.setOf("one"), mmap.get('a', 1));
+        assertEquals(Utils.setOf("one"), mmap.get('a', 2));
+        assertEquals(Utils.setOf("one"), mmap.get('b', 1));
+        assertEquals(Utils.setOf("one"), mmap.get('b', 2));
     }
 
     @Test
@@ -320,21 +321,21 @@ public class MultiMapTest {
 
         assertEquals(4, mmap.size());
 
-        assertEquals(Set.of("one", "two"), mmap.get('a'));
-        assertEquals(Set.of("three", "four"), mmap.get('b'));
+        assertEquals(Utils.setOf("one", "two"), mmap.get('a'));
+        assertEquals(Utils.setOf("three", "four"), mmap.get('b'));
 
         // use null as placeholder (key position is important)
-        assertEquals(Set.of("one", "three"), mmap.get(null, 1));
-        assertEquals(Set.of("two", "four"), mmap.get(null, 2));
+        assertEquals(Utils.setOf("one", "three"), mmap.get(null, 1));
+        assertEquals(Utils.setOf("two", "four"), mmap.get(null, 2));
     }
 
     @Test
     public void shoulRetainSet() {
-        Set<Integer> a = Set.of(1, 2, 3);
-        Set<Integer> b = Set.of(2, 3, 4);
+        Set<Integer> a = Utils.setOf(1, 2, 3);
+        Set<Integer> b = Utils.setOf(2, 3, 4);
         Set<Integer> result = new HashSet<>(a);
         result.retainAll(b);
-        assertEquals(Set.of(2, 3), result);
+        assertEquals(Utils.setOf(2, 3), result);
     }
 
     @Test
@@ -347,7 +348,7 @@ public class MultiMapTest {
 
         assertEquals(1, mmap.size());
 
-        assertNotEquals(Set.of("one"), mmap.get('a', 3));
+        assertNotEquals(Utils.setOf("one"), mmap.get('a', 3));
     }
 
     @Test
@@ -359,8 +360,8 @@ public class MultiMapTest {
 
         assertEquals(2, mmap.size());
 
-        assertEquals(Set.of("one"), mmap.get('a', 1));
-        assertEquals(Set.of("two"), mmap.get(1, 'a'));
+        assertEquals(Utils.setOf("one"), mmap.get('a', 1));
+        assertEquals(Utils.setOf("two"), mmap.get(1, 'a'));
     }
 
     @Test
@@ -372,10 +373,10 @@ public class MultiMapTest {
 
         assertEquals(2, mmap.size());
 
-        assertEquals(Set.of("one"), mmap.get('a', 1));
-        assertEquals(Set.of("two"), mmap.get('a', 2));
+        assertEquals(Utils.setOf("one"), mmap.get('a', 1));
+        assertEquals(Utils.setOf("two"), mmap.get('a', 2));
 
-        assertEquals(Set.of("one", "two"), mmap.get('a'));
+        assertEquals(Utils.setOf("one", "two"), mmap.get('a'));
 
         assertNull(mmap.get('a', 3));
         assertNull(mmap.get('b', 1));

@@ -16,14 +16,17 @@ import org.junit.jupiter.api.Test;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class CounterTest {
-    
+
     @Test
     public void usage() {
         Counter counter = new Counter();
-        Stream.iterate(0, i -> i<3, i -> i+1).forEach(i -> counter.increment());
+        for (int i=0; i<3; i++) {
+            counter.increment();
+        }
+        //Stream.iterate(0, i -> i<3, i -> i+1).forEach(i -> counter.increment());
         assertEquals(3, counter.get());
     }
-    
+
     @Test
     public void testIncrement() {
         Counter c = new Counter();
@@ -40,7 +43,7 @@ public class CounterTest {
         c.incrementBy(4);
         assertEquals(16, c.get());
     }
-    
+
     @Test
     public void testDecrement() {
         Counter c = new Counter(100);
@@ -64,7 +67,7 @@ public class CounterTest {
         assertTrue(c.equals(55));
         assertFalse(c.equals(22));
     }
-    
+
     @Test
     public void testGet() {
         Counter c = new Counter(45);
@@ -76,7 +79,7 @@ public class CounterTest {
         Counter c = new Counter(66);
         assertEquals("66", c.toString());
     }
-    
+
     @Test
     public void testIsZero() {
         Counter c = new Counter();

@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +50,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldGetElementsByIndex() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(3, 2, 1));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(3, 2, 1));
         assertEquals(3, set.get(0));
         assertEquals(2, set.get(1));
         assertEquals(1, set.get(2));
@@ -57,7 +58,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldBeSortable() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(3, 2, 1));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(3, 2, 1));
         set.sort();
         assertEquals(1, set.get(0));
         assertEquals(2, set.get(1));
@@ -66,7 +67,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldRemoveAtIndexFirst() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(1, 2, 3));
         set.removeAtIndex(0);
         assertFalse(set.contains(1));
         assertEquals(2, set.size());
@@ -74,7 +75,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldRemoveAtIndexMiddle() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(1, 2, 3));
         set.removeAtIndex(1);
         assertFalse(set.contains(2));
         assertEquals(2, set.size());
@@ -82,7 +83,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldRemoveAtIndexLast() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(1, 2, 3));
         set.removeAtIndex(2);
         assertFalse(set.contains(3));
         assertEquals(2, set.size());
@@ -90,7 +91,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldRemoveByIteratorFirst() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(1, 2, 3));
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         it.remove();
@@ -102,7 +103,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldRemoveByIteratorMiddle() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(1, 2, 3));
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         assertEquals(2, it.next());
@@ -115,7 +116,7 @@ public class ArraySetTest extends AbstractSetTest {
 
     @Test
     public void shouldRemoveByIteratorLast() {
-        ArraySet<Integer> set = new ArraySet<>(List.of(1, 2, 3));
+        ArraySet<Integer> set = new ArraySet<>(Arrays.asList(1, 2, 3));
         Iterator<Integer> it = set.iterator();
         assertEquals(1, it.next());
         assertEquals(2, it.next());
