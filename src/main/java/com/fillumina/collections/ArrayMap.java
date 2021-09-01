@@ -1,21 +1,22 @@
 package com.fillumina.collections;
 
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * {@link AbstractArrayMap} implementation. Be aware that entries are shown having all the same
+ * {@link BaseArrayMap} implementation. Be aware that entries are shown having all the same
  * value in IDE debuggers because of the use of a single cursor instead of the usual different
  * entry for each mapping.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<Entry<K, V>> {
+public class ArrayMap<K, V> extends BaseArrayMap<K, V> implements Iterable<Entry<K, V>> {
 
     public static final ArrayMap<?, ?> EMPTY = new ImmutableArrayMap<>();
 
+    @SuppressWarnings("unchecked")
     public static <K, V> ArrayMap<K, V> empty() {
         return (ArrayMap<K, V>) EMPTY;
     }
@@ -27,7 +28,7 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
     public ArrayMap() {
     }
 
-    public ArrayMap(AbstractArrayMap<? extends K, ? extends V> copy) {
+    public ArrayMap(BaseArrayMap<? extends K, ? extends V> copy) {
         super(copy);
     }
 
@@ -35,8 +36,12 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
         super(o);
     }
 
-    protected ArrayMap(List<?> list) {
-        super(list);
+    public ArrayMap(Collection<?> collection) {
+        super(collection);
+    }
+
+    public ArrayMap(Iterable<?> iterable) {
+        super(iterable);
     }
 
     public ArrayMap(Map<? extends K, ? extends V> map) {
@@ -44,6 +49,7 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V put(K key, V value) {
         readOnlyCheck();
         if (array == null) {
@@ -52,14 +58,14 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
             array[1] = value;
             return null;
         }
-        int index = getIndexOfKey(key);
+        int index = getAbsoluteIndexOfKey(key);
         if (index == -1) {
             index = array.length;
             Object[] newArray = new Object[array.length + 2];
-            System.arraycopy(array, 0, newArray, 0, array.length);
+            System.arraycopy(array, 0, newArray, 0, index);
+            newArray[index] = key;
+            newArray[index + 1] = value;
             array = newArray;
-            array[index] = key;
-            array[index + 1] = value;
             return null;
         } else {
             V prev = (V) array[index + 1];
@@ -78,12 +84,24 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
         return new ImmutableArrayMap<>(this);
     }
 
+    @SuppressWarnings("unchecked")
     public V getValueAtIndex(int index) {
         return (V) array[1 + (index << 1)];
     }
 
+    @SuppressWarnings("unchecked")
     public K getKeyAtIndex(int index) {
         return (K) array[index << 1];
+    }
+
+    /** @return -1 if not found otherwise the index of the key. */
+    public int getIndexOfKey(K key) {
+        final int idx = getAbsoluteIndexOfKey(key);
+        return idx < 0 ? -1 : idx / 2;
+    }
+
+    public V removeEntryAtIndex(int index) {
+        return removeEntryAtAbsoluteIndex(index * 2);
     }
 
     /**
@@ -104,17 +122,24 @@ public class ArrayMap<K, V> extends AbstractArrayMap<K, V> implements Iterable<E
     /**
      * Implements a very simple bubble sort.
      */
+    @SuppressWarnings("unchecked")
     public void sortByValues(Comparator<V> comparator) {
         readOnlyCheck();
         if (array == null) {
             return;
         }
+        Object[] larray = array; // for faster operations
         boolean swapped;
         do {
             swapped = false;
-            for (int i = array.length - 3; i > 0; i -= 2) {
-                if (comparator.compare((V) array[i], (V) array[i + 2]) > 0) {
-                    swap(i - 1, i + 1);
+            for (int i = larray.length - 3; i > 0; i -= 2) {
+                if (comparator.compare((V) larray[i], (V) larray[i + 2]) > 0) {
+                    Object tmpKey = larray[i-1];
+                    Object tmpValue = larray[i];
+                    larray[i-1] = larray[i+1];
+                    larray[i] = larray[i+2];
+                    larray[i+1] = tmpKey;
+                    larray[i+2] = tmpValue;
                     swapped = true;
                 }
             }

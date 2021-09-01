@@ -18,65 +18,65 @@ import org.junit.jupiter.api.Test;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public abstract class AbstractArrayMapTestHelper {
-    
-    abstract <T extends AbstractArrayMap<Integer,String>> T create(Object... o);
-    
+
+    abstract <T extends BaseArrayMap<Integer,String>> T create(Object... o);
+
     @Test
     public void shouldInitWithArray() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));
         assertEquals("two", map.get(2));
         assertEquals("three", map.get(3));
     }
-    
+
     @Test
     public void shouldAssertContainsEntry() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         map.assertEntry(1, "one");
         map.assertEntry(2, "two");
         map.assertEntry(3, "three");
-        
+
         assertThrows(AssertionError.class, () -> map.assertEntry(4, "four"));
     }
-    
+
     @Test
     public void shouldAssertSize() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         map.assertSize(3);
-        
+
         assertThrows(AssertionError.class, () -> map.assertSize(4));
     }
-    
+
     @Test
     public void testPut() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(1, "one");
         map.put(2, "two");
         map.put(3, "three");
-        
+
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));
         assertEquals("two", map.get(2));
         assertEquals("three", map.get(3));
     }
-    
+
     @Test
     public void testPutDifferentOrderOfInsertion() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(3, "three");
         map.put(2, "two");
         map.put(1, "one");
-        
+
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));
         assertEquals("two", map.get(2));
         assertEquals("three", map.get(3));
     }
-    
+
     @Test
     public void testPutExistingKey() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(1, "one");
         map.put(2, "two");
         map.put(3, "three");
@@ -84,7 +84,7 @@ public abstract class AbstractArrayMapTestHelper {
         map.put(1, "ONE");
         map.put(2, "TWO");
         map.put(3, "THREE");
-        
+
         assertEquals(3, map.size());
         assertEquals("ONE", map.get(1));
         assertEquals("TWO", map.get(2));
@@ -93,9 +93,9 @@ public abstract class AbstractArrayMapTestHelper {
 
     @Test
     public void testRemoveFirst() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         map.remove(1);
-        
+
         assertEquals(2, map.size());
         assertEquals("two", map.get(2));
         assertEquals("three", map.get(3));
@@ -103,7 +103,7 @@ public abstract class AbstractArrayMapTestHelper {
 
     @Test
     public void testRemoveMiddle() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         map.remove(2);
 
         assertEquals(2, map.size());
@@ -113,7 +113,7 @@ public abstract class AbstractArrayMapTestHelper {
 
     @Test
     public void testRemoveLast() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         map.remove(3);
 
         assertEquals(2, map.size());
@@ -123,85 +123,85 @@ public abstract class AbstractArrayMapTestHelper {
 
     @Test
     public void testRemoveNotPresent() {
-        AbstractArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
+        BaseArrayMap<Integer,String> map = create(1, "one", 2, "two", 3, "three");
         assertNull(map.remove(4));
     }
 
     @Test
     public void testToArray() {
         Object[] objects = new Object[] {1, "one", 2, "two", 3, "three"};
-        AbstractArrayMap<Integer,String> map = create(objects);
+        BaseArrayMap<Integer,String> map = create(objects);
         Object[] array = map.toArray();
         Assertions.assertArrayEquals(objects, array);
     }
 
     @Test
     public void testClear() {
-        AbstractArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
+        BaseArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
         map.clear();
         assertEquals(0, map.size());
     }
-        
+
     @Test
     public void shouldForEach() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(3, "three");
         map.put(1, "one");
         map.put(2, "two");
 
         Map<Integer,String> m = new HashMap<>();
         map.forEach((k,v) -> m.put(k,v));
-        
+
         assertEquals(3, m.size());
         assertEquals("one", m.get(1));
         assertEquals("two", m.get(2));
         assertEquals("three", m.get(3));
     }
-    
+
     @Test
     public void testMutableEntries() {
-        AbstractArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
+        BaseArrayMap<Integer,String> map = create(2, "two", 3, "three",1, "one");
 
         Iterator<Map.Entry<Integer,String>> it = map.entrySet().iterator();
         Map.Entry<Integer,String> a = it.next();
         Map.Entry<Integer,String> b = it.next();
         Map.Entry<Integer,String> c = it.next();
-        
+
         assertTrue(a == b);
         assertTrue(b == c);
     }
-    
+
     @Test
     public void testParallelStream() {
         Object[] array = new Object[10];
         for (int i=0; i<array.length; i++) {
             if ((i & 1) == 1) {
-                array[i] = "" + i;
+                array[i] = "" + i; // string for odd indexes
             } else {
-                array[i] = i;
+                array[i] = i; // integer for even indexes (0 is even)
             }
         }
-        AbstractArrayMap<Integer,String> map = create(array);
+        BaseArrayMap<Integer,String> map = create(array);
 
         Map<Integer,String> cmap = new ConcurrentHashMap<>();
-        
+
         map.entrySet().parallelStream().forEach(e -> cmap.put(e.getKey(),e.getValue()));
-        
+
         assertEquals(map.size(), cmap.size());
         assertEquals(map, cmap);
     }
-    
+
     @Test
     public void shouldIterateOverEmptyMap() {
-        AbstractArrayMap<Integer,String> map = create();
-        
+        BaseArrayMap<Integer,String> map = create();
+
         Iterator<Entry<Integer,String>> it = map.iterator();
         assertFalse(it.hasNext());
     }
-    
+
     @Test
     public void shouldGetSizeForEmptyMap() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
 
         assertEquals(0, map.size());
     }

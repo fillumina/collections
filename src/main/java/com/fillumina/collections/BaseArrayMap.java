@@ -2,44 +2,63 @@ package com.fillumina.collections;
 
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
 /**
- * A very minimal size map backed by a single array interleaved with both keys and values. It should
- * be used mainly as a small immutable object useful to pass pairs of values around without having
- * to revert to a full blown {@link HashMap} which can use quite a lot of memory. It's very fast to
- * clone. Instead of <i>entries</i> it uses a <i>cursor</i> that is a single <i>mutable</i>
+ * A very minimal size map backed by a single array containing interleaved keys and values. Ideal as
+ * an immutable object containing few entries to pass pairs of values around without having to
+ * revert to a full blown {@link HashMap} which has a far bigger memory footprint.
+ * <p>
+ * It doens't support {@link #put(java.lang.Object, java.lang.Object) } operations.
+ * It's extended by:
+ * <ul>
+ * <li>{@link ArrayMap} which is backed by a simple array with access time of O(N)
+ * <li>{@link SortedArrayMap} which is backed by a key-sorted array with access time of O(LogN)
+ * </ul>
+ * <p>
+ * Instead of <i>entries</i> it uses a <i>cursor</i> that is a single <i>mutable</i>
  * {@link Map.Entry}: for this reason <b>don't use its {@link Map.Entry} outside loops and never
- * save them!</b> Every access is O(n). The map keeps insertion order until a sorting method is
- * called. It's not thread safe.
+ * save them!</b>
+ * <p>
+ * Every access is O(n). The map keeps insertion order until a sorting method is called. It's not
+ * thread safe.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
+public class BaseArrayMap<K, V> extends AbstractMap<K, V>
         implements Iterable<Map.Entry<K, V>> {
 
-    private class CursorIterator<K, V> implements Iterator<Entry<K, V>>, Entry<K, V> {
+    public class CursorListIterator<K, V> implements ListIterator<Entry<K, V>>, Entry<K, V> {
 
         private int index;
 
-        public CursorIterator() {
+        public CursorListIterator() {
             this(0);
         }
 
-        public CursorIterator(int index) {
+        public CursorListIterator(int index) {
             this.index = index - 2;
         }
 
         @Override
         public boolean hasNext() {
             return array == null ? false : index < array.length - 2;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return array == null ? false : index > 1;
         }
 
         @Override
@@ -52,21 +71,43 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
 
         @Override
-        public void remove() {
-            removeAtIndex(index);
+        public Entry<K, V> previous() {
+            index -= 2;
+            if (index < 0) {
+                throw new NoSuchElementException();
+            }
+            return this;
         }
 
         @Override
+        public int nextIndex() {
+            return index + 2;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index - 2;
+        }
+
+        @Override
+        public void remove() {
+            removeEntryAtAbsoluteIndex(index);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
         public K getKey() {
             return (K) array[index];
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public V getValue() {
             return (V) array[index + 1];
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public V setValue(V value) {
             readOnlyCheck();
             V prev = (V) array[index + 1];
@@ -75,12 +116,28 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
 
         @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 19 * hash + this.index;
-            return hash;
+        @SuppressWarnings("unchecked")
+        public void set(Entry<K, V> e) {
+            readOnlyCheck();
+            array[index] = e.getKey();
+            array[index + 1] = e.getValue();
         }
 
+        /** Not supported! */
+        @Override
+        public void add(Entry<K, V> e) {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getKey(), getValue());
+        }
+
+        /**
+         * Compares with other {@link Map.Entry} objects.
+         * <b>DO NOT COMPARE WITH A CURSOR FROM THE SAME COLLECTION!</b>
+         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -89,11 +146,14 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
             if (obj == null) {
                 return false;
             }
-            if (getClass() != obj.getClass()) {
+            if (!(obj instanceof Entry)) {
                 return false;
             }
-            final CursorIterator<?, ?> other = (CursorIterator<?, ?>) obj;
-            if (this.index != other.index) {
+            final Entry<?, ?> other = (Entry<?, ?>) obj;
+            if (!Objects.equals(this.getKey(), other.getKey())) {
+                return false;
+            }
+            if (!Objects.equals(this.getValue(), other.getValue())) {
                 return false;
             }
             return true;
@@ -103,13 +163,13 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     private class PairEntrySet<K, V> extends AbstractSet<Entry<K, V>> {
 
         @Override
-        public Iterator<Entry<K, V>> iterator() {
-            return new CursorIterator<>();
+        public CursorListIterator<K, V> iterator() {
+            return new CursorListIterator<>();
         }
 
         @Override
         public int size() {
-            return array.length;
+            return array.length / 2;
         }
 
         @Override
@@ -124,7 +184,7 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         private int endIdx;
 
         public PairSpliterator() {
-            this(0, array.length);
+            this(0, array.length); // using full length here
         }
 
         public PairSpliterator(int startIdx, int endIdx) {
@@ -166,47 +226,65 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public K getKey() {
             return (K) array[startIdx];
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public V getValue() {
             return (V) array[startIdx + 1];
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public V setValue(V value) {
-            throw new UnsupportedOperationException("cannot set into splititerator");
+            readOnlyCheck();
+            V old = (V) array[startIdx + 1];
+            array[startIdx + 1] = value;
+            return old;
         }
     }
 
     protected Object[] array;
-    protected Set<Entry<K, V>> entrySet;
+    protected PairEntrySet<K, V> entrySet;
 
-    public AbstractArrayMap() {
+    public BaseArrayMap() {
     }
 
-    public AbstractArrayMap(AbstractArrayMap<? extends K, ? extends V> copy) {
-        array = copy.array == null ? null : copy.array.clone();
-    }
-
-    /**
-     * Warning: unchecked copy!
-     */
-    public AbstractArrayMap(Object... o) {
-        array = o.clone();
+    public BaseArrayMap(BaseArrayMap<? extends K, ? extends V> copy) {
+        array = (copy.array == null) ? null : copy.array.clone();
     }
 
     /**
      * Warning: unchecked copy!
      */
-    protected AbstractArrayMap(List<?> list) {
+    public BaseArrayMap(Object... objectArray) {
+        array = objectArray;
+    }
+
+    /**
+     * Warning: unchecked copy!
+     */
+    public BaseArrayMap(Collection<?> collection) {
+        array = collection.toArray();
+    }
+
+    /**
+     * Warning: unchecked copy!
+     */
+    public BaseArrayMap(Iterable<?> iterable) {
+        List<Object> list = new ArrayList<>();
+        Iterator<?> it = iterable.iterator();
+        while (it.hasNext()) {
+            list.add(it.next());
+        }
         array = list.toArray();
     }
 
-    public AbstractArrayMap(Map<? extends K, ? extends V> map) {
-        array = new Object[map.size() << 1];
+    public BaseArrayMap(Map<? extends K, ? extends V> map) {
+        array = new Object[map.size() * 2];
         int idx = 0;
         for (Entry<? extends K, ? extends V> e : map.entrySet()) {
             array[idx] = e.getKey();
@@ -221,18 +299,20 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     protected void readOnlyCheck() throws UnsupportedOperationException {
     }
 
+    @SuppressWarnings("unchecked")
     public boolean containsEntry(K k, V v) {
-        return v.equals(get(k));
+        final int idx = getAbsoluteIndexOfKey((K) k);
+        return (idx < 0) ? false : Objects.equals(v, (V) array[idx + 1]);
     }
 
-    public AbstractArrayMap<K, V> assertEntry(K k, V v) throws AssertionError {
+    public BaseArrayMap<K, V> assertEntry(K k, V v) throws AssertionError {
         if (!containsEntry(k, v)) {
             throw new AssertionError("entry not present: key=" + k + " => value=" + v);
         }
         return this;
     }
 
-    public AbstractArrayMap<K, V> assertSize(int size) throws AssertionError {
+    public BaseArrayMap<K, V> assertSize(int size) throws AssertionError {
         if (size != size()) {
             throw new AssertionError("expected size=" + size + " but was " + size());
         }
@@ -251,12 +331,18 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V get(Object key) {
-        final int idx = getIndexOfKey((K) key);
+        final int idx = getAbsoluteIndexOfKey((K) key);
         return idx < 0 ? null : (V) array[idx + 1];
     }
 
-    protected int getIndexOfKey(K key) {
+    /**
+     * <b>NOTE: don't compare to -1 because overloading methods might use negative values!</b>
+     *
+     * @return < 0 if not found otherwise the absolute index of the key in the array.
+     */
+    protected int getAbsoluteIndexOfKey(K key) {
         if (array == null) {
             return -1;
         }
@@ -269,21 +355,24 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V remove(Object key) {
         readOnlyCheck();
-        int pos = getIndexOfKey((K) key);
+        int pos = getAbsoluteIndexOfKey((K) key);
         if (pos >= 0) {
-            return removeAtIndex(pos);
+            return removeEntryAtAbsoluteIndex(pos);
         }
         return null;
     }
 
-    protected V removeAtIndex(int index) {
+    protected V removeEntryAtAbsoluteIndex(int index) {
         readOnlyCheck();
-        if (index < 0) {
-            return null;
+        if (array == null || index < 0 || index > array.length - 2) {
+            throw new IndexOutOfBoundsException("index=" + index + ", array length=" +
+                    (array == null ? 0 : array.length));
         } else {
             Object[] newArray = new Object[array.length - 2];
+            @SuppressWarnings("unchecked")
             V prev = (V) array[index + 1];
             if (index == 0) {
                 System.arraycopy(array, 2, newArray, 0, array.length - 2);
@@ -306,8 +395,8 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
     }
 
     @Override
-    public Iterator<Entry<K, V>> iterator() {
-        return new CursorIterator();
+    public CursorListIterator<K, V> iterator() {
+        return new CursorListIterator<>();
     }
 
     @Override
@@ -318,33 +407,30 @@ public abstract class AbstractArrayMap<K, V> extends AbstractMap<K, V>
         return entrySet;
     }
 
-    /**
-     * Implements a very simple bubble sort.
-     */
+    /** Implements a very simple bubble sort (fast for few entries). */
+    @SuppressWarnings("unchecked")
     protected void sortByKeys(Comparator<K> comparator) {
-        //readOnlyCheck();
+        // readOnlyCheck(); it's used by SortedArrayMap to manage immutable objets
         if (array == null) {
             return;
         }
+        Object[] larray = array; // for faster operations
         boolean swapped;
         do {
             swapped = false;
-            for (int i = array.length - 4; i >= 0; i -= 2) {
-                if (comparator.compare((K) array[i], (K) array[i + 2]) > 0) {
-                    swap(i, i + 2);
+            for (int i = larray.length - 4; i >= 0; i -= 2) {
+                if (comparator.compare((K) larray[i], (K) larray[i + 2]) > 0) {
+                    Object tmpKey = larray[i];
+                    Object tmpValue = larray[i+1];
+                    larray[i] = larray[i+2];
+                    larray[i+1] = larray[i+3];
+                    larray[i+2] = tmpKey;
+                    larray[i+3] = tmpValue;
                     swapped = true;
                 }
             }
         } while (swapped);
     }
 
-    protected void swap(int a, int b) {
-        Object tmpKey = array[a];
-        Object tmpValue = array[a + 1];
-        array[a] = array[b];
-        array[a + 1] = array[b + 1];
-        array[b] = tmpKey;
-        array[b + 1] = tmpValue;
-    }
-
+    // equals(), hashCode() and toString() are all inherited from AbstractMap
 }

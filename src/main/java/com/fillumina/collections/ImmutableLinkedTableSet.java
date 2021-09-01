@@ -45,9 +45,9 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
 
     private static class LinkedEntryMap<K>
             extends AbstractEntryMap<K, Integer, LinkedEntry<K>, VieweableMap<K, Integer>> {
-        
+
         private LinkedEntry<K> head;
-        
+
         public LinkedEntryMap(K[] values) {
             super(values.length);
             if (values.length != 0) {
@@ -73,7 +73,7 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
         protected void readOnlyCheck() {
             throw new UnsupportedOperationException("read only");
         }
-        
+
         @Override
         protected LinkedEntry<K> createEntry(K k, Integer v) {
             throw new UnsupportedOperationException("not used");
@@ -84,12 +84,13 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
             throw new UnsupportedOperationException("not used");
         }
     }
-    
-    
+
+    @SuppressWarnings("unchecked")
     public static <T> ImmutableLinkedTableSet<T> empty() {
         return (ImmutableLinkedTableSet<T>) EMPTY;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> ImmutableLinkedTableSet<T> of(T... values) {
         if (values == null || values.length == 0) {
             return (ImmutableLinkedTableSet<T>) EMPTY;
@@ -97,6 +98,7 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
         return new ImmutableLinkedTableSet<T>(values);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> ImmutableLinkedTableSet<T> of(Collection<? extends T> list) {
         if (list == null || list.isEmpty()) {
             return (ImmutableLinkedTableSet<T>) EMPTY;
@@ -110,18 +112,21 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
     private LinkedEntryMap<T> delegate;
 
     // for kryo
+    @SuppressWarnings("unchecked")
     public ImmutableLinkedTableSet() {
         delegate = new LinkedEntryMap<>((T[])new Object[0]);
     }
-    
+
+    @SuppressWarnings("unchecked")
     public ImmutableLinkedTableSet(T... elements) {
         delegate = new LinkedEntryMap<>(elements);
     }
 
+    @SuppressWarnings("unchecked")
     public ImmutableLinkedTableSet(Collection<? extends T> collection) {
         delegate = new LinkedEntryMap<>((T[])collection.toArray());
     }
-    
+
     /** This operation takes O(n) */
     public T get(int index) {
         Iterator<T> it = iterator();
@@ -136,7 +141,7 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
         LinkedEntry<T> entry = delegate.getEntry(value);
         return entry == null ? -1 : entry.index;
     }
-    
+
     @Override
     public int size() {
         return delegate.size();
@@ -177,6 +182,7 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <S> S[] toArray(S[] a) {
         int index = 0;
         for (T t : this) {

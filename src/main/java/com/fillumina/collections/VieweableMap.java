@@ -46,8 +46,9 @@ public class VieweableMap<K, V>
     protected VieweableMap(Object... array) {
         super(array);
     }
-    
+
     @Override
+    @SuppressWarnings("unchecked")
     protected AbstractMap.SimpleImmutableEntry<K, V> createEntry(K k, V v) {
         if (k == null && v == null) {
             return (AbstractMap.SimpleImmutableEntry<K, V>) AbstractEntryMap.NULL_ENTRY;

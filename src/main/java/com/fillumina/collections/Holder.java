@@ -6,17 +6,18 @@ import java.util.function.Supplier;
 
 /**
  * Useful inside lambdas instead of using {@link java.util.concurrent.atomic.AtomicReference}.
- * 
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class Holder<T> {
     private static final Object EMPTY = new Object();
-    
+
+    @SuppressWarnings("unchecked")
     private T value = (T) EMPTY;
 
     public Holder() {
     }
-    
+
     public Holder(T value) {
         this.value = value;
     }
@@ -32,15 +33,15 @@ public class Holder<T> {
             this.value = value;
         }
     }
-    
+
     public boolean isEmpty() {
         return value == EMPTY;
     }
-    
+
     public boolean isNull() {
         return value == null;
     }
-    
+
     public T get() {
         if (isEmpty()) {
             return null;
@@ -118,7 +119,7 @@ public class Holder<T> {
             throw exceptionSupplier.get();
         }
     }
-    
+
     @Override
     public int hashCode() {
         return Objects.hashCode(this.value);
@@ -132,7 +133,7 @@ public class Holder<T> {
         return value.equals(obj);
     }
 
-    
+
     @Override
     public String toString() {
         return Objects.toString(value);

@@ -35,6 +35,10 @@ import java.util.stream.Collectors;
  */
 public class MultiMap<T> {
 
+    @SuppressWarnings("unchecked")
+    public static final Tree<?> EMPTY_TREE =
+            new Tree<>(null, Collections.EMPTY_MAP, Collections.EMPTY_LIST);
+
     public static class Tree<T> {
 
         private Tree<T> parent;
@@ -55,6 +59,7 @@ public class MultiMap<T> {
         /**
          * Clone the entire structure into a map.
          */
+        @SuppressWarnings("unchecked")
         public Map<?, ?> toMap() {
             return (Map<?, ?>) replaceMap((Function<T, Object>) Function.identity());
         }
@@ -406,6 +411,10 @@ public class MultiMap<T> {
     }
 
     /**
+     * Get the value associated with the passed keys. A null keys means all the set.
+     * Remember that keys are positional so null must be specified where the key should be
+     * if you don't want to set it.
+     *
      * @return the values associated to all passed keys.
      */
     public Set<T> get(Object... keys) {
@@ -435,6 +444,7 @@ public class MultiMap<T> {
      *
      * @return true if the value has been added (was not already present).
      */
+    @SuppressWarnings("unchecked")
     public boolean add(T value, Object... keys) {
         checkMapListSize(keys.length);
         Container container = new Container(keys, value);
@@ -493,18 +503,22 @@ public class MultiMap<T> {
     }
 
     public Set<Object> keysAtIndex(int index) {
-        return mapList.get(index).keySet();
+        try {
+            return mapList.get(index).keySet();
+        } catch (IndexOutOfBoundsException ex) {
+            return Collections.emptySet();
+        }
     }
 
     /**
      * @return a tree from the given positions.
      */
     public Tree<T> treeFromIndexes(int... indexes) {
-        Tree<T> root = createTree(Collections.emptyList(), null, indexes, 0,
-                null);
+        Tree<T> root = createTree(Collections.emptyList(), null, indexes, 0, null);
         return root;
     }
 
+    @SuppressWarnings("unchecked")
     private Tree<T> createTree(
             List<Object> keys, Object key,
             int[] indexes, int pos,
@@ -529,7 +543,7 @@ public class MultiMap<T> {
                 }
             }
             if (currentSelection == null || currentSelection.isEmpty()) {
-                return null;
+                return (Tree<T>) EMPTY_TREE;
             }
         } else {
             keyList = keys;
@@ -540,7 +554,7 @@ public class MultiMap<T> {
         if (isNotLeaf) {
             Set<Object> keySet = keysAtIndex(indexes[pos]);
             if (keySet.isEmpty()) {
-                return null;
+                return (Tree<T>) EMPTY_TREE;
             }
             // cannot use TreeMap on unknown types
             Map<Object, Tree<T>> map = new HashMap<>(keySet.size());
@@ -557,7 +571,7 @@ public class MultiMap<T> {
             });
 
             if (map == null) {
-                return null;
+                return (Tree<T>) EMPTY_TREE;
             }
             return new Tree<>(null, map, null);
         } else {

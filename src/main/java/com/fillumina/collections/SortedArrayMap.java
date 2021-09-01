@@ -1,29 +1,28 @@
 package com.fillumina.collections;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * Map backed by a sorted array. Very compact and accessible in O(Log n). Useful to store large maps
- * in a very small space with decent access time. It's very inefficient to add elements in. It uses
- * cursors as iterators so don't use {@link Map.Entry} outside loops. It <b>requires</b> a
- * {@link Comparable} key.
+ * {@link java.util.Map} backed by a sorted array. Very compact and accessible in O(Log n). Useful
+ * to store large maps in a very small space with decent access time. It's very inefficient to add
+ * elements in. It uses cursors as iterators so don't use {@link Map.Entry} outside loops.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
+public class SortedArrayMap<K extends Comparable<K>, V> extends BaseArrayMap<K, V> {
 
     private static final int PAIR_MASK = Integer.MAX_VALUE - 1;
 
     public static final SortedArrayMap<?, ?> EMPTY = new ImmutableSortedArrayMap<>();
 
-
-    public static <K, V> SortedArrayMap<K, V> empty() {
+    @SuppressWarnings("unchecked")
+    public static <K extends Comparable<K>, V> SortedArrayMap<K, V> empty() {
         return (SortedArrayMap<K, V>) EMPTY;
     }
 
-    public static <K, V> MapBuilder<SortedArrayMap<K, V>, K, V> builder() {
+    public static <K extends Comparable<K>, V> MapBuilder<SortedArrayMap<K, V>, K, V> builder() {
         return new MapBuilder<>(o -> new SortedArrayMap<>(o));
     }
 
@@ -40,21 +39,22 @@ public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
         sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
-    protected SortedArrayMap(List<?> list) {
-        super(list);
+    public SortedArrayMap(Collection<?> collection) {
+        super(collection);
         sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
-    
+
     public SortedArrayMap(Map<K, V> map) {
         super(map);
         sortByKeys((a, b) -> ((Comparable<K>) a).compareTo((K) b));
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public V put(K key, V value) {
         readOnlyCheck();
         Objects.requireNonNull(key, "key cannot be null");
-        int index = getIndexOfKey(key);
+        int index = getAbsoluteIndexOfKey(key);
         if (array == null) {
             array = new Object[2];
             array[0] = key;
@@ -90,10 +90,14 @@ public class SortedArrayMap<K, V> extends AbstractArrayMap<K, V> {
     }
 
     /**
+     * Search an element using the bisection algorithm on the sorted keys.
+     * It's performance is O(LogN).
+     *
      * @return index if found, -index-2 if not found
      */
     @Override
-    protected int getIndexOfKey(K key) {
+    @SuppressWarnings("unchecked")
+    protected int getAbsoluteIndexOfKey(K key) {
         if (array == null || array.length == 0) {
             return -2;
         }

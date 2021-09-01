@@ -17,14 +17,14 @@ import java.util.Objects;
  * using its own in place {@link #sort()} implementation. It's not thread safe.
  * <p>
  * NOTE: it doesn't work with well with Kryo persistor.
- *  
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     public static final SmallSet<?> EMPTY = new ImmutableSmallSet<Object>();
-    
+
     // can be either:
     // 1) null
     // 2) a single object
@@ -34,15 +34,16 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     public SmallSet() {
     }
 
+    @SuppressWarnings("unchecked")
     public SmallSet(T... elements) {
         if (elements != null) {
             final int length = elements.length;
             switch (length) {
-                case 0: 
+                case 0:
                     // do nothing
                     break;
-                case 1: 
-                    obj = elements[0]; 
+                case 1:
+                    obj = elements[0];
                     break;
                 default:
                     Object[] array = new Object[length];
@@ -89,10 +90,11 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     protected void readOnlyCheck() {
         // do nothing
     }
-    
+
     /**
      * Get the element at the given index.
      */
+    @SuppressWarnings("unchecked")
     public T get(int index) {
         if (obj == null) {
             throw new IndexOutOfBoundsException("empty set, index=" + index);
@@ -104,6 +106,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         throw new IndexOutOfBoundsException("empty set, index=" + index);
     }
 
+    @SuppressWarnings("unchecked")
     public int indexOf(T t) {
         if (obj == null) {
             return -1;
@@ -119,12 +122,13 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
             return obj.equals(t) ? 0 : -1;
         }
     }
-    
+
     /**
-     * In place sorting. Don't use 
+     * In place sorting. Don't use
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
+    @SuppressWarnings("unchecked")
     public void sort(Comparator<T> comparator) {
         readOnlyCheck();
         if (obj != null && obj.getClass().isArray()) {
@@ -134,10 +138,11 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     }
 
     /**
-     * In place sorting. Don't use 
+     * In place sorting. Don't use
      * {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
+    @SuppressWarnings("unchecked")
     public void sort() {
         readOnlyCheck();
         if (obj != null && obj.getClass().isArray()) {
@@ -147,6 +152,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean add(T e) {
         readOnlyCheck();
         if (e == null) {
@@ -192,6 +198,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
      * It's quite an expensive operation.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public boolean remove(Object e) {
         readOnlyCheck();
         if (e == null || obj == null) {
@@ -220,6 +227,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     public T removeAtIndex(int i) {
         readOnlyCheck();
         T[] array = (T[]) obj;
@@ -235,8 +243,9 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         obj = na;
         return oldValue;
     }
-    
+
     @Override
+    @SuppressWarnings("unchecked")
     public boolean contains(Object o) {
         if (obj == null) {
             return false;
@@ -258,6 +267,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
         if (obj == null) {
             // the set is empty
@@ -319,6 +329,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public int size() {
         if (obj == null) {
             return 0;
@@ -329,6 +340,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public int hashCode() {
         if (obj == null) {
             return 0;
@@ -340,6 +352,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
 
     // equals() is imported from AbstractCollection
     @Override
+    @SuppressWarnings("unchecked")
     public String toString() {
         if (obj == null) {
             return "null";
@@ -348,7 +361,7 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         }
         return "[" + obj.toString() + "]";
     }
-    
+
     /** @return immutable clone */
     public ImmutableSmallSet<T> immutable() {
         return new ImmutableSmallSet<>(this);

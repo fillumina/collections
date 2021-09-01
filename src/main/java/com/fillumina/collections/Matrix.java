@@ -31,6 +31,7 @@ public class Matrix<K, V> {
 
     public static final Matrix<?,?> EMPTY = new Immutable<Object,Object>();
 
+    @SuppressWarnings("unchecked")
     public static <K,V> Matrix<K,V> empty() {
         return (Matrix<K, V>) EMPTY;
     }
@@ -94,19 +95,23 @@ public class Matrix<K, V> {
         private List<V[]> rows = new ArrayList<>();
         private int rowLength = -1;
 
+        @SuppressWarnings("unchecked")
         public RowBuilder<K, V> keys(Collection<? extends K> keys) {
             return keys((K[]) keys.toArray());
         }
 
+        @SuppressWarnings("unchecked")
         public RowBuilder<K, V> keys(K... values) {
             this.keys = values;
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         public RowBuilder<K, V> row(Collection<? extends V> values) {
             return row((V[]) values.toArray());
         }
 
+        @SuppressWarnings("unchecked")
         public RowBuilder<K, V> row(V... values) {
             rows.add(values);
             if (rowLength == -1) {
@@ -127,6 +132,7 @@ public class Matrix<K, V> {
             return new Immutable<>(keys, array);
         }
 
+        @SuppressWarnings("unchecked")
         private V[][] createMatrix() {
             V[][] array = (V[][]) new Object[rows.size()][];
             for (int i = 0, l = rows.size(); i < l; i++) {
@@ -142,10 +148,12 @@ public class Matrix<K, V> {
         private List<V[]> columns = new ArrayList<>();
         private int colLength = -1;
 
+        @SuppressWarnings("unchecked")
         public ColBuilder<K, V> col(K key, Collection<? extends V> values) {
             return col(key, (V[]) values.toArray());
         }
 
+        @SuppressWarnings("unchecked")
         public ColBuilder<K, V> col(K key, V... values) {
             this.keys.add(key);
             this.columns.add(values);
@@ -165,6 +173,7 @@ public class Matrix<K, V> {
             return new Immutable<>(ImmutableLinkedTableSet.of(keys), array);
         }
 
+        @SuppressWarnings("unchecked")
         private V[][] createMatrix() {
             final int rows = columns.size();
             V[][] array = (V[][]) new Object[colLength][rows];
@@ -259,6 +268,7 @@ public class Matrix<K, V> {
         this.matrix = array;
     }
 
+    @SuppressWarnings("unchecked")
     protected Matrix(K[] keys, int rows) {
         this.keys = keys == null ? null : createKeys(Arrays.asList(keys));
         matrix = (V[][]) new Object[keys.length][rows];
@@ -269,6 +279,7 @@ public class Matrix<K, V> {
         this.matrix = array;
     }
 
+    @SuppressWarnings("unchecked")
     public Matrix(Collection<? extends K> keys, int rows) {
         this.keys = keys == null ? null : createKeys(keys);
         matrix = (V[][]) new Object[keys.size()][rows];
@@ -289,6 +300,7 @@ public class Matrix<K, V> {
     /**
      * Sizes the array with predefined length
      */
+    @SuppressWarnings("unchecked")
     public Matrix(int rows, int cols) {
         keys = null;
         matrix = (V[][]) new Object[cols][rows];
@@ -297,17 +309,20 @@ public class Matrix<K, V> {
     /**
      * Transforms a map in a mono-dimensional matrix where K are keys and V are values.
      */
+    @SuppressWarnings("unchecked")
     public Matrix(Map<K, V> map) {
         keys = createKeys(map.keySet());
         matrix = (V[][]) new Object[1][];
         matrix[0] = map.values().toArray();
     }
 
+    @SuppressWarnings("unchecked")
     public Matrix(Matrix<? extends K, ? extends V> copy) {
         this.keys = copy.keys == null ? null : (BiMap<K, Integer>) copy.keys.clone();
         this.matrix = cloneMatrixArray(copy);
     }
 
+    @SuppressWarnings("unchecked")
     private static <V> V[][] cloneMatrixArray(Matrix<?, ? extends V> copy) {
         if (copy.matrix == null) {
             return null;
@@ -353,6 +368,7 @@ public class Matrix<K, V> {
         return keys.inverse().get(column);
     }
 
+    @SuppressWarnings("unchecked")
     public Matrix<K,V> addKeys(K... keys) {
         for (K k : keys) {
             addKey(k);
@@ -376,6 +392,7 @@ public class Matrix<K, V> {
         return keys.inverse().put(col, key);
     }
 
+    @SuppressWarnings("unchecked")
     public Matrix<K, V> addColumn(K key, V... column) {
         return addColumn(key, Arrays.asList(column));
     }
@@ -423,6 +440,7 @@ public class Matrix<K, V> {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     public Matrix<K, V> set(int row, int col, V value) {
         readOnlyCheck();
         if (matrix == null) {
@@ -443,10 +461,12 @@ public class Matrix<K, V> {
         matrix = newMatrix;
     }
 
+    @SuppressWarnings("unchecked")
     public V get(int row, int col) {
         return (V) matrix[row][col];
     }
 
+    @SuppressWarnings("unchecked")
     public V getByKey(K key, int rowIndex) {
         int col = keys.get(key);
         return (V) matrix[rowIndex][col];
@@ -517,6 +537,7 @@ public class Matrix<K, V> {
         return new ColumnIterator(col);
     }
 
+    @SuppressWarnings("unchecked")
     public void forEachElement(Consumer<V> consumer) {
         for (int i = 0, li = matrix.length; i < li; i++) {
             for (int j = 0, lj = matrix[0].length; j < lj; j++) {
@@ -533,6 +554,7 @@ public class Matrix<K, V> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void insertRowAtIndex(int index) {
         readOnlyCheck();
         int length = matrix.length;
@@ -543,6 +565,7 @@ public class Matrix<K, V> {
         matrix = newmtx;
     }
 
+    @SuppressWarnings("unchecked")
     void insertColumnAtIndex(int index) {
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
@@ -553,6 +576,7 @@ public class Matrix<K, V> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void removeRowAtIndex(int index) {
         readOnlyCheck();
         int length = matrix.length;
@@ -566,6 +590,7 @@ public class Matrix<K, V> {
         matrix = newmtx;
     }
 
+    @SuppressWarnings("unchecked")
     void matrixRemoveColumnAtIndex(int index) {
         final int length = matrix[0].length;
         for (int i = 0, l = matrix.length; i < l; i++) {
@@ -601,6 +626,7 @@ public class Matrix<K, V> {
     /**
      * @return a read only list backed by the matrix.
      */
+    @SuppressWarnings("unchecked")
     public List<V> getRowAsListByIndex(int row) {
         return new AbstractList<V>() {
             @Override
@@ -618,6 +644,7 @@ public class Matrix<K, V> {
     /**
      * @return a read only list backed by the matrix.
      */
+    @SuppressWarnings("unchecked")
     public List<V> getColumnAsListByIndex(int col) {
         return new AbstractList<V>() {
             @Override

@@ -39,7 +39,7 @@ public class ImmutableSortedArrayMapTest {
         m.put(2, "two");
         m.put(3, "three");
         
-        Map<Integer, String> map = ImmutableSortedArrayMap.of(m);
+        Map<Integer, String> map = ImmutableSortedArrayMap.ofMap(m);
 
         assertEquals(3, map.size());
         assertEquals("one", map.get(1));

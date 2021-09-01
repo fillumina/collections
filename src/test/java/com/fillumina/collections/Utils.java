@@ -10,8 +10,10 @@ import java.util.Set;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
+// TODO fix unchecked or unsafe
 class Utils {
 
+    @SuppressWarnings("unchecked")
     public static <T> Set<T> setOf(T... array) {
         Set<T> set = new HashSet<>();
         for (T t : array) {
@@ -20,6 +22,7 @@ class Utils {
         return Collections.unmodifiableSet(set);
     }
 
+    @SuppressWarnings("unchecked")
     public static <K,V> Map<K,V> mapOf(Object... array) {
         Map<K,V> map = new HashMap<>();
         for (int i=0; i<array.length; i+=2) {

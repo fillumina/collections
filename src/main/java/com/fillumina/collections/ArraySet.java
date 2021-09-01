@@ -30,6 +30,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     public ArraySet() {
     }
 
+    @SuppressWarnings("unchecked")
     public ArraySet(T... elements) {
         if (elements != null) {
             final int length = elements.length;
@@ -62,6 +63,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public ArraySet(Collection<? extends T> elements) {
         if (elements != null && !elements.isEmpty()) {
             array = (T[]) elements.toArray();
@@ -85,6 +87,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     /**
      * Get the element at the given index.
      */
+    @SuppressWarnings("unchecked")
     public T get(int index) {
         if (array == null) {
             throw new IndexOutOfBoundsException("empty set, index=" + index);
@@ -136,6 +139,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean add(T e) {
         readOnlyCheck();
         if (e == null) {
@@ -174,6 +178,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
      * It's quite an expensive operation.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public boolean remove(Object e) {
         readOnlyCheck();
         if (e == null || array == null) {
@@ -201,6 +206,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     public T removeAtIndex(int i) {
         readOnlyCheck();
         T oldValue = array[i];
@@ -217,6 +223,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean contains(Object o) {
         if (array == null) {
             return false;
@@ -238,6 +245,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Iterator<T> iterator() {
         if (array == null) {
             // the set is empty

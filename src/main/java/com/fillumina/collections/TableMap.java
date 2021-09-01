@@ -26,7 +26,7 @@ public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, Tabl
     /**
      * Homologous copy constructor.
      */
-    public TableMap(AbstractEntryMap<? extends K, ? extends V, 
+    public TableMap(AbstractEntryMap<? extends K, ? extends V,
             Entry<? extends K, ? extends V>, TableMap<? extends K, ? extends V>> map) {
         super(map);
     }
@@ -39,6 +39,7 @@ public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, Tabl
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected Entry<K, V> createEntry(K k, V v) {
         if (k == null && v == null) {
             return (Entry<K, V>) AbstractEntryMap.NULL_ENTRY;
@@ -55,10 +56,10 @@ public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, Tabl
     public ImmutableTableMap<K, V> immutable() {
         return new ImmutableTableMap<K, V>(this);
     }
-    
+
     @Override
     public TableMap<K, V> clone() {
         return new TableMap<K, V>(this);
     }
-    
+
 }

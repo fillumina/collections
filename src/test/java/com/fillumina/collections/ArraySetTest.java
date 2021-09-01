@@ -3,7 +3,6 @@ package com.fillumina.collections;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,6 +22,7 @@ public class ArraySetTest extends AbstractSetTest {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected <T> Set<T> createSet(T... array) {
         return new ArraySet<>(array);
     }

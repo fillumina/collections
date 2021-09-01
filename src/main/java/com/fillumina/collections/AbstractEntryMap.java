@@ -15,10 +15,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * A hash {@link java.util.Map} implementation.
+ * A very extendable hash-map {@link java.util.Map} implementation.
  * <ul>
- * <li>allows to specify a {@link Map.Entry} implementation
- * <li>has a {@code public} {@link #forEach(java.util.function.Consumer) } and
+ * <li>allows to specify a customized {@link Map.Entry} implementation
+ * <li>has a {@code public} {@code forEach(Consumer<Entry>)} and
  * <i>{@code protected}</i> {@link #putEntry(java.util.Map.Entry) } and {@link #getEntry(Object) }
  * and can add entries with its {@code keySet}.
  * <li>It's performances are O(1) for all operations (add, get, remove) but it's O(n) for the worst
@@ -40,6 +40,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     protected static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
+    /**
+     * This is the status that is actually passed to the immutable implementation.
+     * @param <E>
+     */
     public static class InternalState<E> {
 
         private E[] array;
@@ -55,6 +59,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         state = new InternalState<>();
     }
 
+    @SuppressWarnings("unchecked")
     public AbstractEntryMap(int initialSize) {
         this();
         // by using a power of 2 as a size the expensive module operation
@@ -87,6 +92,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     /**
      * Copy constructor.
      */
+    @SuppressWarnings("unchecked")
     public AbstractEntryMap(
             AbstractEntryMap<? extends K, ? extends V, ? extends E, ? extends M> map) {
         this();
@@ -118,6 +124,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         this(list.toArray());
     }
 
+    @SuppressWarnings("unchecked")
     protected AbstractEntryMap(Object... array) {
         this();
         for (int i=0,l=array.length; i<l; i+=2) {
@@ -127,7 +134,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             innerPut(k,v);
         }
     }
-    
+
     protected abstract E createEntry(K k, V v);
 
     /**
@@ -164,6 +171,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     // fluent interface methods
+    @SuppressWarnings("unchecked")
     public M add(K k, V v) {
         put(k, v);
         return (M) this;
@@ -173,6 +181,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return add(entry.getKey(), entry.getValue());
     }
 
+    @SuppressWarnings("unchecked")
     public M addAll(Map<K, V> map) {
         map.forEach((k, v) -> put(k, v));
         return (M) this;
@@ -275,6 +284,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     private void resizeCheck() {
         if (state.array == null || state.array.length == 0) {
             state.array = (E[]) new Entry[INITIAL_SIZE];
@@ -444,11 +454,13 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public boolean remove(Object o) {
                 return AbstractEntryMap.this.removeEntry(((E) o));
             }
 
             @Override
+            @SuppressWarnings("unchecked")
             public boolean add(Entry<K, V> e) {
                 return AbstractEntryMap.this.putEntry((E) e) == null;
             }
@@ -799,11 +811,13 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean removeAll(Collection<?> c) {
             return AbstractEntryMap.this.removeAll((Collection<K>) c);
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean retainAll(Collection<?> c) {
             return AbstractEntryMap.this.retainAll((Collection<K>) c);
         }
@@ -819,6 +833,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean remove(Object key) {
             return AbstractEntryMap.this.remove((K) key) != null;
         }

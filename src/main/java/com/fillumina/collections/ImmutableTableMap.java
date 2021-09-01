@@ -14,11 +14,13 @@ import java.util.Map;
 public final class ImmutableTableMap<K, V> extends UnmodifiableTableMap<K, V> {
 
     public static final ImmutableTableMap<?,?> EMPTY = new ImmutableTableMap<Object, Object>();
-    
+
+    @SuppressWarnings("unchecked")
     public static <K,V> ImmutableTableMap<K,V> empty() {
         return (ImmutableTableMap<K, V>) EMPTY;
     }
-    
+
+    @SuppressWarnings("unchecked")
     public static <K,V> ImmutableTableMap<K,V> of(Object... values) {
         MapBuilder<ImmutableTableMap<K,V>, K,V> builder = builder();
         for (int i=0; i<values.length; i+=2) {
@@ -26,11 +28,11 @@ public final class ImmutableTableMap<K, V> extends UnmodifiableTableMap<K, V> {
         }
         return builder.build();
     }
-    
+
     public static <K,V> ImmutableTableMap<K,V> of(Map<? extends K, ? extends V> map) {
         return new ImmutableTableMap<>(map);
     }
-    
+
     public static <K, V> MapBuilder<ImmutableTableMap<K,V>, K, V> builder() {
         return new MapBuilder<>(l -> new ImmutableTableMap<>(l));
     }
@@ -58,7 +60,7 @@ public final class ImmutableTableMap<K, V> extends UnmodifiableTableMap<K, V> {
     protected ImmutableTableMap(List<?> list) {
         super(list);
     }
-    
+
     @Override
     public ImmutableTableMap<K, V> immutable() {
         return this;
@@ -68,7 +70,7 @@ public final class ImmutableTableMap<K, V> extends UnmodifiableTableMap<K, V> {
     public UnmodifiableTableMap<K, V> unmodifiable() {
         return this;
     }
-    
+
     @Override
     public ImmutableTableMap<K, V> clone() {
         return this;

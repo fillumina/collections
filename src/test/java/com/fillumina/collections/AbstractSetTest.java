@@ -3,7 +3,6 @@ package com.fillumina.collections;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,9 +16,9 @@ import org.junit.jupiter.api.Test;
 public abstract class AbstractSetTest {
 
     protected abstract <T> Set<T> createSet();
+    @SuppressWarnings("unchecked")
     protected abstract <T> Set<T> createSet(T... array);
     protected abstract <T> Set<T> createSet(Collection<T> coll);
-
 
     @Test
     public void shouldSkipDuplicates() {

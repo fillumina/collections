@@ -1,6 +1,5 @@
 package com.fillumina.collections;
 
-import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,13 +13,14 @@ import org.junit.jupiter.api.Test;
 public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Override
+    @SuppressWarnings("unchecked")
     SortedArrayMap<Integer,String> create(Object... o) {
-        return new SortedArrayMap<Integer,String>(o);
+        return new SortedArrayMap<>(o);
     }
 
     @Test
     public void shouldMapIsSorted() {
-        AbstractArrayMap<Integer,String> map = new SortedArrayMap<>();
+        BaseArrayMap<Integer,String> map = new SortedArrayMap<>();
         map.put(3, "three");
         map.put(2, "two");
         map.put(1, "one");
@@ -37,7 +37,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testPutInMiddle() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(1, "one");
         map.put(2, "two");
         map.put(4, "four");
@@ -55,7 +55,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testPutAtBeginning() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(2, "two");
         map.put(3, "three");
         map.put(4, "four");
@@ -73,7 +73,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testPutAtBeginningThreeItems() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(2, "two");
         map.put(3, "three");
 
@@ -87,7 +87,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testPutAfterBeginning() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(1, "one");
         map.put(3, "three");
         map.put(4, "four");
@@ -105,7 +105,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testPutButLast() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(1, "one");
         map.put(2, "two");
         map.put(3, "three");
@@ -123,7 +123,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testPutReversed() {
-        AbstractArrayMap<Integer,String> map = create();
+        BaseArrayMap<Integer,String> map = create();
         map.put(5, "five");
         map.put(4, "four");
         map.put(3, "three");
@@ -140,7 +140,7 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Test
     public void testReadOnlyCheck() {
-        AbstractArrayMap<Integer,String> map = new ImmutableSortedArrayMap<>(
+        BaseArrayMap<Integer,String> map = new ImmutableSortedArrayMap<>(
             Utils.mapOf(1, "one", 2, "two", 3, "three"));
 
         assertThrows(UnsupportedOperationException.class,

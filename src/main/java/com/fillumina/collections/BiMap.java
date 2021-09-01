@@ -16,6 +16,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     public static BiMap<?, ?> EMPTY_MAP = immutable();
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
+    @SuppressWarnings("unchecked")
     public static <K, V> BiMap<K, V> empty() {
         return (BiMap<K, V>) EMPTY_MAP;
     }
@@ -28,10 +29,12 @@ public class BiMap<K, V> extends TableMap<K, V> {
         return new BiMap<>(true, array);
     }
 
+    @SuppressWarnings("unchecked")
     public static <K, V> MapBuilder<BiMap<K,V>, K,V> builder() {
         return new MapBuilder<>(l -> new BiMap(false, l.toArray()));
     }
 
+    @SuppressWarnings("unchecked")
     public static <K, V> MapBuilder<BiMap<K,V>, K,V> immutableBuilder() {
         return new MapBuilder<>(l -> new BiMap(true, l.toArray()));
     }
@@ -40,6 +43,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     private final boolean immutable;
 
     /** Empty constructor. */
+    @SuppressWarnings("unchecked")
     public BiMap() {
         super();
         this.inverseMap = new BiMap(this, false);
@@ -62,6 +66,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     }
 
     /** @param prepares the map to the expected size (avoid expensive resizing operation). */
+    @SuppressWarnings("unchecked")
     public BiMap(int initialSize) {
         super(initialSize);
         this.inverseMap = new BiMap(this, false, initialSize, EMPTY_ARRAY);
@@ -69,12 +74,14 @@ public class BiMap<K, V> extends TableMap<K, V> {
     }
 
     /** Creates an immutableClone map (used by static creators). */
+    @SuppressWarnings("unchecked")
     private BiMap(boolean immutable, Map<K, V> map) {
         super(map.size());
         this.inverseMap = new BiMap(this, immutable, map.size(), map);
         this.immutable = immutable;
     }
 
+    @SuppressWarnings("unchecked")
     private BiMap(boolean immutable, Object... array) {
         super(array.length);
         this.inverseMap = new BiMap(this, immutable, array.length, array);
@@ -90,6 +97,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
         this.immutable = immutable;
     }
 
+    @SuppressWarnings("unchecked")
     private BiMap(BiMap<V, K> inverseMap, boolean immutable, int initialSize, Object... array) {
         super(initialSize);
         this.inverseMap = inverseMap;
@@ -102,6 +110,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     }
 
     /** Clone */
+    @SuppressWarnings("unchecked")
     private BiMap(BiMap<K,V> copy, BiMap<V,K> inverse, boolean immutable) {
         super();
         if (inverse != null) {
@@ -114,6 +123,7 @@ public class BiMap<K, V> extends TableMap<K, V> {
     }
 
     /** View */
+    @SuppressWarnings("unchecked")
     private BiMap(BiMap<K,V> copy, BiMap<V,K> inverse) {
         super(copy.getInternalState());
         this.immutable = true;
