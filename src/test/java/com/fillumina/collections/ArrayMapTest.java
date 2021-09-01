@@ -347,9 +347,7 @@ public class ArrayMapTest extends AbstractArrayMapTestHelper {
         ArrayMap<Integer,String> arrayMap = new ArrayMap<>(hashMap);
 
         assertEquals(hashMap, arrayMap);
-
-        // hash order of calculation changes and so the results are (possibly!!) different
-        //assertNotEquals(hashMap.hashCode(), arrayMap.hashCode());
+        assertEquals(hashMap.hashCode(), arrayMap.hashCode());
     }
 
     @Test
@@ -384,8 +382,4 @@ public class ArrayMapTest extends AbstractArrayMapTestHelper {
         arrayMap.assertEntry("k3", "v3");
     }
 
-    @Test
-    public void shouldUseCopyConstructor() {
-
-    }
 }

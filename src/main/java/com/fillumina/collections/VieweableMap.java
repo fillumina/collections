@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * It's a {@link java.util.Map} implementation that uses unmodifiable {@link Entry} and can produce
- * <b>unmodifiable</b> view.
+ * It's a {@link java.util.Map} implementation that uses unmodifiable {@link Entry} (but it's
+ * otherwise modifiable) and can produce <b>unmodifiable</b> views.
  *
  * @param <K>
  * @param <V>

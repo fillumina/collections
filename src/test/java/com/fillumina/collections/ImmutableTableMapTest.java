@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  */
 public class ImmutableTableMapTest {
 
-    @Test
+//    @Test
     public void testOfValues() {
         Map<Integer, String> map = ImmutableTableMap
                 .of(1, "one", 2, "two", 3, "three");
@@ -32,13 +32,13 @@ public class ImmutableTableMapTest {
         assertEquals("one", map.get(1));
     }
 
-    @Test
+//    @Test
     public void testOfMap() {
         Map<Integer, String> m = new HashMap<>();
         m.put(1, "one");
         m.put(2, "two");
         m.put(3, "three");
-        
+
         Map<Integer, String> map = ImmutableTableMap.of(m);
 
         assertEquals(3, map.size());
@@ -46,8 +46,8 @@ public class ImmutableTableMapTest {
         assertEquals("two", map.get(2));
         assertEquals("three", map.get(3));
     }
-    
-    @Test
+
+//    @Test
     public void testBuilder() {
         Map<Integer, String> map = ImmutableTableMap.<Integer, String>builder()
                 .put(1, "one")
@@ -61,7 +61,7 @@ public class ImmutableTableMapTest {
         assertEquals("three", map.get(3));
     }
 
-    @Test
+//    @Test
     public void shouldNotModify() {
         Map<Integer, String> map = ImmutableTableMap.<Integer, String>builder()
                 .put(1, "one")

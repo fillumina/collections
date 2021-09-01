@@ -17,7 +17,8 @@ import java.util.function.Supplier;
 /**
  * A very extendable hash-map {@link java.util.Map} implementation.
  * <ul>
- * <li>allows to specify a customized {@link Map.Entry} implementation
+ * <li>allows to specify a customized {@link Map.Entry} implementation (remember to use the same
+ * hashcode as defined in {@link java.util.HashMap.Node#hashCode()}).
  * <li>has a {@code public} {@code forEach(Consumer<Entry>)} and
  * <i>{@code protected}</i> {@link #putEntry(java.util.Map.Entry) } and {@link #getEntry(Object) }
  * and can add entries with its {@code keySet}.
@@ -36,7 +37,8 @@ import java.util.function.Supplier;
 public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Map<K, V>>
         implements Map<K, V> {
 
-    private static final int INITIAL_SIZE = 8;
+    // remember MUST be a power of 2
+    private static final int INITIAL_SIZE = 16;
 
     protected static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);
 
@@ -51,11 +53,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         private int mask;
     }
 
-    private Set<Entry<K, V>> entrySet;
-    private InternalState<E> state;
+    private final InternalState<E> state;
+    private Set<Entry<K, V>> entrySet; // cache it only if needed
 
     public AbstractEntryMap() {
-        super();
         state = new InternalState<>();
     }
 
@@ -90,7 +91,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
-     * Copy constructor.
+     * Clone constructor.
      */
     @SuppressWarnings("unchecked")
     public AbstractEntryMap(
@@ -103,6 +104,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             for (int i = 0, l = otherArray.length; i < l; i++) {
                 if (otherArray[i] != null) {
                     E e = otherArray[i];
+                    // this way you can copy from maps with different implementations of Entry
                     array[i] = createEntry(e.getKey(), e.getValue());
                 }
             }
@@ -135,6 +137,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
     }
 
+    /**
+     * Implement your own {@link Map.Entry} by overriding this method.
+     * @param k
+     * @param v
+     * @return
+     */
     protected abstract E createEntry(K k, V v);
 
     /**
@@ -143,13 +151,16 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     protected abstract AbstractEntryMap<K, V, E, M> createMap(int size);
 
     /**
-     * Override to provide a read-only implementation.
+     * Override to provide a read-only implementation by throwing an exception.
      */
     protected void readOnlyCheck() {
         // do nothing
     }
 
     protected boolean isKeyEqualsToEntry(Object key, E e) {
+        if (e == null) {
+            return false;
+        }
         return Objects.equals(key, e.getKey());
     }
 
@@ -170,7 +181,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return h ^ (h >>> 7) ^ (h >>> 4);
     }
 
+    //****************************
     // fluent interface methods
+    //****************************
+
     @SuppressWarnings("unchecked")
     public M add(K k, V v) {
         put(k, v);
@@ -187,6 +201,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return (M) this;
     }
 
+    /** Checks if the entry with given key and value is present. */
     public boolean containsEntry(K k, V v) {
         E entry = getEntry(k);
         if (entry == null) {
@@ -207,6 +222,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             throw new AssertionError("expected size=" + size + " but was " + size());
         }
         return this;
+    }
+
+    private void saveState(InternalState<E> otherState) {
+        this.state.array = otherState.array;
+        this.state.mask = otherState.mask;
+        this.state.size = otherState.size;
     }
 
     @Override
@@ -234,6 +255,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
+     * Inserts a new entry.
      * Substitutes the existing entry with the same key if exists.
      */
     protected E innerPutEntry(E entry) {
@@ -260,6 +282,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     /**
+     * Inserts a key and value possibly reusing an existing entry if it has the same key.
      * This put operation bypass {@link #readOnlyCheck()} check.
      */
     protected V innerPut(K key, V value) {
@@ -272,7 +295,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
                 try {
                     e.setValue(value);
                 } catch (UnsupportedOperationException ex) {
-                    // some Entry implementation doesn't allow setting values, creates a new entry
+                    // some Entry implementations doesn't allow setting values, creates a new entry
                     state.array[idx] = createEntry(key, value);
                 }
                 return old;
@@ -290,6 +313,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             state.array = (E[]) new Entry[INITIAL_SIZE];
             state.mask = state.array.length - 1;
         } else if (state.size > (state.array.length >> 1)) {
+            // for performance reason always keep half the array empty
             resize(state.array.length << 1);
         }
     }
@@ -297,15 +321,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     protected void resize(int newSize) {
         AbstractEntryMap<K, V, E, M> map = createMap(nextPowerOf2(newSize) >> 1);
         forEach(e -> map.innerPutEntry(e));
-        this.state = map.state;
-    }
-
-    private void relocateEntry(E entry) {
-        int idx = hash(entry.getKey()) & state.mask;
-        while (state.array[idx] != null) {
-            idx = (idx + 1) & state.mask;
-        }
-        state.array[idx] = entry;
+        saveState(map.state);
     }
 
     @Override
@@ -326,10 +342,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     public V getOrCreate(K key, V value) {
         V v = get(key);
         if (v == null) {
-            v = value;
-            put(key, v);
+            put(key, value);
         }
-        return v;
+        return value;
     }
 
     public E getEntry(Object key) {
@@ -400,6 +415,14 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         state.size--;
     }
 
+    private void relocateEntry(E entry) {
+        int idx = hash(entry.getKey()) & state.mask;
+        while (state.array[idx] != null) {
+            idx = (idx + 1) & state.mask;
+        }
+        state.array[idx] = entry;
+    }
+
     public boolean removeAll(Collection<K> coll) {
         boolean removed = false;
         for (K k : coll) {
@@ -416,7 +439,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
                 tmap.putEntry(e);
             }
         }
-        this.state = tmap.state;
+        saveState(tmap.state);
         return !tmap.isEmpty();
     }
 
@@ -640,46 +663,44 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * multiple calls to this method will not all return the same collection.
      */
     public Collection<V> values() {
-        Collection<V> vals = values;
-        if (vals == null) {
-            vals = new AbstractCollection<V>() {
-                public Iterator<V> iterator() {
-                    return new Iterator<V>() {
-                        private Iterator<Entry<K, V>> i = entrySet().iterator();
-
-                        public boolean hasNext() {
-                            return i.hasNext();
-                        }
-
-                        public V next() {
-                            return i.next().getValue();
-                        }
-
-                        public void remove() {
-                            i.remove();
-                        }
-                    };
-                }
-
-                public int size() {
-                    return AbstractEntryMap.this.size();
-                }
-
-                public boolean isEmpty() {
-                    return AbstractEntryMap.this.isEmpty();
-                }
-
-                public void clear() {
-                    AbstractEntryMap.this.clear();
-                }
-
-                public boolean contains(Object v) {
-                    return AbstractEntryMap.this.containsValue(v);
-                }
-            };
-            values = vals;
+        if (values != null) {
+            return values;
         }
-        return vals;
+        return values = new AbstractCollection<V>() {
+            public Iterator<V> iterator() {
+                return new Iterator<V>() {
+                    private Iterator<Entry<K, V>> i = entrySet().iterator();
+
+                    public boolean hasNext() {
+                        return i.hasNext();
+                    }
+
+                    public V next() {
+                        return i.next().getValue();
+                    }
+
+                    public void remove() {
+                        i.remove();
+                    }
+                };
+            }
+
+            public int size() {
+                return AbstractEntryMap.this.size();
+            }
+
+            public boolean isEmpty() {
+                return AbstractEntryMap.this.isEmpty();
+            }
+
+            public void clear() {
+                AbstractEntryMap.this.clear();
+            }
+
+            public boolean contains(Object v) {
+                return AbstractEntryMap.this.containsValue(v);
+            }
+        };
     }
 
     // Comparison and hashing

@@ -20,8 +20,8 @@ import java.util.function.Function;
 /**
  * It's a multi value map backed by a 2-dimensional array. It is possible to
  * retrieve the value of a cell by using coordinates or by indicating its key and the row number and
- * it's possible to "translate" from one cell to another on the same row with a different key. Key
- * access and cell access are all O(1). Searching of values is linear.
+ * it's possible to "translate" by rows from one column to another using column headers as keys.
+ * Key access and cell access are O(1), translating is linear along the same row.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -253,6 +253,7 @@ public class Matrix<K, V> {
         return new ColBuilder<>();
     }
 
+    // key name and column index
     private BiMap<K,Integer> keys;
 
     // using T[][] interferes with Kryo
@@ -377,12 +378,12 @@ public class Matrix<K, V> {
     }
 
     public Matrix<K,V> addKey(K key) {
-        setKeyAtColumn(key, keys == null ? 0 : keys.size());
+        setKeyAtColumn(keys == null ? 0 : keys.size(), key);
         return this;
     }
 
     /** @return the old key */
-    public K setKeyAtColumn(K key, int col) {
+    public K setKeyAtColumn(int col, K key) {
         readOnlyCheck();
         if (keys == null) {
             keys = new BiMap<>();
@@ -476,6 +477,7 @@ public class Matrix<K, V> {
         return keys == null ? Collections.emptySet() : keys.immutableView().keySet();
     }
 
+    /** @return a map view of the row values indexed by column keys. */
     public Map<K, V> getRowMap(int row) {
         return new AbstractMap<K, V>() {
             @Override

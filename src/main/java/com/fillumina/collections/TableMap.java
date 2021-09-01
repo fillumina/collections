@@ -4,7 +4,7 @@ import java.util.AbstractMap;
 import java.util.Map;
 
 /**
- * Full {@link java.util.Map} conform implementation.
+ * Full {@link java.util.Map} conform implementation of {@link AbstractEntryMap}.
  */
 public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, TableMap<K, V>> {
 

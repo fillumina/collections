@@ -10,13 +10,14 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * A Set implementation with the aim of using as little space as possible. Its
+ * A Set implementation backed by an array with the aim of using as little space as possible. Its
  * performances shouldn't be horrible for very few elements having complexity
  * {@code O(n)}. Doesn't accept {@code null}. It maintains insertion order
  * and the n-th elemnt can be get by using {@link #get(int) }. It's sortable by
  * using its own in place {@link #sort()} implementation. It's not thread safe.
  * <p>
- * NOTE: it doesn't work with Kryo persister because of its use of Object.
+ * NOTE: it doesn't work with <a href='https://github.com/EsotericSoftware/kryo'>Kryo</a> persister
+ * because of its use of Object.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

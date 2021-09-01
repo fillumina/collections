@@ -39,15 +39,17 @@ public class MultiMap<T> {
     public static final Tree<?> EMPTY_TREE =
             new Tree<>(null, Collections.EMPTY_MAP, Collections.EMPTY_LIST);
 
+    /** Represents a node in a tree (recursively defining the tree). */
     public static class Tree<T> {
 
         private Tree<T> parent;
+        /** The list of keys of this node. */
         private final List<Object> keyList;
         private final Map<Object, Tree<T>> children;
+        /** The value of this node. */
         private final T value;
 
-        public Tree(T value, Map<Object, Tree<T>> children,
-                List<Object> keyList) {
+        public Tree(T value, Map<Object, Tree<T>> children, List<Object> keyList) {
             this.value = value;
             this.children = children;
             this.keyList = keyList;
@@ -89,8 +91,7 @@ public class MultiMap<T> {
         public <R> Tree<R> replaceTree(Function<T, R> transformer) {
             Map<Object, Tree<R>> m = new HashMap<>();
             if (children == null) {
-                return new Tree<>(transformer.apply(value),
-                        null, keyList);
+                return new Tree<>(transformer.apply(value), null, keyList);
             } else {
                 Map<Object, Tree<R>> newChildren = children.entrySet().stream()
                         .collect(Collectors.toMap(Entry::getKey,
@@ -511,7 +512,9 @@ public class MultiMap<T> {
     }
 
     /**
-     * @return a tree from the given positions.
+     * @return a tree where each level is assigned to the index in the given position.
+     * i.e. treeFromIndexes(1, 0, 2) uses the the index 1 at the first leve, 0 at the second
+     * and 2 at the third.
      */
     public Tree<T> treeFromIndexes(int... indexes) {
         Tree<T> root = createTree(Collections.emptyList(), null, indexes, 0, null);

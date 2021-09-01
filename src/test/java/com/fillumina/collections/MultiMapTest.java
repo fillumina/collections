@@ -25,6 +25,7 @@ public class MultiMapTest {
     public void usageExample() {
         MultiMap<Double> mmap = new MultiMap<>();
 
+        //       value      key_1          key_2
         //       time (s)   runner name    race type
         mmap.add(55.3, "Maria Stella", "400 mt");
         mmap.add(52.9, "Gisella Masi", "400 mt");
@@ -35,19 +36,28 @@ public class MultiMapTest {
         mmap.add(12.3, "Maria Stella", "100 mt");
         mmap.add(10.9, "Gisella Masi", "100 mt");
 
-        double avg100mt = mmap.get(null, "100 mt")
-                .stream().mapToDouble(d -> d).average().getAsDouble();
+        //                                             key_1=*   key_2='100 mt'
+        final Set<Double> avg100mtValuesSet = mmap.get(null, "100 mt");
+        double avg100mt = avg100mtValuesSet.stream().mapToDouble(d -> d).average().getAsDouble();
         assertEquals((12.3 + 10.9)/2, avg100mt);
 
+        // uses the canonical order to create the tree: first runner, then race
         Tree<Double> byRunner = mmap.treeFromIndexes(0, 1);
-        Map<?,?> runnerTimings =  byRunner.get("Maria Stella").toMap();
+        final Tree<Double> mariaTree = byRunner.get("Maria Stella");
+        Map<?,?> runnerTimings =  mariaTree.toMap();
         assertEquals(3, runnerTimings.size());
         assertEquals(12.3, runnerTimings.get("100 mt"));
         assertEquals(23.3, runnerTimings.get("200 mt"));
         assertEquals(55.3, runnerTimings.get("400 mt"));
 
+        // uses the reverse order to create the tree: first race, then runner
         Tree<Double> byRace = mmap.treeFromIndexes(1, 0);
-        Map<?,?> raceTimings = byRace.get("200 mt").toMap();
+
+        assertEquals(new HashSet<>(Arrays.asList("100 mt", "200 mt", "400 mt")),
+                byRace.getChildren().keySet());
+
+        final Tree<Double> race200mtTree = byRace.get("200 mt");
+        Map<?,?> raceTimings = race200mtTree.toMap();
         assertEquals(2, raceTimings.size());
         assertEquals(21.9, raceTimings.get("Gisella Masi"));
         assertEquals(23.3, raceTimings.get("Maria Stella"));

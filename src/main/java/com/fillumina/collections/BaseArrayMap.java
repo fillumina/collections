@@ -5,6 +5,7 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -129,9 +130,13 @@ public class BaseArrayMap<K, V> extends AbstractMap<K, V>
             throw new UnsupportedOperationException("Not supported.");
         }
 
+        /**
+         * Implementation copied from {@link java.util.HashMap.Node#hashCode()}.
+         * Must be this code otherwise cannot compare to other map implementations.
+         */
         @Override
         public int hashCode() {
-            return Objects.hash(getKey(), getValue());
+            return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
         }
 
         /**

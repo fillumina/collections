@@ -315,8 +315,8 @@ public class MatrixTest {
         assertEquals('A', mtx.getKeyAtColumn(0));
         assertEquals('B', mtx.getKeyAtColumn(1));
 
-        mtx.setKeyAtColumn('a', 0);
-        mtx.setKeyAtColumn('b', 1);
+        mtx.setKeyAtColumn(0, 'a');
+        mtx.setKeyAtColumn(1, 'b');
 
         assertEquals('a', mtx.getKeyAtColumn(0));
         assertEquals('b', mtx.getKeyAtColumn(1));
@@ -340,7 +340,7 @@ public class MatrixTest {
     }
 
     @Test
-    public void shouldGerRowsAndColumns() {
+    public void shouldGetRowsAndColumns() {
         Matrix<String, Integer> mtx = Matrix.<String, Integer>rowBuilder()
                 .keys("A", "B", "C")
                 .row(11, 12, 13)
@@ -585,6 +585,7 @@ public class MatrixTest {
         assertEquals("three", rowMap.get(3));
     }
 
+    // that's the main purpose!!
     @Test
     public void shouldGetTranslations() {
         Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
