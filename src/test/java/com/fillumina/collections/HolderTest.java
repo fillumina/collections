@@ -14,16 +14,16 @@ import org.junit.jupiter.api.Test;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class HolderTest {
-    
+
     @Test
     public void usage() {
-        Holder<Integer> h = new Holder<>();
-        
-        Stream.of(1, 7, 8, 2).forEach(i -> h.set(i));
-        
-        assertEquals(2, h.get());
+        Holder<Integer> h = new Holder<>(0);
+
+        Stream.of(1, 2, 3, 4).forEach(i -> h.set(h.get() + i));
+
+        assertEquals(1 + 2 + 3 + 4, h.get());
     }
-    
+
     @Test
     public void testSetIfNull() {
         Holder<Integer> h = new Holder<>();
@@ -39,7 +39,7 @@ public class HolderTest {
     public void testIsEmpty() {
         Holder<Integer> h = new Holder<>();
         assertTrue(h.isEmpty());
-        
+
         h.set(null);
         assertFalse(h.isEmpty());
         assertTrue(h.isNull());
@@ -76,9 +76,9 @@ public class HolderTest {
     @Test
     public void testOrElse() {
         Holder<Integer> h = new Holder<>();
-        
+
         assertEquals(21, h.orElse(21));
-        
+
         h.set(12);
         assertEquals(12, h.orElse(21));
     }
@@ -86,9 +86,9 @@ public class HolderTest {
     @Test
     public void testOrElseGet() {
         Holder<Integer> h = new Holder<>();
-        
+
         assertEquals(21, h.orElseGet(() -> 21));
-        
+
         h.set(12);
         assertEquals(12, h.orElseGet(() -> 21));
     }
@@ -96,15 +96,15 @@ public class HolderTest {
     @Test
     public void testOrElseThrow_0args() {
         Holder<Integer> h = new Holder<>();
-        
+
         assertThrows(NoSuchElementException.class, () -> h.orElseThrow());
     }
 
     @Test
     public void testOrElseThrow_Supplier() throws Exception {
         Holder<Integer> h = new Holder<>();
-        
-        assertThrows(IllegalArgumentException.class, () -> 
+
+        assertThrows(IllegalArgumentException.class, () ->
                 h.orElseThrow(() -> new IllegalArgumentException()));
     }
 
@@ -112,7 +112,7 @@ public class HolderTest {
     public void testHashCode() {
         final String string = "hello";
         assertEquals(string.hashCode(), new Holder<>(string).hashCode());
-        
+
         final Integer value = Integer.valueOf(123);
         assertEquals(value.hashCode(), new Holder<>(value).hashCode());
     }
@@ -128,5 +128,5 @@ public class HolderTest {
         final Object value = new Date();
         assertEquals(value.toString(), new Holder<>(value).toString());
     }
-    
+
 }

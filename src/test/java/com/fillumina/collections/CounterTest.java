@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,7 +18,13 @@ public class CounterTest {
         for (int i=0; i<3; i++) {
             counter.increment();
         }
-        //Stream.iterate(0, i -> i<3, i -> i+1).forEach(i -> counter.increment());
+        assertEquals(3, counter.get());
+    }
+
+    @Test
+    public void shouldCountInsideStream() {
+        Counter counter = new Counter();
+        Arrays.asList(1, 2, 3).stream().forEach(i -> counter.increment());
         assertEquals(3, counter.get());
     }
 

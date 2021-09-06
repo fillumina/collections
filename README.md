@@ -1,4 +1,4 @@
-mi ser# Collection of Java containers
+# Collection of Java containers
 
 ### Optimized for size efficiency
 
