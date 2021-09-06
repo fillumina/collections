@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 public class MultiMapTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     public void usageExample() {
         MultiMap<Double> mmap = new MultiMap<>();
 
@@ -496,6 +497,7 @@ public class MultiMapTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldGetKeysAtIndex() {
         MultiMap<String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
@@ -507,8 +509,9 @@ public class MultiMapTest {
         assertContains(mmap.getKeySetAtIndex(2), 2, 3);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> void assertContains(Set<T> set, T... values) {
-        List<T> valueList = Arrays.asList(values);
+        List<T> valueList = Arrays.<T>asList(values);
         assertEquals(set.size(), valueList.size());
         assertTrue(set.containsAll(valueList));
         assertTrue(valueList.containsAll(set));

@@ -348,10 +348,11 @@ public class MultiMap<T>
      * @param key
      * @return the set of values pointed by the given key in the given index
      */
+    @SuppressWarnings("unchecked")
     public Set<T> getSetAtIndex(int index, Object key) {
         Set<Entry<List<Object>,T>> set = getEntrySetAtIndex(index, key);
         if (set == null) {
-            return Collections.EMPTY_SET;
+            return Collections.<T>emptySet();
         }
         return set.stream().map(e -> e.getValue()).collect(Collectors.toSet());
     }
@@ -371,7 +372,7 @@ public class MultiMap<T>
     public Map<Object,Set<T>> getMapAtIndex(int index) {
         Map<Object, Set<Entry<List<Object>, T>>> map = getEntryMapAtIndex(index);
         if (map == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.<Object,Set<T>>emptyMap();
         }
         return map.entrySet().stream()
                 .collect(Collectors.toMap(
