@@ -16,7 +16,7 @@ import java.util.Objects;
  * and the n-th elemnt can be get by using {@link #get(int) }. It's sortable by
  * using its own in place {@link #sort()} implementation. It's not thread safe.
  * <p>
- * NOTE: it doesn't work with well with Kryo persistor.
+ * NOTE: it doesn't work well with Kryo persistor.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

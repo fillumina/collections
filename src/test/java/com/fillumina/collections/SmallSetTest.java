@@ -90,44 +90,6 @@ public class SmallSetTest extends AbstractSetTest {
     }
 
     @Test
-    public void shouldRemoveByIteratorFirst() {
-        SmallSet<Integer> set = new SmallSet<>(Arrays.asList(1, 2, 3));
-        Iterator<Integer> it = set.iterator();
-        assertEquals(1, it.next());
-        it.remove();
-        assertFalse(set.contains(1));
-        assertEquals(2, set.size());
-        assertTrue(it.hasNext());
-        assertEquals(2, it.next());
-    }
-
-    @Test
-    public void shouldRemoveByIteratorMiddle() {
-        SmallSet<Integer> set = new SmallSet<>(Arrays.asList(1, 2, 3));
-        Iterator<Integer> it = set.iterator();
-        assertEquals(1, it.next());
-        assertEquals(2, it.next());
-        it.remove();
-        assertFalse(set.contains(2));
-        assertEquals(2, set.size());
-        assertTrue(it.hasNext());
-        assertEquals(3, it.next());
-    }
-
-    @Test
-    public void shouldRemoveByIteratorLast() {
-        SmallSet<Integer> set = new SmallSet<>(Arrays.asList(1, 2, 3));
-        Iterator<Integer> it = set.iterator();
-        assertEquals(1, it.next());
-        assertEquals(2, it.next());
-        assertEquals(3, it.next());
-        it.remove();
-        assertFalse(set.contains(3));
-        assertEquals(2, set.size());
-        assertFalse(it.hasNext());
-    }
-
-    @Test
     public void shouldUseCloneConstructorForArray() {
         SmallSet<String> smallSet = new SmallSet<>(
                 "one", "two", "three");

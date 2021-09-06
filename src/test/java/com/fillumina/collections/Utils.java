@@ -10,7 +10,6 @@ import java.util.Set;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-// TODO fix unchecked or unsafe
 class Utils {
 
     @SuppressWarnings("unchecked")

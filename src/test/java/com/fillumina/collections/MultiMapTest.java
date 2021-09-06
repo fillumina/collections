@@ -23,7 +23,10 @@ public class MultiMapTest {
     @Test
     @SuppressWarnings("unchecked")
     public void usageExample() {
+        // can be initialized without any argument (i.e. no size required)
         MultiMap<Double> mmap = new MultiMap<>();
+
+        // load raw data into the mmap
 
         //       value      key_1          key_2
         //       time (s)   runner name    race type
@@ -36,10 +39,15 @@ public class MultiMapTest {
         mmap.add(12.3, "Maria Stella", "100 mt");
         mmap.add(10.9, "Gisella Masi", "100 mt");
 
+        // query the data by using indexed keys
+
         //                                             key_1=*   key_2='100 mt'
         final Set<Double> avg100mtValuesSet = mmap.getAll(null, "100 mt");
+        assertEquals(2, avg100mtValuesSet.size());
         double avg100mt = avg100mtValuesSet.stream().mapToDouble(d -> d).average().getAsDouble();
         assertEquals((12.3 + 10.9)/2, avg100mt);
+
+        // create different trees out of the data
 
         // uses the canonical order to create the tree: first runner, then race
         Tree<Double> byRunner = mmap.createTreeFromIndexes(0, 1);
@@ -256,6 +264,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldFlatToLevel0() {
+        // leve=0 is just the same as TREE.toMap()
         Map<?,?> flatMap0 = TREE.flatToLevel(0);
         flatMap0.forEach((a, m1) -> {
             ((Map<?,?>)m1).forEach((b, m2) -> {
@@ -276,6 +285,16 @@ public class MultiMapTest {
                 String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + c;
                 assertEquals(v, value);
             });
+        });
+    }
+
+    @Test
+    public void shouldFlatToLevel2() {
+        Map<?,?> flatMap2 = TREE.flatToLevel(2);
+        flatMap2.forEach((keyList, v) -> {
+            List<?> kl = (List<?>) keyList;
+            String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + kl.get(2);
+            assertEquals(v, value);
         });
     }
 
@@ -394,6 +413,10 @@ public class MultiMapTest {
         assertEquals("alpha", mmap.getAny(0, 1, 2));
         assertEquals("beta", mmap.getAny(0, 1, 3));
         assertEquals("gamma", mmap.getAny(0, 4, 3));
+
+        // can be 'alpha' or 'beta'
+        final String any = mmap.getAny(null, 1, null);
+        assertTrue("alpha".equals(any) || "beta".equals(any));
     }
 
     @Test
