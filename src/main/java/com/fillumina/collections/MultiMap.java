@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 /**
  * Provides an easy and powerful way to navigate, rearrange and manipulate indexed data.
  *
+ *
  * @param T the <i>value</i> type (keys are always objects)
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -39,13 +40,13 @@ public class MultiMap<T>
         /** Recursively generate the tree. The root has parent null. */
         private Tree<T> parent;
 
-        /** The list of keys of this node. */
+        /** The list of keys of this node (should be the path of parents). */
         private final List<Object> keyList;
 
-        /** Children trees indexex by key. */
+        /** Children trees indexex by key (only in non leaf nodes). */
         private final Map<Object, Tree<T>> children;
 
-        /** The value of this node. */
+        /** The value of this node (only in leaves). */
         private final T value;
 
         public Tree(T value, Map<Object, Tree<T>> children, List<Object> keyList) {
@@ -121,7 +122,7 @@ public class MultiMap<T>
         private Object mapAtLevel(List<Object> klist, int level) {
             if (level > 0) {
                 Map<Object, Object> map = new HashMap<>();
-                List<Object> listOfKeys = createList(klist, null);
+                List<Object> listOfKeys = addItemToList(klist, null);
                 int pos = klist.size();
                 children.forEach((k, c) -> {
                     listOfKeys.set(pos, k);
@@ -134,7 +135,7 @@ public class MultiMap<T>
             } else {
                 Map<?, ?> newChildren = children.entrySet().stream()
                         .collect(Collectors.toMap(
-                                e -> createList(klist, e.getKey()),
+                                e -> addItemToList(klist, e.getKey()),
                                 e -> e.getValue().toMap()));
                 return newChildren;
             }
@@ -550,15 +551,70 @@ public class MultiMap<T>
             int pos,
             Set<Entry<List<Object>,T>> selection) {
 
+        final List<Object> keyList = addKeyToKeys(keys, key);
+        final Set<Entry<List<Object>,T>> currentSelection =
+                createCurrentSelection(key, indexes, pos, selection);
+
+        if (pos < indexes.length) {
+            // not a leaf so creates child trees
+            Set<Object> keySet = getKeySetAtIndex(indexes[pos]);
+            if (keySet.isEmpty()) {
+                // no keys
+                return (Tree<T>) EMPTY_TREE;
+
+            } else {
+                // creates children trees
+                Map<Object, Tree<T>> map = new HashMap<>(keySet.size()); // cannot use TreeMap
+                final int indexPosition = pos + 1;
+                keySet.parallelStream().forEach(k -> {
+                    final Tree<T> t = createTree(keyList, k,
+                            indexes, indexPosition, currentSelection);
+                    synchronized (map) {
+                        map.put(k, t);
+                    }
+                });
+                return new Tree<>(null, map, null);
+            }
+
+        } else {
+            // it's a leaf
+            T value = currentSelection.iterator().next().getValue();
+            if (currentSelection.size() > 1) {
+                throw new IllegalArgumentException("wrong number of indexes");
+            }
+            return new Tree<>(value, null, keyList);
+        }
+    }
+
+    private static List<Object> addKeyToKeys(List<Object> keys, Object key) {
         List<Object> keyList;
-        final Set<Entry<List<Object>,T>> currentSelection;
         if (key != null) {
             if (keys == null) {
                 keyList = Collections.singletonList(key);
             } else {
-                keyList = createList(keys, key);
+                keyList = addItemToList(keys, key);
             }
+        } else {
+            keyList = keys;
+        }
+        return keyList;
+    }
 
+    private static List<Object> addItemToList(List<Object> list, Object item) {
+        List<Object> l = new ArrayList<>(list.size() + 1);
+        l.addAll(list);
+        l.add(item);
+        return l;
+    }
+
+    private Set<Entry<List<Object>,T>> createCurrentSelection(
+            Object key,
+            int[] indexes,
+            int pos,
+            Set<Entry<List<Object>,T>> selection) {
+
+        final Set<Entry<List<Object>,T>> currentSelection;
+        if (key != null) {
             Set<Entry<List<Object>,T>> keySelection = getEntrySetAtIndex(indexes[pos - 1], key);
             if (keySelection.isEmpty()) {
                 currentSelection = createNewSet(selection);
@@ -568,54 +624,13 @@ public class MultiMap<T>
                     currentSelection.retainAll(selection);
                 }
             }
-            if (currentSelection == null || currentSelection.isEmpty()) {
-                return (Tree<T>) EMPTY_TREE;
+            if (currentSelection.isEmpty()) {
+                return null;
             }
         } else {
-            keyList = keys;
-            currentSelection = null;
+            return null;
         }
-
-        final boolean isNotLeaf = pos < indexes.length;
-        if (isNotLeaf) {
-            Set<Object> keySet = getKeySetAtIndex(indexes[pos]);
-            if (keySet.isEmpty()) {
-                return (Tree<T>) EMPTY_TREE;
-            }
-            // cannot use TreeMap on unknown types
-            Map<Object, Tree<T>> map = new HashMap<>(keySet.size());
-            int indexPosition = pos + 1;
-            keySet.parallelStream().forEach(k -> {
-
-                final Tree<T> t = createTree(keyList, k,
-                        indexes, indexPosition, currentSelection);
-                if (t != null) {
-                    synchronized (map) {
-                        map.put(k, t);
-                    }
-                }
-            });
-
-            if (map == null) {
-                return (Tree<T>) EMPTY_TREE;
-            }
-            return new Tree<>(null, map, null);
-        } else {
-            T value = currentSelection.iterator().next().getValue();
-
-            if (currentSelection.size() > 1) {
-                throw new IllegalArgumentException("wrong number of parameters");
-            }
-
-            return new Tree<>(value, null, keyList);
-        }
-    }
-
-    private static List<Object> createList(List<Object> list, Object elem) {
-        List<Object> l = new ArrayList<>(list.size() + 1);
-        l.addAll(list);
-        l.add(elem);
-        return l;
+        return currentSelection;
     }
 
 }
