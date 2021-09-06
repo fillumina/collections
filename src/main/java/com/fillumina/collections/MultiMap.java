@@ -19,33 +19,32 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Provides a way to easily navigate, rearrange and manipulate data present in tree structures. The
- * idea is to replicate the functioning of a relational database where every inserted key has its
- * own set of values associated with it and can be queried to create both useful answers or new
- * organization of the same data. In particular a new tree structure can be created with a different
- * hierarchy of indexes. For example it is possible to pass from a hierarchy organized by
- * {@code granpa -> father -> son} to a new one with {@code son -> father -> granpa} or even
- * compress one level to get: {@code granpa -> families (fathers+sons)}.
- * <p>
- * It's performances are not particularly fast but managing potentially a lot of data the accent was
- * on having a compact representation. It should be used as a computational step to extract useful
- * views over unstructured data.
+ * Provides an easy and powerful way to navigate, rearrange and manipulate indexed data.
  *
+ * @param T the <i>value</i> type (keys are always objects)
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-public class MultiMap<T> {
+public class MultiMap<T>
+        extends AbstractEntryMap<List<Object>,T,Entry<List<Object>,T>,MultiMap<T>>  {
 
     @SuppressWarnings("unchecked")
     public static final Tree<?> EMPTY_TREE =
             new Tree<>(null, Collections.EMPTY_MAP, Collections.EMPTY_LIST);
 
-    /** Represents a node in a tree (recursively defining the tree). */
+    /**
+     * Represents a node in a tree (recursively defining the tree).
+     */
     public static class Tree<T> {
 
+        /** Recursively generate the tree. The root has parent null. */
         private Tree<T> parent;
+
         /** The list of keys of this node. */
         private final List<Object> keyList;
+
+        /** Children trees indexex by key. */
         private final Map<Object, Tree<T>> children;
+
         /** The value of this node. */
         private final T value;
 
@@ -54,9 +53,12 @@ public class MultiMap<T> {
             this.children = children;
             this.keyList = keyList;
             if (children != null) {
+                // set children.parent to self
                 this.children.values().forEach(t -> t.parent = this);
             }
         }
+
+        // TODO these toMap methods can be sustituted with one that flat the keys for each value (keys[] -> value)
 
         /**
          * Clone the entire structure into a map.
@@ -69,18 +71,25 @@ public class MultiMap<T> {
         /**
          * Clone the entire structure into a map transforming its leave values.
          */
-        public Map<?, ?> toMap(Function<T, Object> transformer) {
-            return (Map<?, ?>) replaceMap(transformer);
+        public Map<?, ?> toMap(Function<T, Object> valueTransformer) {
+            return (Map<?, ?>) replaceMap(valueTransformer);
         }
 
-        private Object replaceMap(Function<T, Object> transformer) {
+        /**
+         * Be advised that the result of this method is influenced by the structure of the
+         * tree and might return a map with object values as well as a multi level map.
+         *
+         * @param valueTransformer modify the value
+         * @return might return a value or another map
+         */
+        private Object replaceMap(Function<T, Object> valueTransformer) {
             if (children == null) {
-                return value;
+                return valueTransformer.apply(value);
             } else {
                 Map<?, ?> newChildren = children.entrySet().stream()
                         .collect(Collectors.toMap(
                                 e -> e.getKey(),
-                                e -> e.getValue().replaceMap(transformer)));
+                                e -> e.getValue().replaceMap(valueTransformer)));
                 return newChildren;
             }
         }
@@ -88,14 +97,14 @@ public class MultiMap<T> {
         /**
          * Clone the entire structure changing its leave values only.
          */
-        public <R> Tree<R> replaceTree(Function<T, R> transformer) {
+        public <R> Tree<R> replaceTree(Function<T, R> valueTransformer) {
             Map<Object, Tree<R>> m = new HashMap<>();
             if (children == null) {
-                return new Tree<>(transformer.apply(value), null, keyList);
+                return new Tree<>(valueTransformer.apply(value), null, keyList);
             } else {
                 Map<Object, Tree<R>> newChildren = children.entrySet().stream()
                         .collect(Collectors.toMap(Entry::getKey,
-                                e -> e.getValue().replaceTree(transformer)));
+                                e -> e.getValue().replaceTree(valueTransformer)));
                 return new Tree<>(null, newChildren, keyList);
             }
         }
@@ -287,106 +296,106 @@ public class MultiMap<T> {
         }
     }
 
-    /**
-     * Contains the value and all the keys it refers to. It's important because we cannot assume all
-     * values have a meaningful {@link Object#hashCode()} and
-     * {@link Object#equals(java.lang.Object)} implementation.
-     */
-    private static class Container<T> {
+    // The List items are the indexes of key sets mapping to values:
+    // each index have a set of keys each of which point to a set of values.
+    //            index    key      set of values
+    private final List<Map<Object, Set<Entry<List<Object>,T>>>> mapList =
+            new ArrayList<>();
 
-        private final Object[] keys;
-        private final T value;
-        private final int hashcode;
+    private int keySize = -1;
 
-        public Container(Object[] keys, T value) {
-            this.keys = keys;
-            this.value = value;
-            this.hashcode = Arrays.deepHashCode(keys);
-        }
-
-        @Override
-        public int hashCode() {
-            return hashcode;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Container<?> other = (Container<?>) obj;
-            return Arrays.deepEquals(this.keys, other.keys);
-        }
-
-        @Override
-        public String toString() {
-            return Arrays.toString(keys) + " => " + value;
-        }
-    }
-
-    // The keys are organized positionally in a list so that key '1' on the first
-    // position of the list is different from key '1' on the second.
-    //                      key      set of values
-    private final List<Map<Object, Set<Container<T>>>> mapList = new ArrayList<>();
-
-    // helper to be able to change internal set type
-    private static <T> Set<Container<T>> createNewSet() {
+    // helper to be able to easily change internal set type
+    private static <T> Set<Entry<List<Object>,T>> createNewSet() {
         return new HashSet<>();
     }
 
-    // helper to be able to change internal set type
-    private static <T> Set<Container<T>> createNewSet(Collection<Container<T>> coll) {
+    // helper to be able to easily change internal set type
+    private static <T> Set<Entry<List<Object>,T>> createNewSet(
+            Collection<Entry<List<Object>,T>> coll) {
         return new HashSet<>(coll);
     }
 
+    public MultiMap() {
+        super();
+    }
+
+    public MultiMap(int initialSize) {
+        super(initialSize);
+    }
+
+    @Override
+    protected Entry<List<Object>,T> createEntry(List<Object> k, T v) {
+        return new HashMap.SimpleEntry<>(k, v);
+    }
+
+    @Override
+    protected AbstractEntryMap<List<Object>, T, Entry<List<Object>,T>, MultiMap<T>>
+            createMap(int size) {
+        return new MultiMap<>(size);
+    }
+
+    @Override
     public void clear() {
+        super.clear();
         mapList.forEach(m -> m.clear());
         mapList.clear();
     }
 
     /**
-     * @return true if no <i>values</i> are present.
-     */
-    public boolean isEmpty() {
-        for (Map<Object, Set<Container<T>>> map : mapList) {
-            if (!map.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Be careful this is a quite expensive operation.
+     * Gets the set of values pointed by the key in the index.
      *
-     * @return the total number of <i>values</i>.
+     * @param index
+     * @param key
+     * @return the set of values pointed by the given key in the given index
      */
-    public int size() {
-        return values().size();
+    public Set<T> getSetAtIndex(int index, Object key) {
+        Set<Entry<List<Object>,T>> set = getEntrySetAtIndex(index, key);
+        if (set == null) {
+            return Collections.EMPTY_SET;
+        }
+        return set.stream().map(e -> e.getValue()).collect(Collectors.toSet());
     }
 
-    /**
-     * @return the values associated with the key at the given index (position).
-     */
-    private Set<Container<T>> getSetAtIndex(int index, Object key) {
-        if (mapList == null || mapList.isEmpty() || index >= mapList.size() || index < 0) {
-            return null;
-        }
-        final Map<Object, Set<Container<T>>> map = mapList.get(index);
+    private Set<Entry<List<Object>,T>> getEntrySetAtIndex(int index, Object key)
+            throws IndexOutOfBoundsException {
+        Map<Object, Set<Entry<List<Object>,T>>> map = getEntryMapAtIndex(index);
         return map == null ? null : map.get(key);
     }
 
     /**
-     * @return the first value associated to all passed keys.
+     * Gets the map between keys and values in the index.
+     *
+     * @param index
+     * @return the map of (key,value) from the given index
      */
-    public T getFirst(Collection<Object> keys) {
-        Set<T> set = get(keys);
+    public Map<Object,Set<T>> getMapAtIndex(int index) {
+        Map<Object, Set<Entry<List<Object>, T>>> map = getEntryMapAtIndex(index);
+        if (map == null) {
+            return Collections.EMPTY_MAP;
+        }
+        return map.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey(),
+                        e -> e.getValue().stream()
+                                .map(n -> n.getValue()).collect(Collectors.toSet())));
+    }
+
+    private Map<Object, Set<Entry<List<Object>, T>>> getEntryMapAtIndex(int index) throws
+            IndexOutOfBoundsException {
+        if (mapList == null || mapList.isEmpty() || index >= mapList.size() || index < 0) {
+            throw new IndexOutOfBoundsException("index= " + index + ", multiMap size= " +
+                    ((mapList == null) ? 0 : mapList.size()));
+        }
+        final Map<Object, Set<Entry<List<Object>,T>>> map = mapList.get(index);
+        return map;
+    }
+
+    /**
+     * @param keys the keys ordered by index (order is important)
+     * @return a value associated to all passed keys.
+     */
+    public T getAny(Collection<Object> keys) {
+        Set<T> set = getAll(keys);
         if (set == null || set.isEmpty()) {
             return null;
         }
@@ -394,17 +403,19 @@ public class MultiMap<T> {
     }
 
     /**
+     * @param keys the keys ordered by index (order is important)
      * @return the values associated to all the passed keys.
      */
-    public Set<T> get(Collection<Object> keys) {
-        return get(keys.toArray());
+    public Set<T> getAll(Collection<Object> keys) {
+        return getAll(keys.toArray());
     }
 
     /**
-     * @return the first value associated to all passed keys.
+     * @param keys the keys ordered by index (order is important)
+     * @return a value associated to all passed keys.
      */
-    public T getFirst(Object... keys) {
-        Set<T> set = get(keys);
+    public T getAny(Object... keys) {
+        Set<T> set = getAll(keys);
         if (set == null || set.isEmpty()) {
             return null;
         }
@@ -412,18 +423,19 @@ public class MultiMap<T> {
     }
 
     /**
-     * Get the value associated with the passed keys. A null keys means all the set.
-     * Remember that keys are positional so null must be specified where the key should be
-     * if you don't want to set it.
+     * Get the value associated to the passed keys. A null keys means all the values in that index.
+     * Remember that keys are positional so null must be specified where the key should be if you
+     * don't want to set it.
      *
+     * @param keys the keys ordered by index (order is important)
      * @return the values associated to all passed keys.
      */
-    public Set<T> get(Object... keys) {
-        Set<Container<T>> result = null;
+    public Set<T> getAll(Object... keys) {
+        Set<Entry<List<Object>,T>> result = null;
         for (int i = 0, l = keys.length; i < l; i++) {
             Object k = keys[i];
             if (k != null) {
-                Set<Container<T>> set = getSetAtIndex(i, k);
+                Set<Entry<List<Object>,T>> set = getEntrySetAtIndex(i, k);
                 if (set != null) {
                     if (result == null) {
                         result = createNewSet(set);
@@ -435,34 +447,56 @@ public class MultiMap<T> {
                 }
             }
         }
-        return result == null ? null : result.stream().map(s -> s.value).collect(Collectors.toSet());
+        return result == null
+                ? null
+                : result.stream().map(s -> s.getValue()).collect(Collectors.toSet());
     }
 
     /**
-     * Adds a value to all the sets corresponding to the given keys. The position of the key is
-     * important and equal keys on different position are considered different.
-     * This method can be executed concurrently (i.e. in a parallel stream).
+     * Adds a value to all the sets corresponding to the given indexes. The position of the key
+     * represents the index. This method can be executed concurrently (i.e. in a parallel stream).
      *
-     * @return true if the value has been added (was not already present).
+     * @param value the value to add
+     * @param keys the keys ordered by index (order is important)
+     * @return the old value
      */
     @SuppressWarnings("unchecked")
     public boolean add(T value, Object... keys) {
-        checkMapListSize(keys.length);
-        Container container = new Container(keys, value);
+        List<Object> keylist = Arrays.asList(keys);
+        if (keySize == -1) {
+            keySize = keylist.size();
+        } else if (keySize != keylist.size()) {
+            throw new IllegalArgumentException(
+                    "expected key size= " + keySize + ", was " + keylist.size());
+        }
+        Entry<List<Object>,T> entry = createEntry(keylist, value);
+        super.putEntry(entry);
+
+        checkIndexesAndAddIfNeeded(keys.length);
         boolean added = false;
         for (int i = 0, l = keys.length; i < l; i++) {
             Object k = keys[i];
-            Set<Container<T>> set = mapList
+            Set<Entry<List<Object>,T>> set = mapList
                     .get(i)
                     .computeIfAbsent(k, key -> createNewSet());
-            synchronized (set) {
-                added |= set.add(container);
-            }
+            added |= set.add(entry);
         }
         return added;
     }
 
-    private void checkMapListSize(int size) {
+    @Override
+    public T put(List<Object> keys, T value) {
+        add(value, keys);
+        return null; // changes many associations each in a different way
+    }
+
+    /**
+     * Checks if there are enough maps to contain all the indexes and if there aren't create
+     * the new ones.
+     *
+     * @param size how many maps there should be
+     */
+    private void checkIndexesAndAddIfNeeded(int size) {
         if (size > mapList.size()) {
             synchronized (mapList) {
                 // double check in the thread safe code
@@ -476,59 +510,47 @@ public class MultiMap<T> {
         }
     }
 
-    public boolean remove(Object... keys) {
-        boolean removed = false;
-        Container<T> element = new Container<>(keys, null);
-        for (int i = 0, l = keys.length; i < l; i++) {
-            Object k = keys[i];
-            Set<Container<T>> set = getSetAtIndex(i, k);
-            if (set != null) {
-                removed |= set.remove(element);
-            }
-        }
-        return removed;
+    /** NOT SUPPORTED */
+    @Override
+    public T remove(Object key) {
+        throw new UnsupportedOperationException("remove not supported");
     }
 
-    public Set<T> values() {
-        return mapList.stream()
-                .flatMap(map -> map.values().stream())
-                .flatMap(set -> set.stream())
-                .map(container -> container.value)
-                .collect(Collectors.toSet());
-    }
-
-    public Set<Object> keySet(Object... keys) {
-        return mapList.stream()
-                .flatMap(map -> map.keySet().stream())
-                .collect(Collectors.toSet());
-    }
-
-    public Set<Object> keysAtIndex(int index) {
-        try {
-            return mapList.get(index).keySet();
-        } catch (IndexOutOfBoundsException ex) {
-            return Collections.emptySet();
-        }
+    @Override
+    protected void removeIndex(int idx) {
+        throw new UnsupportedOperationException("remove not supported");
     }
 
     /**
-     * @return a tree where each level is assigned to the index in the given position.
-     * i.e. treeFromIndexes(1, 0, 2) uses the the index 1 at the first leve, 0 at the second
+     *
+     * @param index
+     * @return the set of keys in the given index
+     * @throw IndexOutOfBoundsException
+     */
+    public Set<Object> getKeySetAtIndex(int index) {
+        return mapList.get(index).keySet();
+    }
+
+    /**
+     * @return a tree where each level is assigned to the index in the given position.<br>
+     * i.e. {@code createTreeFromIndexes(1, 0, 2)} uses the index 1 for the first level, 0 at the second
      * and 2 at the third.
      */
-    public Tree<T> treeFromIndexes(int... indexes) {
+    public Tree<T> createTreeFromIndexes(int... indexes) {
         Tree<T> root = createTree(Collections.emptyList(), null, indexes, 0, null);
         return root;
     }
 
     @SuppressWarnings("unchecked")
     private Tree<T> createTree(
-            List<Object> keys, Object key,
-            int[] indexes, int pos,
-            Set<Container<T>> selection) {
+            List<Object> keys,
+            Object key,
+            int[] indexes,
+            int pos,
+            Set<Entry<List<Object>,T>> selection) {
 
         List<Object> keyList;
-        final Set<Container<T>> currentSelection;
+        final Set<Entry<List<Object>,T>> currentSelection;
         if (key != null) {
             if (keys == null) {
                 keyList = Collections.singletonList(key);
@@ -536,7 +558,7 @@ public class MultiMap<T> {
                 keyList = createList(keys, key);
             }
 
-            Set<Container<T>> keySelection = getSetAtIndex(indexes[pos - 1], key);
+            Set<Entry<List<Object>,T>> keySelection = getEntrySetAtIndex(indexes[pos - 1], key);
             if (keySelection.isEmpty()) {
                 currentSelection = createNewSet(selection);
             } else {
@@ -555,7 +577,7 @@ public class MultiMap<T> {
 
         final boolean isNotLeaf = pos < indexes.length;
         if (isNotLeaf) {
-            Set<Object> keySet = keysAtIndex(indexes[pos]);
+            Set<Object> keySet = getKeySetAtIndex(indexes[pos]);
             if (keySet.isEmpty()) {
                 return (Tree<T>) EMPTY_TREE;
             }
@@ -578,7 +600,7 @@ public class MultiMap<T> {
             }
             return new Tree<>(null, map, null);
         } else {
-            T value = currentSelection.iterator().next().value;
+            T value = currentSelection.iterator().next().getValue();
 
             if (currentSelection.size() > 1) {
                 throw new IllegalArgumentException("wrong number of parameters");
@@ -594,4 +616,5 @@ public class MultiMap<T> {
         l.add(elem);
         return l;
     }
+
 }
