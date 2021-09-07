@@ -1029,4 +1029,28 @@ public class GenericMapTest {
         assertTrue(entries.contains(new ImmutableMapEntry(2, "two")));
         assertTrue(entries.contains(new ImmutableMapEntry(3, "three")));
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void shouldMatchTwoEntries() {
+        Map<Integer,String> m1 = create(1, "one");
+        Set<Entry<Integer,String>> entries1 = m1.entrySet();
+        Entry<Integer,String> e1 = entries1.iterator().next();
+
+        Map<Integer,String> m2 = create(1, "one");
+        Set<Entry<Integer,String>> entries2 = m2.entrySet();
+        Entry<Integer,String> e2 = entries2.iterator().next();
+
+        assertNotNull(e1);
+        assertNotNull(e2);
+
+        assertEquals(e1, e2);
+        assertEquals(e1.hashCode(), e2.hashCode());
+
+        HashMap.SimpleEntry<Integer,String> reference = new HashMap.SimpleEntry<>(1, "one");
+        assertEquals(reference, e1);
+        assertEquals(reference.hashCode(), e1.hashCode());
+        assertEquals(reference, e2);
+        assertEquals(reference.hashCode(), e2.hashCode());
+    }
 }

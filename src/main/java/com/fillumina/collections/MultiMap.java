@@ -19,10 +19,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Stores data in an non normalized way by indexing each value with multiple keys. The data can then
- * be queried by selecting the keys of interest in the right index. It is possible to generate trees
- * out of the data by specifying the index that will compose the levels of the tree. The
- * tree can then be manipulated and maps can be extracted by flattening it.
+ * Stores data in an non normalized way by indexing each value with multiple keys (position is
+ * important). The data can then be queried by selecting the keys of interest in the right index. It
+ * is possible to generate trees by specifying the order of the indexes that will compose the
+ * levels of the tree. The tree can then be manipulated and maps can be extracted by flattening it.
  *
  * @param T the <i>value</i> type (keys are always objects)
  * @author Francesco Illuminati <fillumina@gmail.com>
