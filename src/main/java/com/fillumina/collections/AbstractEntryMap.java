@@ -400,6 +400,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         } while (true);
     }
 
+    // used by BiMap
+    @SuppressWarnings("unckecked")
+    protected Entry<K,V> getEntryAtIndex(int idx) {
+        return (Entry<K,V>) (state.array == null ? null : state.array[idx]);
+    }
+
     protected void removeIndex(int idx) {
         state.array[idx] = null;
         // relocate following entries until null
@@ -484,13 +490,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
             @Override
             @SuppressWarnings("unchecked")
-            public boolean add(Entry<K, V> e) {
-                return AbstractEntryMap.this.putEntry((E) e) == null;
-            }
-
-            @Override
             public boolean contains(Object o) {
-                return AbstractEntryMap.this.getEntry(o) != null;
+                Entry<K,V> entry = (Entry<K,V>)
+                        AbstractEntryMap.this.getEntry(((Entry<K,V>)o).getKey());
+                return Objects.equals(o, entry);
             }
 
             @Override
@@ -528,7 +531,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
                     @Override
                     public void remove() {
                         readOnlyCheck();
-                        AbstractEntryMap.this.removeIndex(currentIdx);
+                        // a little slower but plays nicer with extending classes
+                        Entry<K,V> entry = getEntryAtIndex(currentIdx);
+                        AbstractEntryMap.this.remove(entry.getKey());
+                        //AbstractEntryMap.this.removeIndex(currentIdx);
                         idx = Math.max(0, currentIdx - 1);
                         goToNextNonNullItem();
                     }
@@ -558,6 +564,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * @throws NullPointerException {@inheritDoc}
      */
     public boolean containsValue(Object value) {
+        if (state.array == null) {
+            return false;
+        }
         Iterator<Entry<K, V>> i = entrySet().iterator();
         if (value == null) {
             for (E e : state.array) {
@@ -567,7 +576,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             }
         } else {
             for (E e : state.array) {
-                if (e != null && value.equals(e.getValue() == null)) {
+                if (e != null && Objects.equals(value,e.getValue())) {
                     return true;
                 }
             }
@@ -623,8 +632,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * }
      *}</pre>
      */
-    transient Set<K> keySet;
-    transient Collection<V> values;
+    private transient Set<K> keySet;
+    private transient Collection<V> values;
 
     /**
      * {@inheritDoc}
@@ -776,6 +785,9 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      */
     @Override
     public int hashCode() {
+        if (state.array == null) {
+            return 0;
+        }
         int h = 0;
         for (E e : state.array) {
             if (e != null) {
@@ -844,11 +856,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
 
         @Override
-        public boolean addAll(Collection<? extends K> c) {
-            return super.addAll(c);
-        }
-
-        @Override
         public boolean containsAll(Collection<?> c) {
             return super.containsAll(c);
         }
@@ -857,11 +864,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         @SuppressWarnings("unchecked")
         public boolean remove(Object key) {
             return AbstractEntryMap.this.remove((K) key) != null;
-        }
-
-        @Override
-        public boolean add(K e) {
-            return AbstractEntryMap.this.put(e, null) == null;
         }
 
         @Override

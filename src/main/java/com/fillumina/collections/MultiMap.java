@@ -496,13 +496,25 @@ public class MultiMap<T>
      * @return the old value
      */
     @SuppressWarnings("unchecked")
+    public synchronized boolean addSynchronized(T value, Object... keys) {
+        return add(value, keys);
+    }
+
+    /**
+     * Adds a value associated with keys. The position of the key represents the index.
+     *
+     * @param value the value to add
+     * @param keys the keys ordered by index (order is important)
+     * @return the old value
+     */
+    @SuppressWarnings("unchecked")
     public boolean add(T value, Object... keys) {
         List<Object> keylist = Arrays.asList(keys);
         if (keySize == -1) {
             keySize = keylist.size();
         } else if (keySize != keylist.size()) {
             throw new IllegalArgumentException(
-                    "expected key size= " + keySize + ", was " + keylist.size());
+                    "expected key of size " + keySize + ", was " + keylist.size());
         }
         Entry<List<Object>, T> entry = createEntry(keylist, value);
         super.putEntry(entry);

@@ -16,17 +16,21 @@ import org.junit.jupiter.api.Test;
 public class GenericSetTest extends GenericCollectionTest {
 
     @SuppressWarnings("unchecked")
-    private <T> Set<T> createSet(T... array) {
+    private <T extends Comparable<T>> Set<T> createSet(T... array) {
         return create(Arrays.asList(array));
     }
 
     @Override
-    protected <T> Set<T> create(Collection<T> collection) {
+    protected <T extends Comparable<T>> Set<T> create(Collection<T> collection) {
         return new HashSet<>(collection);
     }
 
     @Test
     public void shouldNotAddAnExistingElement() {
+        if (isReadOnly()) {
+            return;
+        }
+
         Set<Integer> set = createSet(1, 2, 3);
         assertEquals(3, set.size());
         assertTrue(set.contains(1));
@@ -48,18 +52,20 @@ public class GenericSetTest extends GenericCollectionTest {
         assertTrue(set.contains(2));
         assertTrue(set.contains(3));
 
-        if (!readOnly()) {
-            assertTrue(set.add(4));
-            assertEquals(4, set.size());
-            assertTrue(set.contains(1));
-            assertTrue(set.contains(2));
-            assertTrue(set.contains(3));
-            assertTrue(set.contains(4));
-        }
+        assertTrue(set.add(4));
+        assertEquals(4, set.size());
+        assertTrue(set.contains(1));
+        assertTrue(set.contains(2));
+        assertTrue(set.contains(3));
+        assertTrue(set.contains(4));
     }
 
     @Test
     public void shouldNotAddAnExistingElementOnEmptySet() {
+        if (isReadOnly()) {
+            return;
+        }
+
         Set<Integer> set = createSet();
         assertEquals(0, set.size());
         assertTrue(set.add(1));
@@ -69,12 +75,10 @@ public class GenericSetTest extends GenericCollectionTest {
         assertEquals(1, set.size());
         assertTrue(set.contains(1));
 
-        if (!readOnly()) {
-            assertTrue(set.add(4));
-            assertEquals(2, set.size());
-            assertTrue(set.contains(1));
-            assertTrue(set.contains(4));
-        }
+        assertTrue(set.add(4));
+        assertEquals(2, set.size());
+        assertTrue(set.contains(1));
+        assertTrue(set.contains(4));
     }
 
 }

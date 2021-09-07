@@ -35,6 +35,6 @@ The Java JDK library uses defensive object copying extensively to avoid having a
 
 ### Lambdas helpers
 
-* `Holder` contains a mutable value to be used inside non concurrent lambdas.
-* `Counter` contains a counter that can be used inside non concurrent lambdas.
+* `Holder` contains a mutable value to be used inside non concurrent lambdas (use `AtomicReference` in concurrent lambdas).
+* `Counter` contains a counter that can be used inside non concurrent lambdas (use `AtomicInteger` in concurrent lambdas).
 

@@ -36,6 +36,21 @@ public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
     }
 
     @Test
+    public void AAshouldPutElements() {
+        BaseArrayMap<Integer,String> map = new SortedArrayMap<>();
+        map.put(1, "one");
+        map.put(5, "five");
+        map.put(4, "four");
+        map.put(2, "two");
+        map.put(3, "three");
+        assertEquals("one", map.get(1));
+        assertEquals("two", map.get(2));
+        assertEquals("three", map.get(3));
+        assertEquals("four", map.get(4));
+        assertEquals("five", map.get(5));
+    }
+
+    @Test
     public void testPutInMiddle() {
         BaseArrayMap<Integer,String> map = create();
         map.put(1, "one");

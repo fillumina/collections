@@ -5,7 +5,6 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -17,11 +16,9 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 /**
- * A very minimal size map backed by a single array containing interleaved keys and values. Ideal as
- * an immutable object containing few entries to pass pairs of values around without having to
- * revert to a full blown {@link HashMap} which has a far bigger memory footprint.
+ * A very minimal size map backed by a single array containing interleaved keys and values.
  * <p>
- * It doens't support {@link #put(java.lang.Object, java.lang.Object) } operations.
+ * It doens't support {@link #put(java.lang.Object, java.lang.Object) }
  * It's extended by:
  * <ul>
  * <li>{@link ArrayMap} which is backed by a simple array with access time of O(N)
@@ -37,6 +34,7 @@ import java.util.function.Consumer;
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
+// TODO use ArrayMap as base and extends it with SortedMap
 public class BaseArrayMap<K, V> extends AbstractMap<K, V>
         implements Iterable<Map.Entry<K, V>> {
 
@@ -65,7 +63,7 @@ public class BaseArrayMap<K, V> extends AbstractMap<K, V>
         @Override
         public Entry<K, V> next() {
             index += 2;
-            if (index > array.length) {
+            if (array == null || index >= array.length) {
                 throw new NoSuchElementException();
             }
             return this;
@@ -98,13 +96,21 @@ public class BaseArrayMap<K, V> extends AbstractMap<K, V>
         @Override
         @SuppressWarnings("unchecked")
         public K getKey() {
-            return (K) array[index];
+            try {
+                return (K) array[index];
+            } catch(ArrayIndexOutOfBoundsException ex) {
+                throw new NoSuchElementException();
+            }
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public V getValue() {
-            return (V) array[index + 1];
+            try {
+                return (V) array[index + 1];
+            } catch (ArrayIndexOutOfBoundsException ex) {
+                throw new NoSuchElementException("index " + (index + 1));
+            }
         }
 
         @Override
@@ -174,12 +180,22 @@ public class BaseArrayMap<K, V> extends AbstractMap<K, V>
 
         @Override
         public int size() {
-            return array.length / 2;
+            return array == null ? 0 :array.length / 2;
         }
 
         @Override
         public Spliterator<Entry<K, V>> spliterator() {
             return new PairSpliterator<>();
+        }
+
+        @Override
+        public void clear() {
+            BaseArrayMap.this.clear();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return BaseArrayMap.this.isEmpty();
         }
     }
 

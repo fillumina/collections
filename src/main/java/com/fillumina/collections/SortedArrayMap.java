@@ -82,9 +82,9 @@ public class SortedArrayMap<K extends Comparable<K>, V> extends BaseArrayMap<K, 
                     System.arraycopy(array, index, newArray, index + 2, array.length - index);
                 }
             }
+            newArray[index] = key;
+            newArray[index + 1] = value;
             array = newArray;
-            array[index] = key;
-            array[index + 1] = value;
             return null;
         }
     }
@@ -102,26 +102,26 @@ public class SortedArrayMap<K extends Comparable<K>, V> extends BaseArrayMap<K, 
             return -2;
         }
 
-        final int length = array.length;
-        int range = (length == 2) ? 0 : (length / 2) & PAIR_MASK;
-        int idx = range;
-        do {
-            int cmp = ((Comparable<K>) key).compareTo((K) array[idx]);
-            if (cmp == 0) {
-                return idx;
-            }
-            idx += (cmp > 0) ? range : -range;
-            if (range < 2) {
-                return -idx - ((cmp > 0) ? 4 : 2);
-            }
-            if (idx < 0) {
-                return -2;
-            }
-            if (idx >= length) {
-                idx = length - 2;
-            }
-            range = (range >> 1) & PAIR_MASK;
-        } while (true);
+        // copied from Arrays#binarySearch(Object[]...)
+
+        int low = 0;
+        int high = (array.length >> 1) - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            @SuppressWarnings("rawtypes")
+            Comparable midVal = (Comparable)array[mid << 1];
+            @SuppressWarnings("unchecked")
+            int cmp = midVal.compareTo(key);
+
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else
+                return mid << 1; // key found
+        }
+        return -((low + 1) << 1);  // key not found.
     }
 
     public SortedArrayMap<K, V> immutable() {
