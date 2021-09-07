@@ -16,9 +16,10 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 /**
- * A very minimal size map backed by a single array containing interleaved keys and values.
+ * A very compact map backed by a single array containing interleaved keys and values.
  * <p>
  * It doens't support {@link #put(java.lang.Object, java.lang.Object) }
+ * <p>
  * It's extended by:
  * <ul>
  * <li>{@link ArrayMap} which is backed by a simple array with access time of O(N)
@@ -32,9 +33,11 @@ import java.util.function.Consumer;
  * Every access is O(n). The map keeps insertion order until a sorting method is called. It's not
  * thread safe.
  *
+ * @see ArrayMap
+ * @see SortedArrayMap
+ * 
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
-// TODO use ArrayMap as base and extends it with SortedMap
 public class BaseArrayMap<K, V> extends AbstractMap<K, V>
         implements Iterable<Map.Entry<K, V>> {
 

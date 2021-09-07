@@ -284,7 +284,12 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
 
                 @Override
                 public T next() {
-                    T t = ((T[]) obj)[pos];
+                    T t;
+                    try {
+                        t = ((T[]) obj)[pos];
+                    } catch (IndexOutOfBoundsException ex) {
+                        throw new NoSuchElementException("reading past end");
+                    }
                     pos++;
                     return t;
                 }

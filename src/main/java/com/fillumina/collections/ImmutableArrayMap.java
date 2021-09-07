@@ -7,6 +7,8 @@ import java.util.Map;
  * Very slow compact immutable map to be used with few items.
  * It uses a <i>cursor</i> instead of <i>entries</i> so don't use {@link Map.Entry} outside loops.
  *
+ * @see ArrayMap
+ * @see BaseArrayMap
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public final class ImmutableArrayMap<K, V> extends ArrayMap<K, V> {

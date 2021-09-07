@@ -19,9 +19,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Provides an easy and powerful way to navigate, rearrange and manipulate indexed data. It allows
- * to load raw data, query, manipulate and generate a tree from it by given criteria.
- *
+ * Stores data in an non normalized way by indexing each value with multiple keys. The data can then
+ * be queried by selecting the keys of interest in the right index. It is possible to generate trees
+ * out of the data by specifying the index that will compose the levels of the tree. The
+ * tree can then be manipulated and maps can be extracted by flattening it.
  *
  * @param T the <i>value</i> type (keys are always objects)
  * @author Francesco Illuminati <fillumina@gmail.com>
@@ -489,7 +490,9 @@ public class MultiMap<T>
     }
 
     /**
-     * Adds a value associated with keys. The position of the key represents the index.
+     * Adds a value associated with keys. The position of the key represents the index. This method
+     * is synchronized and can be used in parallel streams. Note that this class is not otherwise
+     * thread safe.
      *
      * @param value the value to add
      * @param keys the keys ordered by index (order is important)
@@ -557,13 +560,17 @@ public class MultiMap<T>
         }
     }
 
-    /** NOT SUPPORTED */
+    /**
+     * NOT SUPPORTED
+     */
     @Override
     public T remove(Object key) {
         throw new UnsupportedOperationException("remove not supported");
     }
 
-    /** NOT SUPPORTED */
+    /**
+     * NOT SUPPORTED
+     */
     @Override
     protected void removeIndex(int idx) {
         throw new UnsupportedOperationException("remove not supported");

@@ -6,9 +6,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * {@link BaseArrayMap} implementation. Be aware that entries are shown having all the same
- * value in IDE debuggers because of the use of a single cursor instead of the usual different
- * entry for each mapping.
+ * {@link BaseArrayMap} implementation. Has a very compact memory footprint but it's quite slow if
+ * containing many entries because every operation is O(n).
+ * <p>
+ * Be aware that entries are shown having all the same value in IDE debuggers because of the use of
+ * a cursor instead of the usual different {@link Map.Entry} for each mapping. A <i>cursor</i> is a
+ * mutable {@link Map.Entry} that changes its value and key when iterating. It allows to avoid using
+ * so many key-value containers but cannot be saved. If you need to save a cursor, clone it with
+ * {@link ImmutableMapEntry}.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -94,7 +99,9 @@ public class ArrayMap<K, V> extends BaseArrayMap<K, V> implements Iterable<Entry
         return (K) array[index << 1];
     }
 
-    /** @return -1 if not found otherwise the index of the key. */
+    /**
+     * @return -1 if not found otherwise the index of the key.
+     */
     public int getIndexOfKey(K key) {
         final int idx = getAbsoluteIndexOfKey(key);
         return idx < 0 ? -1 : idx / 2;
@@ -134,12 +141,12 @@ public class ArrayMap<K, V> extends BaseArrayMap<K, V> implements Iterable<Entry
             swapped = false;
             for (int i = larray.length - 3; i > 0; i -= 2) {
                 if (comparator.compare((V) larray[i], (V) larray[i + 2]) > 0) {
-                    Object tmpKey = larray[i-1];
+                    Object tmpKey = larray[i - 1];
                     Object tmpValue = larray[i];
-                    larray[i-1] = larray[i+1];
-                    larray[i] = larray[i+2];
-                    larray[i+1] = tmpKey;
-                    larray[i+2] = tmpValue;
+                    larray[i - 1] = larray[i + 1];
+                    larray[i] = larray[i + 2];
+                    larray[i + 1] = tmpKey;
+                    larray[i + 2] = tmpValue;
                     swapped = true;
                 }
             }

@@ -7,6 +7,8 @@ import java.util.Collection;
  * between objects. It maintains insertion order and uses very little memory but it's quite slow
  * to access.
  *
+ * @see ArraySet
+ *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public final class ImmutableArraySet<T> extends ArraySet<T> {

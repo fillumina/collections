@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 public class SortedArrayMapTest extends AbstractArrayMapTestHelper {
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     SortedArrayMap<Integer,String> create(Object... o) {
         return new SortedArrayMap<>(o);
     }

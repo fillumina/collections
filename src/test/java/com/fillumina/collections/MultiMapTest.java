@@ -26,7 +26,9 @@ public class MultiMapTest {
         // can be initialized without any argument (i.e. no size required)
         MultiMap<Double> mmap = new MultiMap<>();
 
-        // load raw data into the mmap
+        // *******************************************
+        // load un-normalized data into the mmap
+        // *******************************************
 
         //       value      key_1          key_2
         //       time (s)   runner name    race type
@@ -39,7 +41,9 @@ public class MultiMapTest {
         mmap.add(12.3, "Maria Stella", "100 mt");
         mmap.add(10.9, "Gisella Masi", "100 mt");
 
-        // query the data by using indexed keys
+        // *********************************************************************
+        // query the data by using indexed keys (null means all keys)
+        // *********************************************************************
 
         //                                             key_1=*   key_2='100 mt'
         final Set<Double> avg100mtValuesSet = mmap.getAll(null, "100 mt");
@@ -47,16 +51,22 @@ public class MultiMapTest {
         double avg100mt = avg100mtValuesSet.stream().mapToDouble(d -> d).average().getAsDouble();
         assertEquals((12.3 + 10.9)/2, avg100mt);
 
-        // create different trees out of the data
+        // *********************************************************************
+        // create a tree representation of the data
+        // *********************************************************************
 
         // uses the canonical order to create the tree: first runner, then race
         Tree<Double> byRunner = mmap.createTreeFromIndexes(0, 1);
         final Tree<Double> mariaTree = byRunner.get("Maria Stella");
-        Map<String,Double> runnerTimings =  (Map<String,Double>) mariaTree.toMap();
+        Map<String,Double> runnerTimings = (Map<String,Double>) mariaTree.toMap();
         assertEquals(3, runnerTimings.size());
         assertEquals(12.3, runnerTimings.get("100 mt"));
         assertEquals(23.3, runnerTimings.get("200 mt"));
         assertEquals(55.3, runnerTimings.get("400 mt"));
+
+        // *********************************************************************
+        // create another tree representation of the data
+        // *********************************************************************
 
         // uses the reverse order to create the tree: first race, then runner
         Tree<Double> byRace = mmap.createTreeFromIndexes(1, 0);
@@ -308,7 +318,7 @@ public class MultiMapTest {
     }
 
     @Test
-    public void shouldSelectFromEqualElements() {
+    public void shouldDifferentKeysPointToSameValue() {
         MultiMap<String> mmap = new MultiMap<>();
 
         mmap.add("one", 'a', 1);
@@ -335,6 +345,7 @@ public class MultiMapTest {
 
         assertEquals(4, mmap.size());
 
+        // if the remaining keys are null can be omitted
         assertEquals(Utils.setOf("one", "two"), mmap.getAll('a'));
         assertEquals(Utils.setOf("three", "four"), mmap.getAll('b'));
 

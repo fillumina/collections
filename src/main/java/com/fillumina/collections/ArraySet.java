@@ -10,11 +10,11 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 /**
- * A Set implementation backed by an array with the aim of using as little space as possible. Its
- * performances shouldn't be horrible for very few elements having complexity
- * {@code O(n)}. Doesn't accept {@code null}. It maintains insertion order
- * and the n-th elemnt can be get by using {@link #get(int) }. It's sortable by
- * using its own in place {@link #sort()} implementation. It's not thread safe.
+ * A {@link java.util.Set} implementation backed by an array with the aim of using as little space
+ * as possible. Its performances shouldn't be horrible for very few elements having complexity
+ * {@code O(n)}. Doesn't accept {@code null}. It maintains insertion order and the n-th element can
+ * be get by using {@link #get(int n) }. It's sortable by using its own in place {@link #sort()}
+ * implementation. It's not thread safe.
  * <p>
  * NOTE: it doesn't work with <a href='https://github.com/EsotericSoftware/kryo'>Kryo</a> persister
  * because of its use of Object.
@@ -22,6 +22,7 @@ import java.util.Objects;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class ArraySet<T> extends AbstractSet<T> implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     public static final ArraySet<?> EMPTY = new ImmutableArraySet<Object>();
@@ -45,9 +46,10 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                 default:
                     Object[] tmpArray = new Object[length];
                     int index = 0;
-                    ELEM: for (T t : elements) {
-                        for (int i=0; i<index; i++) {
-                            if (Objects.equals(tmpArray[i],t)) {
+                    ELEM:
+                    for (T t : elements) {
+                        for (int i = 0; i < index; i++) {
+                            if (Objects.equals(tmpArray[i], t)) {
                                 continue ELEM;
                             }
                         }
@@ -74,7 +76,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     public ArraySet(ArraySet<? extends T> smallSet) {
         if (smallSet.array != null) {
             if (smallSet.array.getClass().isArray()) {
-                this.array = ((T[])smallSet.array).clone();
+                this.array = ((T[]) smallSet.array).clone();
             } else {
                 this.array = smallSet.array;
             }
@@ -104,7 +106,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         if (array == null) {
             return -1;
         } else {
-            for (int i=array.length-1; i>=0; i--) {
+            for (int i = array.length - 1; i >= 0; i--) {
                 if (t.equals(array[i])) {
                     return i;
                 }
@@ -114,8 +116,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     }
 
     /**
-     * <b>In place</b> sorting. Don't use
-     * {@link java.util.Collections#sort(java.util.List) }
+     * <b>In place</b> sorting. Don't use {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
     public ArraySet<T> sort(Comparator<T> comparator) {
@@ -127,8 +128,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     }
 
     /**
-     * <b>In place</b> sorting. Don't use
-     * {@link java.util.Collections#sort(java.util.List) }
+     * <b>In place</b> sorting. Don't use {@link java.util.Collections#sort(java.util.List) }
      * which is much slower than this method.
      */
     public ArraySet<T> sort() {
@@ -200,7 +200,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
                     return true;
                 }
             }
-        } else if (equals(array, (T)e)) {
+        } else if (equals(array, (T) e)) {
             array = null;
             return true;
         }
@@ -228,7 +228,7 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
     public boolean contains(Object o) {
         if (array == null) {
             return false;
-        } else if (equals(o, (T)array)) {
+        } else if (equals(o, (T) array)) {
             // ok there is a catch here but I choose not to care
             return true;
         } else if (array.getClass().isArray()) {
@@ -338,7 +338,9 @@ public class ArraySet<T> extends AbstractSet<T> implements Serializable {
         return "[" + array.toString() + "]";
     }
 
-    /** @return immutable clone */
+    /**
+     * @return immutable clone
+     */
     public ImmutableArraySet<T> immutable() {
         return new ImmutableArraySet<>(this);
     }

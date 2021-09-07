@@ -3,6 +3,7 @@ package com.fillumina.collections;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +42,12 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
         public Integer setValue(Integer value) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(key);
+        }
+
     }
 
     private static class LinkedEntryMap<K>
@@ -169,9 +176,13 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
 
             @Override
             public T next() {
-                T value = current.getKey();
-                current = current.next;
-                return value;
+                try {
+                    T value = current.getKey();
+                    current = current.next;
+                    return value;
+                } catch (NullPointerException ex) {
+                    throw new NoSuchElementException();
+                }
             }
         };
     }

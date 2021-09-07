@@ -4,12 +4,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A BiMap is a map where value unicity is enforced as well as key's. If an existing value is
- * inserted with a new key the old mapping is removed. The BiMap follows the
+ * A map where value unicity is enforced as well as key's. If an existing value is
+ * inserted with a different key mapping the old mapping is removed. BiMap follows the
  * {@link Map} specification and its keys and values pairs can be inverted by using
- * {@link #inverseMap()}.
+ * {@link #inverseMap()}. Every operation on one of the two symmetrical map is performed to the
+ * other.
  * <p>
- * Being backed by 2 hash maps its performance is O(1) with worst case O(N).
+ * Being backed by 2 hash maps its performance is O(1) with worst case of O(N).
+ *
+ * @see AbstractEntryMap
+ * @see TableMap
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

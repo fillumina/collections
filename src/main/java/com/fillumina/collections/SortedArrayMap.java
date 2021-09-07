@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * {@link java.util.Map} backed by a sorted array. Very compact and accessible in O(Log n). Useful
  * to store large maps in a very small space with decent access time. It's very inefficient to add
- * elements in. It uses cursors as iterators so don't use {@link Map.Entry} outside loops.
+ * elements in it. It uses cursors as iterators so don't use {@link Map.Entry} outside loops.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -102,7 +102,7 @@ public class SortedArrayMap<K extends Comparable<K>, V> extends BaseArrayMap<K, 
             return -2;
         }
 
-        // copied from Arrays#binarySearch(Object[]...)
+        // adapted from Arrays#binarySearch(Object[]...)
 
         int low = 0;
         int high = (array.length >> 1) - 1;
