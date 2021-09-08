@@ -10,6 +10,13 @@ import java.util.Objects;
  */
 public class ImmutableMapEntry<K, V> implements Map.Entry<K,V> {
 
+    public static ImmutableMapEntry<?,?> NULL_ENTRY = new ImmutableMapEntry<>(null, null);
+
+    @SuppressWarnings("unchecked")
+    public static <K,V> ImmutableMapEntry<K,V> nullEntry() {
+        return (ImmutableMapEntry<K, V>) NULL_ENTRY;
+    }
+
     private final K key;
     private final V value;
     private final int hashcode;

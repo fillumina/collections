@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * {@link java.util.Map} backed by a sorted array. Very compact and accessible in O(Log n). Useful
- * to store large maps in a very small space with decent access time. It's very inefficient to add
- * elements in it. It uses cursors as iterators so don't use {@link Map.Entry} outside loops.
+ * {@link java.util.Map} backed by a sorted array. Very compact and accessed in O(Log n). Useful to
+ * store large maps in a very small space with decent access time. It uses cursors as iterators so
+ * don't use {@link Map.Entry} outside loops.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
@@ -90,8 +90,8 @@ public class SortedArrayMap<K extends Comparable<K>, V> extends BaseArrayMap<K, 
     }
 
     /**
-     * Search an element using the bisection algorithm on the sorted keys.
-     * It's performance is O(LogN).
+     * Search an element using the bisection algorithm on the sorted keys. It's performance is
+     * O(LogN).
      *
      * @return index if found, -index-2 if not found
      */
@@ -103,23 +103,23 @@ public class SortedArrayMap<K extends Comparable<K>, V> extends BaseArrayMap<K, 
         }
 
         // adapted from Arrays#binarySearch(Object[]...)
-
         int low = 0;
         int high = (array.length >> 1) - 1;
 
         while (low <= high) {
             int mid = (low + high) >>> 1;
             @SuppressWarnings("rawtypes")
-            Comparable midVal = (Comparable)array[mid << 1];
+            Comparable midVal = (Comparable) array[mid << 1];
             @SuppressWarnings("unchecked")
             int cmp = midVal.compareTo(key);
 
-            if (cmp < 0)
+            if (cmp < 0) {
                 low = mid + 1;
-            else if (cmp > 0)
+            } else if (cmp > 0) {
                 high = mid - 1;
-            else
+            } else {
                 return mid << 1; // key found
+            }
         }
         return -((low + 1) << 1);  // key not found.
     }

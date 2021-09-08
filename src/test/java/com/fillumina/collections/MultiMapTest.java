@@ -1,6 +1,6 @@
 package com.fillumina.collections;
 
-import com.fillumina.collections.MultiMap.Tree;
+import com.fillumina.collections.Tree;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,7 +58,7 @@ public class MultiMapTest {
         // uses the canonical order to create the tree: first runner, then race
         Tree<Double> byRunner = mmap.createTreeFromIndexes(0, 1);
         final Tree<Double> mariaTree = byRunner.get("Maria Stella");
-        Map<String,Double> runnerTimings = (Map<String,Double>) mariaTree.toMap();
+        Map<String,Double> runnerTimings = (Map<String,Double>) mariaTree.toMultiLevelMap();
         assertEquals(3, runnerTimings.size());
         assertEquals(12.3, runnerTimings.get("100 mt"));
         assertEquals(23.3, runnerTimings.get("200 mt"));
@@ -75,7 +75,7 @@ public class MultiMapTest {
                 byRace.getChildren().keySet());
 
         final Tree<Double> race200mtTree = byRace.get("200 mt");
-        Map<String,Double> raceTimings = (Map<String,Double>) race200mtTree.toMap();
+        Map<String,Double> raceTimings = (Map<String,Double>) race200mtTree.toMultiLevelMap();
         assertEquals(2, raceTimings.size());
         assertEquals(21.9, raceTimings.get("Gisella Masi"));
         assertEquals(23.3, raceTimings.get("Maria Stella"));
@@ -243,7 +243,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetMap() {
-        Map<?,?> treeMap = TREE.toMap();
+        Map<?,?> treeMap = TREE.toMultiLevelMap();
         treeMap.forEach((a, m1) -> {
             assertTrue(A_SET.contains(a));
             ((Map<?,?>)m1).forEach((b, m2) -> {
@@ -274,7 +274,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldFlatToLevel0() {
-        // leve=0 is just the same as TREE.toMap()
+        // leve=0 is just the same as TREE.toMultiLevelMap()
         Map<?,?> flatMap0 = TREE.flatToLevel(0);
         flatMap0.forEach((a, m1) -> {
             ((Map<?,?>)m1).forEach((b, m2) -> {

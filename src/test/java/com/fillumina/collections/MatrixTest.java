@@ -30,8 +30,8 @@ public class MatrixTest {
 //  row V
     public static void main(String[] args) {
         Matrix<Integer, String> mtx = Matrix.<Integer,String>rowBuilder()
-                .row("one", "two two", "three")
-                .row("four four four", "", "six")
+                .row("one", "two_two", "three")
+                .row("four_four_four", "", "six")
                 .build();
 
         System.out.println(mtx.toString());

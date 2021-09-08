@@ -6,16 +6,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -30,315 +25,10 @@ import java.util.stream.Collectors;
 public class MultiMap<T>
         extends AbstractEntryMap<List<Object>, T, Entry<List<Object>, T>, MultiMap<T>> {
 
-    @SuppressWarnings("unchecked")
-    public static final Tree<?> EMPTY_TREE =
-            new Tree<>(null, Collections.EMPTY_MAP, Collections.EMPTY_LIST);
-
-    /**
-     * Represents a node in a tree (recursively defining the tree).
-     */
-    public static class Tree<T> {
-
-        /**
-         * Recursively generate the tree. The root has parent null.
-         */
-        private Tree<T> parent;
-
-        /**
-         * The list of keys of this node (should be the path of parents).
-         */
-        private final List<Object> keyList;
-
-        /**
-         * Children trees indexex by key (only in non leaf nodes).
-         */
-        private final Map<Object, Tree<T>> children;
-
-        /**
-         * The value of this node (only in leaves).
-         */
-        private final T value;
-
-        public Tree(T value, Map<Object, Tree<T>> children, List<Object> keyList) {
-            this.value = value;
-            this.children = children;
-            this.keyList = keyList;
-            if (children != null) {
-                // set children.parent to self
-                this.children.values().forEach(t -> t.parent = this);
-            }
-        }
-
-        /**
-         * Clone the entire structure into a map of maps.
-         */
-        @SuppressWarnings("unchecked")
-        public Map<?, ?> toMap() {
-            return (Map<?, ?>) replaceMap((Function<T, Object>) Function.identity());
-        }
-
-        /**
-         * Clone the entire structure into a map of maps transforming its leaf values.
-         */
-        public Map<?, ?> toMap(Function<T, Object> valueTransformer) {
-            return (Map<?, ?>) replaceMap(valueTransformer);
-        }
-
-        /**
-         * Returns a map of maps for all the levels of the tree except the last one that will be
-         * substituted by plain Objects.
-         *
-         * @param valueTransformer modify the value
-         * @return might return a value or another map
-         */
-        private Object replaceMap(Function<T, Object> valueTransformer) {
-            if (children == null) {
-                return valueTransformer.apply(value);
-            } else {
-                Map<?, ?> newChildren = children.entrySet().stream()
-                        .collect(Collectors.toMap(
-                                e -> e.getKey(),
-                                e -> e.getValue().replaceMap(valueTransformer)));
-                return newChildren;
-            }
-        }
-
-        /**
-         * Clone the entire structure changing its leave values only.
-         */
-        public <R> Tree<R> replaceTree(Function<T, R> valueTransformer) {
-            Map<Object, Tree<R>> m = new HashMap<>();
-            if (children == null) {
-                return new Tree<>(valueTransformer.apply(value), null, keyList);
-            } else {
-                Map<Object, Tree<R>> newChildren = children.entrySet().stream()
-                        .collect(Collectors.toMap(Entry::getKey,
-                                e -> e.getValue().replaceTree(valueTransformer)));
-                return new Tree<>(null, newChildren, keyList);
-            }
-        }
-
-        /**
-         * Compress the tree to the given level and than convert to a map.
-         */
-        public Map<?, ?> flatToLevel(int level) {
-            return (Map<?, ?>) mapAtLevel(Collections.emptyList(), level);
-        }
-
-        private Object mapAtLevel(List<Object> klist, int level) {
-            if (level > 0) {
-                Map<Object, Object> map = new HashMap<>();
-                List<Object> listOfKeys = addItemToList(klist, null);
-                int pos = klist.size();
-                children.forEach((k, c) -> {
-                    listOfKeys.set(pos, k);
-                    map.putAll((Map<?, ?>) c.mapAtLevel(listOfKeys, level - 1));
-                });
-                return map;
-            }
-            // level 0: compacts the rest in a single level
-            if (children == null) {
-                return value; // no need to compact: we are at the leaf level
-            } else {
-                Map<?, ?> newChildren = children.entrySet().stream()
-                        .collect(Collectors.toMap(
-                                e -> addItemToList(klist, e.getKey()),
-                                e -> valueOrMap(e.getValue())));
-                return newChildren;
-            }
-        }
-
-        private static Object valueOrMap(Object obj) {
-            if (obj instanceof Tree) {
-                final Tree tree = (Tree) obj;
-                if (tree.isLeaf()) {
-                    return tree.getValue();
-                }
-                return (tree).toMap();
-            }
-            return obj;
-        }
-
-        /**
-         * Returns a mapping between all keys -> values. It's equal to {@code getFlatMap(maxLevel)}.
-         *
-         * @return
-         */
-        public Map<List<Object>, T> getLeavesMap() {
-            Map<List<Object>, T> map = new HashMap<>();
-            visitLeaves(t -> map.put(t.getKeyList(), t.getValue()));
-            return map;
-        }
-
-        public void visitLeaves(Consumer<Tree<T>> leafConsumer) {
-            if (children != null) {
-                children.values().forEach(t -> t.visitLeaves(leafConsumer));
-            } else {
-                leafConsumer.accept(this);
-            }
-        }
-
-        public void visitValues(Consumer<T> leafConsumer) {
-            if (children != null) {
-                for (Tree<T> child : children.values()) {
-                    child.visitValues(leafConsumer);
-                }
-            }
-            if (value != null) {
-                leafConsumer.accept(value);
-            }
-        }
-
-        @Override
-        public Tree<T> clone() {
-            Map<Object, Tree<T>> m = new HashMap<>();
-            if (children == null) {
-                return new Tree<>(value, null, keyList);
-            }
-            children.forEach((o, t) -> m.put(o, t.clone()));
-            return new Tree<>(value, m, keyList);
-        }
-
-        /**
-         * Removes leaves and branches passing the predicate test.
-         */
-        public boolean pruneLeaves(Predicate<T> leavesRemovePredicate) {
-            if (isLeaf()) {
-                if (value != null) {
-                    return leavesRemovePredicate.test(value);
-                } else {
-                    return true;
-                }
-            } else {
-                Iterator<Entry<Object, Tree<T>>> it = children.entrySet().iterator();
-                while (it.hasNext()) {
-                    if (it.next().getValue().pruneLeaves(leavesRemovePredicate)) {
-                        it.remove();
-                    }
-                }
-                return children.isEmpty();
-            }
-        }
-
-        /**
-         * Removes branches passing the predicate test
-         */
-        public void pruneBranches(Predicate<Object> branchRemovePredicate) {
-            if (!isLeaf()) {
-                Iterator<Entry<Object, Tree<T>>> it = children.entrySet().iterator();
-                while (it.hasNext()) {
-                    Entry<Object, Tree<T>> e = it.next();
-                    Object key = e.getKey();
-                    if (branchRemovePredicate.test(key)) {
-                        it.remove();
-                    } else {
-                        final Tree<T> t = e.getValue();
-                        t.pruneBranches(branchRemovePredicate);
-                    }
-                }
-            }
-        }
-
-        public boolean isRoot() {
-            return parent == null;
-        }
-
-        public boolean isLeaf() {
-            return children == null || children.size() == 0;
-        }
-
-        public Tree<T> getRoot() {
-            Tree<T> current = this;
-            while (current.parent != null) {
-                current = current.parent;
-            }
-            return current;
-        }
-
-        public Tree<T> getParent() {
-            return parent;
-        }
-
-        public List<Object> getKeyList() {
-            return keyList;
-        }
-
-        public String getKeyListAsString() {
-            return getKeyListAsString(":");
-        }
-
-        public String getKeyListAsString(String delimiter) {
-            if (keyList == null || keyList.isEmpty()) {
-                return null;
-            }
-            return keyList.stream()
-                    .map(o -> Objects.toString(o))
-                    .collect(Collectors.joining(delimiter));
-        }
-
-        public Map<Object, Tree<T>> getChildren() {
-            return children;
-        }
-
-        /**
-         * Return the tree pointed by the given key.
-         *
-         * @param key
-         * @return
-         */
-        public Tree<T> get(Object key) {
-            return children.get(key);
-        }
-
-        /**
-         * Returns a map with the given keys each pointing to its child tree.
-         *
-         * @param keys
-         * @return a map of (key -> tree)
-         */
-        public Map<Object, Tree<T>> mget(Object... keys) {
-            if (keys.length == 1) {
-                return Collections.singletonMap(keys[0], children.get(keys[0]));
-            }
-            Map<Object, Tree<T>> map = new HashMap<>();
-            for (Object k : keys) {
-                if (map.containsKey(k)) {
-                    map.put(k, children.get(k));
-                }
-            }
-            return map;
-        }
-
-        /**
-         * Available only on leaves, otherwise null.
-         */
-        public T getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder buf = new StringBuilder();
-            buf.append("(");
-            if (keyList != null) {
-                buf.append(keyList.toString());
-            }
-            if (keyList != null && value != null) {
-                buf.append(" => ");
-            }
-            if (value != null) {
-                buf.append(value.toString());
-            }
-            buf.append(")");
-            return buf.toString();
-        }
-    }
-
     // The List items are the indexes of key sets mapping to values:
     // each index have a set of keys each of which point to a set of values.
     //            index    key      set of values
-    private final List<Map<Object, Set<Entry<List<Object>, T>>>> mapList =
-            new ArrayList<>();
+    private final List<Map<Object, Set<Entry<List<Object>, T>>>> mapList = new ArrayList<>();
 
     private int keySize = -1;
 
@@ -565,7 +255,7 @@ public class MultiMap<T>
      */
     @Override
     public T remove(Object key) {
-        throw new UnsupportedOperationException("remove not supported");
+        throw new UnsupportedOperationException("not supported");
     }
 
     /**
@@ -573,7 +263,7 @@ public class MultiMap<T>
      */
     @Override
     protected void removeIndex(int idx) {
-        throw new UnsupportedOperationException("remove not supported");
+        throw new UnsupportedOperationException("not supported");
     }
 
     /**
@@ -613,7 +303,7 @@ public class MultiMap<T>
             Set<Object> keySet = getKeySetAtIndex(indexes[pos]);
             if (keySet.isEmpty()) {
                 // no keys
-                return (Tree<T>) EMPTY_TREE;
+                return Tree.<T>emptyTree();
 
             } else {
                 // creates children trees
@@ -635,7 +325,7 @@ public class MultiMap<T>
             if (currentSelection.size() > 1) {
                 throw new IllegalArgumentException("wrong number of indexes");
             }
-            return new Tree<>(value, null, keyList);
+            return new Tree<>(keyList, null, value);
         }
     }
 

@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Map<K, V>>
         implements Map<K, V> {
 
-    // remember MUST be a power of 2
+    // MUST be a power of 2
     private static final int INITIAL_SIZE = 16;
 
     protected static Entry<?, ?> NULL_ENTRY = new SimpleImmutableEntry<>(null, null);

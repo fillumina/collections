@@ -347,8 +347,9 @@ public class Matrix<K, V> {
 
     /**
      * Substitutes the passed keys to the ones present in copy.
-     * @param keys  new set of keys (the order is important)
-     * @param copy  the source of the matrix data
+     *
+     * @param transformer
+     * @return a new Matrix with transformed keys
      */
     public <T> Matrix<T,V> changeKeys(Function<K,T> transformer) {
         BiMap<T,Integer> biMap = new BiMap<>();
@@ -359,10 +360,14 @@ public class Matrix<K, V> {
         return new Matrix<T,V>(biMap, m);
     }
 
+    /** Override */
     protected void resizeCheck() {
+        // do nothing
     }
 
+    /** Override */
     protected void readOnlyCheck() {
+        // do nothing
     }
 
     public K getKeyAtColumn(int column) {
