@@ -42,7 +42,9 @@ public class TreeTest {
         CHILD.put(KEY_NEPHEW_2, NEPHEW2);
 
         ROOT = new Tree<>(null, VALUE_ROOT);
-        ROOT.put(KEY_CHILD, CHILD);
+        ROOT.putEntry(CHILD);
+
+        assertEquals(ROOT, CHILD.getParent());
     }
 
     @Test
@@ -99,6 +101,12 @@ public class TreeTest {
 
     @Test
     public void testGet() {
+        assertEquals(CHILD, ROOT.get(Arrays.asList(KEY_CHILD)));
+        assertEquals(NEPHEW1, CHILD.get(Arrays.asList(KEY_NEPHEW_1)));
+    }
+
+    @Test
+    public void testGetSingleValue() {
         assertEquals(CHILD, ROOT.get(KEY_CHILD));
         assertEquals(NEPHEW1, CHILD.get(KEY_NEPHEW_1));
     }
@@ -121,28 +129,28 @@ public class TreeTest {
                 Arrays.asList(VALUE_ROOT, VALUE_CHILD, VALUE_NEPHEW_1, VALUE_NEPHEW_2)));
     }
 
-    @Test
-    public void testReplaceTree() {
-    }
-
-    @Test
-    public void testFlatToLevel() {
-    }
-
-    @Test
-    public void testGetLeavesMap() {
-    }
-
-    @Test
-    public void testVisitLeaves() {
-    }
-
-    @Test
-    public void testPruneLeaves() {
-    }
-
-    @Test
-    public void testPruneBranches() {
-    }
+//    @Test
+//    public void testReplaceTree() {
+//    }
+//
+//    @Test
+//    public void testFlatToLevel() {
+//    }
+//
+//    @Test
+//    public void testGetLeavesMap() {
+//    }
+//
+//    @Test
+//    public void testVisitLeaves() {
+//    }
+//
+//    @Test
+//    public void testPruneLeaves() {
+//    }
+//
+//    @Test
+//    public void testPruneBranches() {
+//    }
 
 }

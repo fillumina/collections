@@ -124,24 +124,19 @@ public class SmallList<T> extends AbstractList<T> implements Serializable {
         if (e == null || array == null) {
             return false;
         }
-        if (array.getClass().isArray()) {
-            int l = array.length;
-            for (int i = 0; i < l; i++) {
-                if (equals(e, array[i])) {
-                    T[] na = (T[]) new Object[l - 1];
-                    if (i > 0) {
-                        System.arraycopy(array, 0, na, 0, i);
-                    }
-                    if (i < l - 1) {
-                        System.arraycopy(array, i + 1, na, i, l - i - 1);
-                    }
-                    array = na;
-                    return true;
+        int l = array.length;
+        for (int i = 0; i < l; i++) {
+            if (Objects.equals(e, array[i])) {
+                T[] na = (T[]) new Object[l - 1];
+                if (i > 0) {
+                    System.arraycopy(array, 0, na, 0, i);
                 }
+                if (i < l - 1) {
+                    System.arraycopy(array, i + 1, na, i, l - i - 1);
+                }
+                array = na;
+                return true;
             }
-        } else if (equals(array, (T) e)) {
-            array = null;
-            return true;
         }
         return false;
     }
@@ -167,21 +162,17 @@ public class SmallList<T> extends AbstractList<T> implements Serializable {
     public boolean contains(Object o) {
         if (array == null) {
             return false;
-        } else if (equals(o, (T) array)) {
+        } else if (Objects.equals(o, (T) array)) {
             // ok there is a catch here but I choose not to care
             return true;
-        } else if (array.getClass().isArray()) {
+        } else {
             for (T t : ((T[]) array)) {
-                if (equals(o, t)) {
+                if (Objects.equals(o, t)) {
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    protected boolean equals(Object o, T t) {
-        return o.equals(t);
     }
 
     @Override
@@ -191,58 +182,32 @@ public class SmallList<T> extends AbstractList<T> implements Serializable {
             // the set is empty
             return EmptyIterator.empty();
         }
-        if (array.getClass().isArray()) {
-            return new Iterator<T>() {
-                int pos = 0;
+        return new Iterator<T>() {
+            int pos = 0;
 
-                @Override
-                public boolean hasNext() {
-                    return pos < ((T[]) array).length;
-                }
+            @Override
+            public boolean hasNext() {
+                return pos < ((T[]) array).length;
+            }
 
-                @Override
-                public T next() {
-                    T t;
-                    try {
-                        t = ((T[]) array)[pos];
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                        throw new NoSuchElementException();
-                    }
-                    pos++;
-                    return t;
+            @Override
+            public T next() {
+                T t;
+                try {
+                    t = ((T[]) array)[pos];
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    throw new NoSuchElementException();
                 }
+                pos++;
+                return t;
+            }
 
-                @Override
-                public void remove() {
-                    pos--;
-                    SmallList.this.removeAtIndex(pos);
-                }
-            };
-        } else {
-            // only 1 item
-            return new Iterator<T>() {
-                boolean hasNext = true;
-
-                @Override
-                public boolean hasNext() {
-                    return hasNext;
-                }
-
-                @Override
-                public T next() {
-                    if (!hasNext) {
-                        throw new NoSuchElementException();
-                    }
-                    hasNext = false;
-                    return (T) array;
-                }
-
-                @Override
-                public void remove() {
-                    SmallList.this.clear();
-                }
-            };
-        }
+            @Override
+            public void remove() {
+                pos--;
+                SmallList.this.removeAtIndex(pos);
+            }
+        };
     }
 
     @Override
@@ -255,20 +220,18 @@ public class SmallList<T> extends AbstractList<T> implements Serializable {
     public int size() {
         if (array == null) {
             return 0;
-        } else if (array.getClass().isArray()) {
+        } else {
             return ((T[]) array).length;
         }
-        return 1;
     }
 
     @Override
     public int hashCode() {
         if (array == null) {
             return 0;
-        } else if (array.getClass().isArray()) {
+        } else {
             return Arrays.deepHashCode((T[]) array);
         }
-        return Objects.hashCode(array);
     }
 
     // equals() is imported from AbstractCollection
@@ -276,10 +239,9 @@ public class SmallList<T> extends AbstractList<T> implements Serializable {
     public String toString() {
         if (array == null) {
             return "null";
-        } else if (array.getClass().isArray()) {
+        } else {
             return Arrays.toString((T[]) array);
         }
-        return "[" + array.toString() + "]";
     }
 
     /**

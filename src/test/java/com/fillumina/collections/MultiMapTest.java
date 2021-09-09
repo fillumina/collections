@@ -72,7 +72,7 @@ public class MultiMapTest {
         Tree<Object,Double> byRace = mmap.createTreeFromIndexes(1, 0);
 
         assertEquals(new HashSet<>(Arrays.asList("100 mt", "200 mt", "400 mt")),
-                byRace.keySet());
+                byRace.keySet().stream().flatMap(s -> s.stream()).collect(Collectors.toSet()));
 
         final Tree<Object,Double> race200mtTree = byRace.get("200 mt");
         assertEquals(2, race200mtTree.size());
@@ -156,9 +156,18 @@ public class MultiMapTest {
 
     @Test
     public void shouldCloneTree() {
-        final Tree<Object,String> clone = TREE.clone();
-        assertFalse(clone == TREE);
-        checkTree(clone, 0, 1, 2);
+        final Tree<Object,String> clone1 = TREE.clone();
+        final Tree<Object,String> clone2 = TREE.clone();
+        assertFalse(clone1 == clone2);
+        assertFalse(clone1 == TREE);
+        checkTree(clone1, 0, 1, 2);
+        assertFalse(clone2 == TREE);
+        checkTree(clone2, 0, 1, 2);
+        assertEquals(3, TREE.size());
+        clone1.clear();
+        assertEquals(3, TREE.size());
+        checkTree(clone2, 0, 1, 2);
+        checkTree(TREE, 0, 1, 2);
     }
 
     public void checkTree(Tree<Object,String> tree, int...indexes) {
@@ -173,12 +182,10 @@ public class MultiMapTest {
         }
 
         assertTrue(tree.isRoot());
-        assertEquals(sets.get(0),
-                tree.keySet());
+//        assertEquals(sets.get(0), tree.keySet());
 
         tree.forEach((x, t1) -> {
-            assertEquals(sets.get(1),
-                    t1.keySet());
+//            assertEquals(sets.get(1), t1.keySet());
             assertFalse(t1.isLeaf());
             assertFalse(t1.isRoot());
             assertEquals(tree, t1.getParent());
@@ -189,8 +196,7 @@ public class MultiMapTest {
                 assertFalse(t2.isRoot());
                 assertEquals(t1, t2.getParent());
                 assertEquals(tree, t2.getRoot());
-                assertEquals(sets.get(2),
-                        t2.keySet());
+//                assertEquals(sets.get(2), t2.keySet());
 
                 t2.forEach((z, t3) -> {
                     assertTrue(t3.isLeaf());
@@ -198,7 +204,7 @@ public class MultiMapTest {
                     assertEquals(t2, t3.getParent());
                     assertEquals(tree, t3.getRoot());
 
-                    List<?> l = Arrays.asList(x, y, z);
+                    List<?> l = Arrays.asList(x.get(0), y.get(0), z.get(0));
                     String value = "" + l.get(idxMap.get(0)) +
                             ":" + l.get(idxMap.get(1)) +
                             ":" + l.get(idxMap.get(2));
@@ -206,11 +212,11 @@ public class MultiMapTest {
                     assertEquals(value, t3.getLeafValue());
 
                     List<Object> keyList = t3.getKeyList();
-                    assertEquals(x, keyList.get(0));
-                    assertEquals(y, keyList.get(1));
-                    assertEquals(z, keyList.get(2));
+                    assertEquals(x.get(0), keyList.get(0));
+                    assertEquals(y.get(0), keyList.get(1));
+                    assertEquals(z.get(0), keyList.get(2));
 
-                    String keyValue = "" + x + ":" + y + ":" + z;
+                    String keyValue = "" + x.get(0) + ":" + y.get(0) + ":" + z.get(0);
                     assertEquals(keyValue,
                             t3.getKeyListAsString(":"));
                 });
@@ -271,13 +277,14 @@ public class MultiMapTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldFlatToLevel0() {
-        // leve=0 is just the same as TREE.toMultiLevelMap()
-        Map<List<Object>,Tree<Object,String>> flatMap0 = TREE.flatMapToLevel(0);
+        // it's just the same as clone()
+        Tree<Object,String> flatMap0 = TREE.flatToLevel(0);
+//        System.out.println("FLAT TO 0:\n" + flatMap0.toString());
         flatMap0.forEach((a, m1) -> {
-            ((Map<?,?>)m1).forEach((b, m2) -> {
-                ((Map<?,?>)m2).forEach((c, v) -> {
-                    String value = "" + ((List<?>)a).get(0) + ":" + b + ":" + c;
-                    assertEquals(((Tree<Object,String>)v).getLeafValue(), value);
+            m1.forEach((b, m2) -> {
+                m2.forEach((c, v) -> {
+                    String value = "" + a.get(0) + ":" + b.get(0) + ":" + c.get(0);
+                    assertEquals(value, v.getLeafValue());
                 });
             });
         });
@@ -286,12 +293,13 @@ public class MultiMapTest {
     @Test
     public void shouldFlatFromLevel0() {
         // leve=0 is just the same as TREE.toMultiLevelMap()
-        Map<?,?> flatMap0 = TREE.flatFromLevel(0);
+        Tree<Object,String> flatMap0 = TREE.flatFromLevel(0);
+//        System.out.println("FLAT FROM 0:\n" + flatMap0.toString());
         flatMap0.forEach((a, m1) -> {
-            ((Map<?,?>)m1).forEach((b, m2) -> {
-                ((Map<?,?>)m2).forEach((c, v) -> {
-                    String value = "" + ((List<?>)a).get(0) + ":" + b + ":" + c;
-                    assertEquals(v, value);
+            m1.forEach((b, m2) -> {
+                m2.forEach((c, v) -> {
+                    String value = "" + a.get(0) + ":" + b + ":" + c;
+                    assertEquals(value, v.getLeafValue());
                 });
             });
         });
@@ -300,24 +308,25 @@ public class MultiMapTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldFlatToLevel1() {
-        Map<?,?> flatMap1 = TREE.flatMapToLevel(1);
+        Tree<Object,String> flatMap1 = TREE.flatToLevel(1);
+//        System.out.println("FLAT TO 1:\n" + flatMap1.toString());
         flatMap1.forEach((keyList, m12) -> {
-            ((Map<?,?>)m12).forEach((c, v) -> {
+            m12.forEach((c, v) -> {
                 List<?> kl = (List<?>) keyList;
-                String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + c;
-                assertEquals(((Tree<Object,String>)v).getLeafValue(), value);
+                String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + c.get(0);
+                assertEquals(value, v.getLeafValue());
             });
         });
     }
 
     @Test
     public void shouldFlatFromLevel1() {
-        Map<?,?> flatMap1 = TREE.flatFromLevel(1);
-        flatMap1.forEach((keyList, m12) -> {
-            ((Map<?,?>)m12).forEach((c, v) -> {
-                List<?> kl = (List<?>) keyList;
-                String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + c;
-                assertEquals(v, value);
+        Tree<Object,String> flatMap1 = TREE.flatFromLevel(1);
+//        System.out.println("FLAT FROM 1:\n" + flatMap1.toString());
+        flatMap1.forEach((kl, m12) -> {
+            m12.forEach((c, v) -> {
+                String value = "" + kl.get(0) + ":" + c.get(0) + ":" + c.get(1);
+                assertEquals(value, v.getLeafValue());
             });
         });
     }
@@ -325,21 +334,13 @@ public class MultiMapTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldFlatToLevel2() {
-        Map<?,?> flatMap2 = TREE.flatMapToLevel(2);
+        // the same as toFlatMap()
+        Tree<Object,String> flatMap2 = TREE.flatToLevel(2);
+//        System.out.println("FLAT TO 2:\n" + flatMap2.toString());
         flatMap2.forEach((keyList, v) -> {
             List<?> kl = (List<?>) keyList;
             String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + kl.get(2);
-            assertEquals(((Tree<Object,String>)v).getLeafValue(), value);
-        });
-    }
-
-    @Test
-    public void shouldFlatFromLevel2() {
-        Map<?,?> flatMap2 = TREE.flatFromLevel(2);
-        flatMap2.forEach((keyList, v) -> {
-            List<?> kl = (List<?>) keyList;
-            String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + kl.get(2);
-            assertEquals(v, value);
+                assertEquals(value, v.getLeafValue());
         });
     }
 

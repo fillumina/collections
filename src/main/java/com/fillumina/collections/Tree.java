@@ -2,6 +2,7 @@ package com.fillumina.collections;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,15 +21,52 @@ import java.util.stream.Collectors;
 // TODO use Tree as a return type for flat operations (inner operation)
 public class Tree<K,V> // it's a Map AND an Entry with value as itself
         //                        K        V       E          M
-        extends AbstractEntryMap<K, Tree<K,V>, Tree<K,V>, Tree<K,V>>
-        implements Map.Entry<K,Tree<K,V>> {
+        extends AbstractEntryMap<List<K>, Tree<K,V>, Tree<K,V>, Tree<K,V>>
+        implements Map.Entry<List<K>,Tree<K,V>> {
 
     @SuppressWarnings("unchecked")
-    public static final Tree<?,?> EMPTY_TREE = new Tree<>(null, null);
+    public static final Tree<?,?> EMPTY_TREE = new Tree<>((Object)null, null);
 
     @SuppressWarnings("unchecked")
     public static <K,V> Tree<K,V> emptyTree() {
         return (Tree<K,V>) EMPTY_TREE;
+    }
+
+    private static class KeyList<T> extends SmallList<T> {
+
+        public KeyList() {
+        }
+
+        public KeyList(
+                Collection<? extends T> elements) {
+            super(elements);
+        }
+
+        /**
+         * If there is only one item returns the hash code of that item.
+         */
+        @Override
+        public int hashCode() {
+            if (size() == 1) {
+                return Objects.hashCode(get(0));
+            }
+            return super.hashCode();
+        }
+
+        /**
+         * It allows to match an object with the first item of the list if the list has only
+         * one item.
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+            if (size() == 1) {
+                return Objects.equals(get(0), o);
+            }
+            return super.equals(o);
+        }
     }
 
     /**
@@ -36,36 +74,46 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
      */
     private Tree<K,V> parent;
 
-    private final K key;
+    private final List<K> keyList;
 
     /**
      * The leaf value of this node.
      */
     private V leafValue;
 
-    /** Creates a node with its children defined into a map (perform defensive shallow copy). */
-    public Tree(K key, Map<K, Tree<K,V>> children) {
-        this.key = key;
-        if (children != null && !children.isEmpty()) {
-            addAll(children);
-            values().forEach(t -> t.parent = this);
-        }
+    public Tree(List<K> keyList, V leafValue, int initialSize) {
+        super(initialSize);
+        this.keyList = new KeyList<>(keyList);
+        this.leafValue = leafValue;
     }
 
     /** Creates a root. */
     public Tree() {
         this.parent = null;
-        this.key = null;
+        this.keyList = null;
     }
 
     /** Creates a node. **/
+    @SuppressWarnings("unchecked")
     public Tree(K k) {
-        this.key = k;
+        this.keyList = new ImmutableSmallList<>(k);
+    }
+
+    /** Creates a node. **/
+    public Tree(List<K> k) {
+        this.keyList = new ImmutableSmallList<>(k);
     }
 
     /** Creates a leaf. */
+    @SuppressWarnings("unchecked")
     public Tree(K k, V v) {
-        this.key = k;
+        this.keyList = new ImmutableSmallList<>(k);
+        this.leafValue = v;
+    }
+
+    /** Creates a leaf. */
+    public Tree(List<K> k, V v) {
+        this.keyList = new ImmutableSmallList<>(k);
         this.leafValue = v;
     }
 
@@ -80,24 +128,27 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
             throws IllegalArgumentException {
         Tree<K,V> current = parent;
         for (int i=0; i<10; i++) {
+            if (current == null) {
+                return;
+            }
             if (current == tree) {
                 throw new IllegalArgumentException("the parent circularly points to tree");
             }
             current = current.parent;
-            if (current == null) {
-                return;
-            }
         }
     }
 
     @Override
-    protected Tree<K,V> createEntry(K k, Tree<K,V> v) {
-        return v;
+    protected Tree<K,V> createEntry(List<K> key, Tree<K,V> value) {
+        final Tree<K, V> tree = new Tree<>(key, value.leafValue, value.size());
+        value.forEach((k,v) -> tree.putEntry(createEntry(k,v).withParent(tree)));
+        return tree;
     }
 
     @Override
     protected Tree<K,V> createMap(int size) {
-        return new Tree<>();
+        return new Tree<>(this.keyList, this.leafValue, size)
+                .withParent(this.parent);
     }
 
     public Tree<K, V> addTree(Tree<K, V> entry) {
@@ -105,14 +156,50 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
     }
 
     @Override
+    public Tree<K, V> getEntry(Object key) {
+        if (key instanceof List) {
+            return super.getEntry(key);
+        } else {
+            return super.getEntry(Collections.singletonList(key));
+        }
+    }
+
     public Tree<K, V> put(K key, Tree<K, V> value) {
-        Objects.requireNonNull(value, "value must be not null");
-        return super.put(key, value.withParent(this));
+        return put(Collections.singletonList(key), value);
+    }
+
+
+    @Override
+    public Tree<K, V> put(List<K> key, Tree<K, V> value) {
+        if (value.getParent() == null && (key == null || key.equals(value.getKey()))) {
+            return super.putEntry(value.withParent(this));
+        }
+        Tree<K,V> clone = value.cloneWithKey(key);
+        return super.putEntry(clone.withParent(this));
     }
 
     @Override
-    public K getKey() {
-        return key;
+    public void putAll(Map<? extends List<K>, ? extends Tree<K, V>> m) {
+        m.forEach((k,v) -> put(k, v));
+    }
+
+
+
+    /** Adds the passed tree to the new one, if it is already part of another tree it's cloned. */
+    @Override
+    protected Tree<K, V> putEntry(Tree<K, V> entry) {
+        if (entry.getParent() == null) {
+            return super.putEntry(entry.withParent(this));
+        }
+        Tree<K,V> clone = entry.clone();
+        return super.putEntry(clone.withParent(this));
+    }
+
+
+
+    @Override
+    public List<K> getKey() {
+        return keyList;
     }
 
     /**
@@ -179,7 +266,13 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         List<K> list = new ArrayList<>();
         Tree<K,V> current = this;
         while (current.parent != null) {
-            list.add(current.key);
+            // insert in reversed order
+            List<K> clist = current.keyList;
+            if (clist != null && !clist.isEmpty()) {
+                for (int i=clist.size() - 1; i>=0; i--) {
+                    list.add(clist.get(i));
+                }
+            }
             current = current.parent;
         }
         Collections.reverse(list);
@@ -204,9 +297,9 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
      */
     public <W> Tree<K,W> cloneReplacingValues(Function<V, W> valueTransformer) {
         if (isLeaf()) {
-            return new Tree<>(key, valueTransformer.apply(leafValue));
+            return new Tree<>(keyList, valueTransformer.apply(leafValue));
         } else {
-            Tree<K,W> tree = new Tree<>(key);
+            Tree<K,W> tree = new Tree<>(keyList);
             forEach((k,v) -> tree.put(k, v.cloneReplacingValues(valueTransformer)));
             return tree;
         }
@@ -216,46 +309,46 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
      * Compress the tree from the given level on and than convert to a map.
      * @param level to compact
      */
-    public Map<?,?> flatFromLevel(int level) {
-        return (Map<?,?>) flatFromLevelObj(level);
-    }
-
-    private Object flatFromLevelObj(int level) {
+    public Tree<K,V> flatFromLevel(int level) {
         if (isLeaf()) {
-            return leafValue;
-        } else if (level > getDepth()) {
-            Map<Object,Object> map = new HashMap<>();
-            forEach((k,v) -> map.putAll((Map<?,?>)v.flatFromLevelObj(level)));
-            return map;
-        } else {
-            Map<Object,Object> map = new HashMap<>();
-            forEach((k,v) -> {
-                Object key = (level == getDepth()) ? v.getKeyList() : v.getKey();
-                map.put(key, v.flatFromLevelObj(level));
+            return new Tree<>(getKeyList(), getLeafValue());
+        } else if (getDepth() >= level) {
+            // compact here
+            Tree<K,V> tree = new Tree<>(getKey(), getLeafValue());
+            forEach((k,v ) -> {
+                if (v.isLeaf()) {
+                    List<K> kl = v.getKeyList();
+                    kl = kl.subList(level, kl.size());
+                    Tree<K,V> leaf = new Tree<>(kl, v.getLeafValue());
+                    tree.putEntry(leaf);
+                } else {
+                    tree.putAll(v.flatFromLevel(level));
+                }
             });
-            return map;
+            return tree;
+        } else {
+            // clone here
+            Tree<K,V> tree = new Tree<>(keyList, leafValue);
+            forEach((k,v) -> tree.putEntry(v.flatFromLevel(level)));
+            return tree;
         }
     }
 
-    public Map<List<K>,Tree<K,V>> flatMapToLevel(int level) {
-        return flatToLevel(level, Function.identity());
-    }
-
-    /**
-     * Compress the tree to the given level and than convert to a map.
-     * @param level to compact
-     */
-    @SuppressWarnings("unchecked")
-    public <L> Map<L,Tree<K,V>> flatToLevel(int level, Function<List<K>,L> keyListTransformer) {
+    public Tree<K,V> flatToLevel(int level) {
         if (level > 0) {
-            Map<L,Tree<K,V>> map = new HashMap<>();
+            // clone here
+            Tree<K,V> tree = new Tree<>();
             int newLevel = level - 1;
-            forEach((k,v) -> map.putAll((Map<L,Tree<K,V>>)v.flatMapToLevel(newLevel)));
-            return map;
+            forEach((k,v) -> tree.putAll(v.flatToLevel(newLevel)));
+            return tree;
         } else {
-            Map<L,Tree<K,V>> map = new HashMap<>();
-            forEach((k,v) -> map.put(keyListTransformer.apply(v.getKeyList()), v));
-            return map;
+            // compact here
+            Tree<K,V> tree = new Tree<>();
+            forEach((k,v) -> {
+                final List<K> kl = v.getKeyList();
+                tree.put(kl, v);
+            });
+            return tree;
         }
     }
 
@@ -300,13 +393,22 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         }
     }
 
+    public Tree<K,V> cloneWithKey(List<K> keyList) {
+        if (isLeaf()) {
+            return new Tree<>(keyList, leafValue);
+        }
+        Tree<K,V> tree = new Tree<>(keyList, leafValue, size());
+        forEach((o, t) -> tree.putEntry(t.clone().withParent(tree)));
+        return tree;
+    }
+
     @Override
     public Tree<K,V> clone() {
         if (isLeaf()) {
-            return new Tree<>(key, leafValue);
+            return new Tree<>(keyList, leafValue);
         }
-        Tree<K,V> tree = new Tree<>(key);
-        forEach((o, t) -> tree.put(o, t.clone()));
+        Tree<K,V> tree = new Tree<>(keyList, leafValue, size());
+        forEach((o, t) -> tree.putEntry(t.withParent(tree)));
         return tree;
     }
 
@@ -321,7 +423,7 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
                 return true;
             }
         } else {
-            Iterator<Map.Entry<K, Tree<K,V>>> it = entrySet().iterator();
+            Iterator<Map.Entry<List<K>, Tree<K,V>>> it = entrySet().iterator();
             while (it.hasNext()) {
                 if (it.next().getValue().pruneLeaves(leavesRemovePredicate)) {
                     it.remove();
@@ -334,12 +436,12 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
     /**
      * Removes branches passing the predicate test
      */
-    public void pruneBranches(Predicate<K> branchRemovePredicate) {
+    public void pruneBranches(Predicate<List<K>> branchRemovePredicate) {
         if (!isLeaf()) {
-            Iterator<Map.Entry<K, Tree<K,V>>> it = entrySet().iterator();
+            Iterator<Map.Entry<List<K>, Tree<K,V>>> it = entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<K, Tree<K,V>> e = it.next();
-                K key = e.getKey();
+                Map.Entry<List<K>, Tree<K,V>> e = it.next();
+                List<K> key = e.getKey();
                 if (branchRemovePredicate.test(key)) {
                     it.remove();
                 } else {
@@ -353,7 +455,7 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 37 * hash + Objects.hashCode(this.key);
+        hash = 37 * hash + Objects.hashCode(this.keyList);
         hash = 37 * hash + Objects.hashCode(this.leafValue);
         return hash;
     }
@@ -370,7 +472,7 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
             return false;
         }
         final Tree<?,?> other = (Tree<?,?>) obj;
-        if (!Objects.equals(this.key, other.key)) {
+        if (!Objects.equals(this.keyList, other.keyList)) {
             return false;
         }
         if (!Objects.equals(this.leafValue, other.leafValue)) {
@@ -395,19 +497,20 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         buf.append(tabs).append(getKey());
         if (isLeaf()) {
             buf.append(" => ").append(getLeafValue()).append("\n");
-        } else {
-            buf.append(" :\n");
+        }
+        if (!isEmpty()) {
+            buf.append('\n');
             forEach((k,v) -> buf.append(v.toString(tab + 1)));
         }
         return buf.toString();
     }
 
-    private String createTabs(int tab) {
+    private static String createTabs(int tab) {
         if (tab == 0) {
             return "";
         }
-        char[] array = new char[tab];
-        Arrays.fill(array, '\t');
+        char[] array = new char[tab * 4];
+        Arrays.fill(array, ' ');
         return new String(array);
     }
 }
