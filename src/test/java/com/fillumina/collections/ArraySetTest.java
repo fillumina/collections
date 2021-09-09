@@ -3,6 +3,7 @@ package com.fillumina.collections;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,6 +32,26 @@ public class ArraySetTest extends AbstractSetTest {
     protected <T> Set<T> createSet(Collection<T> coll) {
         return new ArraySet<>(coll);
     }
+
+    @Test
+    public void shouldCreateFromRepeatingElementsInCollection() {
+        List<Integer> list = Arrays.asList(2, 1, 2, 3, 1, 3);
+        ArraySet<Integer> set = new ArraySet<>(list);
+        assertEquals(3, set.size());
+        assertTrue(set.contains(1));
+        assertTrue(set.contains(2));
+        assertTrue(set.contains(3));
+    }
+
+    @Test
+    public void shouldCreateFromRepeatingElements() {
+        ArraySet<Integer> set = new ArraySet<>(2, 1, 2, 3, 1, 3);
+        assertEquals(3, set.size());
+        assertTrue(set.contains(1));
+        assertTrue(set.contains(2));
+        assertTrue(set.contains(3));
+    }
+
 
     @Test
     public void shouldStaticCreateImmutable() {

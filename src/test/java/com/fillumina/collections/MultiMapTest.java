@@ -269,6 +269,7 @@ public class MultiMapTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldFlatToLevel0() {
         // leve=0 is just the same as TREE.toMultiLevelMap()
         Map<List<Object>,Tree<Object,String>> flatMap0 = TREE.flatMapToLevel(0);
@@ -297,6 +298,7 @@ public class MultiMapTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldFlatToLevel1() {
         Map<?,?> flatMap1 = TREE.flatMapToLevel(1);
         flatMap1.forEach((keyList, m12) -> {
@@ -321,6 +323,7 @@ public class MultiMapTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void shouldFlatToLevel2() {
         Map<?,?> flatMap2 = TREE.flatMapToLevel(2);
         flatMap2.forEach((keyList, v) -> {

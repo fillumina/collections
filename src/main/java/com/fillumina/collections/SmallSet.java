@@ -67,14 +67,9 @@ public class SmallSet<T> extends AbstractSet<T> implements Serializable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public SmallSet(Collection<? extends T> elements) {
-        if (elements != null && !elements.isEmpty()) {
-            if (elements.size() == 1) {
-                obj = elements.iterator().next();
-            } else {
-                obj = elements.toArray();
-            }
-        }
+        this((T[])elements.toArray());
     }
 
     public SmallSet(SmallSet<? extends T> smallSet) {
