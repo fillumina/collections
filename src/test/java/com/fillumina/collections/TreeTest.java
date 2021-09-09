@@ -5,10 +5,7 @@
 package com.fillumina.collections;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,36 +27,33 @@ public class TreeTest {
     private static final String VALUE_NEPHEW_1 = "nephew_1";
     public static final String TRANSFORMED = "__TRANSFORMED";
 
-    private static Tree<String> ROOT;
-    private static Tree<String> CHILD;
-    private static Tree<String> NEPHEW1;
-    private static Tree<String> NEPHEW2;
+    private static Tree<String,String> ROOT;
+    private static Tree<String,String> CHILD;
+    private static Tree<String,String> NEPHEW1;
+    private static Tree<String,String> NEPHEW2;
 
     @BeforeAll
     public static void init() {
-        NEPHEW1 = new Tree<>(null, null, VALUE_NEPHEW_1);
-        NEPHEW2 = new Tree<>(null, null, VALUE_NEPHEW_2);
+        NEPHEW1 = new Tree<>(KEY_NEPHEW_1,VALUE_NEPHEW_1);
+        NEPHEW2 = new Tree<>(KEY_NEPHEW_2,VALUE_NEPHEW_2);
 
-        Map<Object,Tree<String>> nephewMap = new HashMap<>();
-        nephewMap.put(KEY_NEPHEW_1, NEPHEW1);
-        nephewMap.put(KEY_NEPHEW_2, NEPHEW2);
-        CHILD = new Tree<>(null, nephewMap, VALUE_CHILD);
+        CHILD = new Tree<>(KEY_CHILD, VALUE_CHILD);
+        CHILD.put(KEY_NEPHEW_1, NEPHEW1);
+        CHILD.put(KEY_NEPHEW_2, NEPHEW2);
 
-        Map<Object,Tree<String>> childrenMap = new HashMap<>();
-        childrenMap.put(KEY_CHILD, CHILD);
-        ROOT = new Tree<>(null, childrenMap, VALUE_ROOT);
-
+        ROOT = new Tree<>(null, VALUE_ROOT);
+        ROOT.put(KEY_CHILD, CHILD);
     }
 
     @Test
-    public void testGetValue() {
-        Tree<String> tree = new Tree<>(null, null, "value");
-        assertEquals("value", tree.getValue());
+    public void testGetLeafValue() {
+        Tree<String,String> tree = new Tree<>("key", "value");
+        assertEquals("value", tree.getLeafValue());
 
-        assertEquals(VALUE_CHILD, CHILD.getValue());
-        assertEquals(VALUE_ROOT, ROOT.getValue());
-        assertEquals(VALUE_NEPHEW_1, NEPHEW1.getValue());
-        assertEquals(VALUE_NEPHEW_2, NEPHEW2.getValue());
+        assertEquals(VALUE_CHILD, CHILD.getLeafValue());
+        assertEquals(VALUE_ROOT, ROOT.getLeafValue());
+        assertEquals(VALUE_NEPHEW_1, NEPHEW1.getLeafValue());
+        assertEquals(VALUE_NEPHEW_2, NEPHEW2.getLeafValue());
     }
 
     @Test
@@ -96,18 +90,11 @@ public class TreeTest {
     }
 
     @Test
-    public void testGetKeyList() {
-        List<Object> list = Arrays.asList("one", "two");
-        Tree<String> tree = new Tree<>(list, null, "child");
-        assertEquals(list, tree.getKeyList());
-    }
-
-    @Test
     public void testGetChildren() {
         assertEquals(Utils.mapOf(KEY_CHILD,CHILD),
-                ROOT.getChildren());
+                ROOT);
         assertEquals(Utils.mapOf(KEY_NEPHEW_1, NEPHEW1, KEY_NEPHEW_2, NEPHEW2),
-                CHILD.getChildren());
+                CHILD);
     }
 
     @Test
@@ -118,26 +105,10 @@ public class TreeTest {
 
     @Test
     public void testClone() {
-        Tree<String> cloned = ROOT.clone();
-        cloned.getChildren().clear();
-        assertTrue(cloned.getChildren().isEmpty());
-        assertFalse(ROOT.getChildren().isEmpty());
-    }
-
-    @Test
-    public void testToMultiLevelMap_0args() {
-        Map<?,?> rootMap = ROOT.toMultiLevelMap(v -> v + TRANSFORMED);
-        Map<?,?> childMap = (Map<?,?>) rootMap.get(KEY_CHILD);
-        assertEquals(VALUE_NEPHEW_1 + TRANSFORMED, childMap.get(KEY_NEPHEW_1));
-        assertEquals(VALUE_NEPHEW_2 + TRANSFORMED, childMap.get(KEY_NEPHEW_2));
-    }
-
-    @Test
-    public void testToMultiLevelMap_Function() {
-        Map<?,?> rootMap = ROOT.toMultiLevelMap();
-        Map<?,?> childMap = (Map<?,?>) rootMap.get(KEY_CHILD);
-        assertEquals(VALUE_NEPHEW_1, childMap.get(KEY_NEPHEW_1));
-        assertEquals(VALUE_NEPHEW_2, childMap.get(KEY_NEPHEW_2));
+        Tree<String,String> cloned = ROOT.clone();
+        cloned.clear();
+        assertTrue(cloned.isEmpty());
+        assertFalse(ROOT.isEmpty());
     }
 
     @Test

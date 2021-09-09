@@ -15,9 +15,6 @@ import java.util.Objects;
  * {@code O(n)}. Doesn't accept {@code null}. It maintains insertion order and the n-th element can
  * be get by using {@link #get(int n) }. It's sortable by using its own in place {@link #sort()}
  * implementation. It's not thread safe.
- * <p>
- * NOTE: it doesn't work with <a href='https://github.com/EsotericSoftware/kryo'>Kryo</a> persister
- * because of its use of Object.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */

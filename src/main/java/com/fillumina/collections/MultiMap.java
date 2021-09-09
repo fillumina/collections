@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -281,20 +280,18 @@ public class MultiMap<T>
      * i.e. {@code createTreeFromIndexes(1, 0, 2)} uses the index 1 for the first level, 0 at the
      * second and 2 at the third.
      */
-    public Tree<T> createTreeFromIndexes(int... indexes) {
-        Tree<T> root = createTree(Collections.emptyList(), null, indexes, 0, null);
+    public Tree<Object,T> createTreeFromIndexes(int... indexes) {
+        Tree<Object,T> root = createTree(/*Collections.emptyList(),*/ null, indexes, 0, null);
         return root;
     }
 
     @SuppressWarnings("unchecked")
-    private Tree<T> createTree(
-            List<Object> keys,
+    private Tree<Object,T> createTree(
             Object key,
             int[] indexes,
             int pos,
             Set<Entry<List<Object>, T>> selection) {
 
-        final List<Object> keyList = addKeyToKeys(keys, key);
         final Set<Entry<List<Object>, T>> currentSelection =
                 createCurrentSelection(key, indexes, pos, selection);
 
@@ -303,20 +300,20 @@ public class MultiMap<T>
             Set<Object> keySet = getKeySetAtIndex(indexes[pos]);
             if (keySet.isEmpty()) {
                 // no keys
-                return Tree.<T>emptyTree();
+                return Tree.<Object,T>emptyTree();
 
             } else {
                 // creates children trees
-                Map<Object, Tree<T>> map = new HashMap<>(keySet.size()); // cannot use TreeMap
+                Tree<Object, T> tree = new Tree<>(key); // cannot use TreeMap
                 final int indexPosition = pos + 1;
-                keySet.parallelStream().forEach(k -> {
-                    final Tree<T> t = createTree(keyList, k,
-                            indexes, indexPosition, currentSelection);
-                    synchronized (map) {
-                        map.put(k, t);
+                keySet.stream().forEach(k -> {
+                    final Tree<Object,T> t = createTree(
+                            k, indexes, indexPosition, currentSelection);
+                    synchronized (tree) {
+                        tree.addTree(t);
                     }
                 });
-                return new Tree<>(null, map, null);
+                return tree;
             }
 
         } else {
@@ -325,7 +322,7 @@ public class MultiMap<T>
             if (currentSelection.size() > 1) {
                 throw new IllegalArgumentException("wrong number of indexes");
             }
-            return new Tree<>(keyList, null, value);
+            return new Tree<>(key, value);
         }
     }
 

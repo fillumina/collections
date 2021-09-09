@@ -1,6 +1,7 @@
 package com.fillumina.collections;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,54 +16,133 @@ import java.util.stream.Collectors;
 /**
  * Represents a node in a tree (recursively defining a tree). The tree is immutable.
  */
-// TODO should be heavily modified -> each Tree should be a Map & a Map.Entry at the same time
-public class Tree<T> {
+// TODO use an interface and a factory to mask the horrible getValue() returning itself
+// TODO use Tree as a return type for flat operations (inner operation)
+public class Tree<K,V> // it's a Map AND an Entry with value as itself
+        //                        K        V       E          M
+        extends AbstractEntryMap<K, Tree<K,V>, Tree<K,V>, Tree<K,V>>
+        implements Map.Entry<K,Tree<K,V>> {
 
     @SuppressWarnings("unchecked")
-    public static final Tree<?> EMPTY_TREE =
-            new Tree<>(Collections.EMPTY_LIST, Collections.EMPTY_MAP, null);
+    public static final Tree<?,?> EMPTY_TREE = new Tree<>(null, null);
 
     @SuppressWarnings("unchecked")
-    public static <T> Tree<T> emptyTree() {
-        return (Tree<T>) EMPTY_TREE;
+    public static <K,V> Tree<K,V> emptyTree() {
+        return (Tree<K,V>) EMPTY_TREE;
     }
 
     /**
      * The root has parent is null.
      */
-    private Tree<T> parent;
+    private Tree<K,V> parent;
+
+    private final K key;
 
     /**
-     * The list of keys of this node.
+     * The leaf value of this node.
      */
-    // TODO it's the path up to root!
-    private final List<Object> keyList;
+    private V leafValue;
 
-    /**
-     * Children trees indexed by key (only in non leaf nodes).
-     */
-    // TODO could be substituted by keys in the child tree
-    private final Map<Object, Tree<T>> children;
-
-    /**
-     * The value of this node.
-     */
-    // TODO ONLY FOR LEAVES!!
-    private final T value;
-
-    // TODO warning: no definsive copy of parameters
-    public Tree(List<Object> keyList, Map<Object, Tree<T>> children, T value) {
-        this.keyList = keyList;
-        this.children = children;
-        this.value = value;
+    /** Creates a node with its children defined into a map (perform defensive shallow copy). */
+    public Tree(K key, Map<K, Tree<K,V>> children) {
+        this.key = key;
         if (children != null && !children.isEmpty()) {
-            // set children.parent to self
-            this.children.values().forEach(t -> t.parent = this);
+            addAll(children);
+            values().forEach(t -> t.parent = this);
         }
     }
 
-    public T getValue() {
-        return value;
+    /** Creates a root. */
+    public Tree() {
+        this.parent = null;
+        this.key = null;
+    }
+
+    /** Creates a node. **/
+    public Tree(K k) {
+        this.key = k;
+    }
+
+    /** Creates a leaf. */
+    public Tree(K k, V v) {
+        this.key = k;
+        this.leafValue = v;
+    }
+
+    /** Set the parent. */
+    public Tree<K,V> withParent(Tree<K,V> parent) throws IllegalArgumentException {
+        circularityCheck(this, parent);
+        this.parent = parent;
+        return this;
+    }
+
+    static <K,V> void circularityCheck(Tree<K,V> tree, Tree<K,V> parent)
+            throws IllegalArgumentException {
+        Tree<K,V> current = parent;
+        for (int i=0; i<10; i++) {
+            if (current == tree) {
+                throw new IllegalArgumentException("the parent circularly points to tree");
+            }
+            current = current.parent;
+            if (current == null) {
+                return;
+            }
+        }
+    }
+
+    @Override
+    protected Tree<K,V> createEntry(K k, Tree<K,V> v) {
+        return v;
+    }
+
+    @Override
+    protected Tree<K,V> createMap(int size) {
+        return new Tree<>();
+    }
+
+    public Tree<K, V> addTree(Tree<K, V> entry) {
+        return super.putEntry(entry.withParent(this));
+    }
+
+    @Override
+    public Tree<K, V> put(K key, Tree<K, V> value) {
+        Objects.requireNonNull(value, "value must be not null");
+        return super.put(key, value.withParent(this));
+    }
+
+    @Override
+    public K getKey() {
+        return key;
+    }
+
+    /**
+     * WARNING: this will return the same tree (self)!
+     * @see #getLeafValue()
+     * @see #getLeafValue(java.lang.Object)
+     */
+    @Override
+    public Tree<K,V> getValue() {
+        return this; // <<---- that's the trick! *********************************
+    }
+
+    @Override
+    public Tree<K,V> setValue(Tree<K,V> value) {
+        // it makes no sense
+        throw new UnsupportedOperationException("not supported");
+    }
+
+    public V getLeafValue(K key) {
+        return get(key).getLeafValue();
+    }
+
+    public V getLeafValue() {
+        return leafValue;
+    }
+
+    public V setLeafValue(V value) {
+        V oldValue = this.leafValue;
+        this.leafValue = value;
+        return oldValue;
     }
 
     public boolean isRoot() {
@@ -70,11 +150,11 @@ public class Tree<T> {
     }
 
     public boolean isLeaf() {
-        return children == null || children.isEmpty();
+        return isEmpty();
     }
 
-    public Tree<T> getRoot() {
-        Tree<T> current = this;
+    public Tree<K,V> getRoot() {
+        Tree<K,V> current = this;
         while (current.parent != null) {
             current = current.parent;
         }
@@ -83,7 +163,7 @@ public class Tree<T> {
 
     public int getDepth() {
         int depth = 0;
-        Tree<T> current = this;
+        Tree<K,V> current = this;
         while (current.parent != null) {
             current = current.parent;
             depth++;
@@ -91,13 +171,19 @@ public class Tree<T> {
         return depth;
     }
 
-    public Tree<T> getParent() {
+    public Tree<K,V> getParent() {
         return parent;
     }
 
-    // TODO warning: passing internal data!
-    public List<Object> getKeyList() {
-        return keyList;
+    public List<K> getKeyList() {
+        List<K> list = new ArrayList<>();
+        Tree<K,V> current = this;
+        while (current.parent != null) {
+            list.add(current.key);
+            current = current.parent;
+        }
+        Collections.reverse(list);
+        return list;
     }
 
     public String getKeyListAsString() {
@@ -113,99 +199,63 @@ public class Tree<T> {
                 .map(o -> Objects.toString(o)).collect(Collectors.joining(delimiter));
     }
 
-    // TODO warning: passing internal data!
-    public Map<Object, Tree<T>> getChildren() {
-        return children;
-    }
-
-    /**
-     * Returns the children tree mapped by the given key.
-     *
-     * @param key
-     * @return the children tree
-     */
-    public Tree<T> get(Object key) {
-        return children.get(key);
-    }
-
-    /**
-     * Clone the entire structure into a map of maps.
-     */
-    // TODO basically this is how the Tree should become (this method should't be needed anymore)
-    @SuppressWarnings(value = "unchecked")
-    public Map<?, ?> toMultiLevelMap() {
-        return (Map<?, ?>) replaceMap((Function<T, Object>) Function.identity());
-    }
-
-    /**
-     * Clone the entire structure into a map of maps transforming its leaf values.
-     */
-    // TODO basically this is how the Tree should become (this method should't be needed anymore)
-    public Map<?, ?> toMultiLevelMap(Function<T, Object> valueTransformer) {
-        return (Map<?, ?>) replaceMap(valueTransformer);
-    }
-
-    /**
-     * Returns a map of maps for all the levels of the tree except the last one that will be
-     * substituted by plain Objects.
-     *
-     * @param valueTransformer modify the value
-     * @return might return a value or another map
-     */
-    // TODO basically this is how the Tree should become (this method should't be needed anymore)
-    private Object replaceMap(Function<T, Object> valueTransformer) {
-        if (children == null) {
-            return valueTransformer.apply(value);
-        } else {
-            Map<?, ?> newChildren = children.entrySet().stream()
-                    .collect(Collectors.toMap(e -> e.getKey(),
-                            e -> e.getValue().replaceMap(valueTransformer)));
-            return newChildren;
-        }
-    }
-
     /**
      * Clone the entire structure changing its leave values only.
      */
-    public <R> Tree<R> replaceTree(Function<T, R> valueTransformer) {
-        Map<Object, Tree<R>> m = new HashMap<>();
-        if (children == null) {
-            return new Tree<>(keyList, null, valueTransformer.apply(value));
+    public <W> Tree<K,W> cloneReplacingValues(Function<V, W> valueTransformer) {
+        if (isLeaf()) {
+            return new Tree<>(key, valueTransformer.apply(leafValue));
         } else {
-            Map<Object, Tree<R>> newChildren = children.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            e -> e.getValue().replaceTree(valueTransformer)));
-            return new Tree<>(keyList, newChildren, null);
+            Tree<K,W> tree = new Tree<>(key);
+            forEach((k,v) -> tree.put(k, v.cloneReplacingValues(valueTransformer)));
+            return tree;
         }
+    }
+
+    /**
+     * Compress the tree from the given level on and than convert to a map.
+     * @param level to compact
+     */
+    public Map<?,?> flatFromLevel(int level) {
+        return (Map<?,?>) flatFromLevelObj(level);
+    }
+
+    private Object flatFromLevelObj(int level) {
+        if (isLeaf()) {
+            return leafValue;
+        } else if (level > getDepth()) {
+            Map<Object,Object> map = new HashMap<>();
+            forEach((k,v) -> map.putAll((Map<?,?>)v.flatFromLevelObj(level)));
+            return map;
+        } else {
+            Map<Object,Object> map = new HashMap<>();
+            forEach((k,v) -> {
+                Object key = (level == getDepth()) ? v.getKeyList() : v.getKey();
+                map.put(key, v.flatFromLevelObj(level));
+            });
+            return map;
+        }
+    }
+
+    public Map<List<K>,Tree<K,V>> flatMapToLevel(int level) {
+        return flatToLevel(level, Function.identity());
     }
 
     /**
      * Compress the tree to the given level and than convert to a map.
+     * @param level to compact
      */
-    public Map<?, ?> flatToLevel(int level) {
-        return (Map<?, ?>) mapAtLevel(Collections.emptyList(), level);
-    }
-
-    private Object mapAtLevel(List<Object> klist, int level) {
+    @SuppressWarnings("unchecked")
+    public <L> Map<L,Tree<K,V>> flatToLevel(int level, Function<List<K>,L> keyListTransformer) {
         if (level > 0) {
-            Map<Object, Object> map = new HashMap<>();
-            List<Object> listOfKeys = addItemToList(klist, null);
-            int pos = klist.size();
-            children.forEach((k, c) -> {
-                listOfKeys.set(pos, k);
-                map.putAll((Map<?, ?>) c.mapAtLevel(listOfKeys, level - 1));
-            });
+            Map<L,Tree<K,V>> map = new HashMap<>();
+            int newLevel = level - 1;
+            forEach((k,v) -> map.putAll((Map<L,Tree<K,V>>)v.flatMapToLevel(newLevel)));
             return map;
-        }
-        // level 0: compacts the rest in a single level
-        if (children == null) {
-            return value; // no need to compact: we are at the leaf level
         } else {
-            Map<?, ?> newChildren = children.entrySet().stream()
-                    .collect(Collectors.toMap(e -> addItemToList(klist, e.getKey()),
-                            e -> valueOrMap(e.getValue())));
-            return newChildren;
+            Map<L,Tree<K,V>> map = new HashMap<>();
+            forEach((k,v) -> map.put(keyListTransformer.apply(v.getKeyList()), v));
+            return map;
         }
     }
 
@@ -215,114 +265,149 @@ public class Tree<T> {
      *
      * @return A single level Map with key list as keys and leaves as values.
      */
-    public Map<List<Object>, T> getLeavesMap() {
-        Map<List<Object>, T> map = new HashMap<>();
-        visitLeaves(t -> map.put(t.getKeyList(), t.getValue()));
+    public Map<List<K>, V> toFlatMap() {
+        return toFlatMap(Function.identity());
+    }
+
+    /**
+     * Returns a mapping between all keys -> values. It's functionally equals and more efficient
+     * than {@code getFlatMap(maxLevel)}.
+     *
+     * @param keyListTransformer transforms the key list
+     * @return A single level Map with key list as keys and leaves as values.
+     */
+    public <L> Map<L, V> toFlatMap(Function<List<K>, L> keyListTransformer) {
+        Map<L, V> map = new HashMap<>();
+        visitLeaves(t ->
+                map.put(keyListTransformer.apply(t.getKeyList()), t.getLeafValue()));
         return map;
     }
 
-    public void visitLeaves(Consumer<Tree<T>> leafConsumer) {
-        if (children != null) {
-            children.values().forEach(t -> t.visitLeaves(leafConsumer));
+    public void visitLeaves(Consumer<Tree<K,V>> leafConsumer) {
+        if (!isEmpty()) {
+            values().forEach(t -> t.visitLeaves(leafConsumer));
         } else {
             leafConsumer.accept(this);
         }
     }
 
-    public void visitValues(Consumer<T> leafConsumer) {
-        if (value != null) {
-            leafConsumer.accept(value);
+    public void visitValues(Consumer<V> leafConsumer) {
+        if (!isEmpty()) {
+            forEach((k,v) -> v.visitValues(leafConsumer));
         }
-        if (children != null) {
-            for (Tree<T> child : children.values()) {
-                child.visitValues(leafConsumer);
-            }
+        if (leafValue != null) {
+            leafConsumer.accept(leafValue);
         }
     }
 
     @Override
-    public Tree<T> clone() {
-        Map<Object, Tree<T>> m = new HashMap<>();
-        if (children == null) {
-            return new Tree<>(keyList, null, value);
+    public Tree<K,V> clone() {
+        if (isLeaf()) {
+            return new Tree<>(key, leafValue);
         }
-        children.forEach((o, t) -> m.put(o, t.clone()));
-        return new Tree<>(keyList, m, value);
+        Tree<K,V> tree = new Tree<>(key);
+        forEach((o, t) -> tree.put(o, t.clone()));
+        return tree;
     }
 
     /**
      * Removes leaves and branches passing the predicate test.
      */
-    public boolean pruneLeaves(Predicate<T> leavesRemovePredicate) {
+    public boolean pruneLeaves(Predicate<V> leavesRemovePredicate) {
         if (isLeaf()) {
-            if (value != null) {
-                return leavesRemovePredicate.test(value);
+            if (leafValue != null) {
+                return leavesRemovePredicate.test(leafValue);
             } else {
                 return true;
             }
         } else {
-            Iterator<Map.Entry<Object, Tree<T>>> it = children.entrySet().iterator();
+            Iterator<Map.Entry<K, Tree<K,V>>> it = entrySet().iterator();
             while (it.hasNext()) {
                 if (it.next().getValue().pruneLeaves(leavesRemovePredicate)) {
                     it.remove();
                 }
             }
-            return children.isEmpty();
+            return isEmpty();
         }
     }
 
     /**
      * Removes branches passing the predicate test
      */
-    public void pruneBranches(Predicate<Object> branchRemovePredicate) {
+    public void pruneBranches(Predicate<K> branchRemovePredicate) {
         if (!isLeaf()) {
-            Iterator<Map.Entry<Object, Tree<T>>> it = children.entrySet().iterator();
+            Iterator<Map.Entry<K, Tree<K,V>>> it = entrySet().iterator();
             while (it.hasNext()) {
-                Map.Entry<Object, Tree<T>> e = it.next();
-                Object key = e.getKey();
+                Map.Entry<K, Tree<K,V>> e = it.next();
+                K key = e.getKey();
                 if (branchRemovePredicate.test(key)) {
                     it.remove();
                 } else {
-                    final Tree<T> t = e.getValue();
+                    final Tree<K,V> t = e.getValue();
                     t.pruneBranches(branchRemovePredicate);
                 }
             }
         }
     }
 
-    private static List<Object> addItemToList(List<Object> list, Object item) {
-        List<Object> l = new ArrayList<>(list.size() + 1);
-        l.addAll(list);
-        l.add(item);
-        return l;
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + Objects.hashCode(this.key);
+        hash = 37 * hash + Objects.hashCode(this.leafValue);
+        return hash;
     }
 
-    private static Object valueOrMap(Object obj) {
-        if (obj instanceof Tree) {
-            final Tree tree = (Tree) obj;
-            if (tree.isLeaf()) {
-                return tree.getValue();
-            }
-            return (tree).toMultiLevelMap();
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        return obj;
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Tree<?,?> other = (Tree<?,?>) obj;
+        if (!Objects.equals(this.key, other.key)) {
+            return false;
+        }
+        if (!Objects.equals(this.leafValue, other.leafValue)) {
+            return false;
+        }
+        return true;
+    }
+
+    /** Avoid IDE Debugger default map representations. */
+    public String toActualString(int tab) {
+        return toString();
     }
 
     @Override
     public String toString() {
+        return toString(0);
+    }
+
+    public String toString(int tab) {
+        String tabs = createTabs(tab);
         StringBuilder buf = new StringBuilder();
-        buf.append("(");
-        if (keyList != null) {
-            buf.append(keyList.toString());
+        buf.append(tabs).append(getKey());
+        if (isLeaf()) {
+            buf.append(" => ").append(getLeafValue()).append("\n");
+        } else {
+            buf.append(" :\n");
+            forEach((k,v) -> buf.append(v.toString(tab + 1)));
         }
-        if (keyList != null && value != null) {
-            buf.append(" => ");
-        }
-        if (value != null) {
-            buf.append(value.toString());
-        }
-        buf.append(")");
         return buf.toString();
     }
 
+    private String createTabs(int tab) {
+        if (tab == 0) {
+            return "";
+        }
+        char[] array = new char[tab];
+        Arrays.fill(array, '\t');
+        return new String(array);
+    }
 }
