@@ -60,9 +60,9 @@ public class MultiMapTest {
         final Tree<Object,Double> mariaTree = byRunner.get("Maria Stella");
         //Map<String,Double> runnerTimings = (Map<String,Double>) mariaTree.toMultiLevelMap();
         assertEquals(3, mariaTree.size());
-        assertEquals(12.3, mariaTree.getLeafValue("100 mt"));
-        assertEquals(23.3, mariaTree.getLeafValue("200 mt"));
-        assertEquals(55.3, mariaTree.getLeafValue("400 mt"));
+        assertEquals(12.3, mariaTree.get("100 mt").getNodeValue());
+        assertEquals(23.3, mariaTree.get("200 mt").getNodeValue());
+        assertEquals(55.3, mariaTree.get("400 mt").getNodeValue());
 
         // *********************************************************************
         // create another tree representation of the data
@@ -76,8 +76,8 @@ public class MultiMapTest {
 
         final Tree<Object,Double> race200mtTree = byRace.get("200 mt");
         assertEquals(2, race200mtTree.size());
-        assertEquals(21.9, race200mtTree.getLeafValue("Gisella Masi"));
-        assertEquals(23.3, race200mtTree.getLeafValue("Maria Stella"));
+        assertEquals(21.9, race200mtTree.get("Gisella Masi").getNodeValue());
+        assertEquals(23.3, race200mtTree.get("Maria Stella").getNodeValue());
     }
 
 
@@ -209,7 +209,7 @@ public class MultiMapTest {
                             ":" + l.get(idxMap.get(1)) +
                             ":" + l.get(idxMap.get(2));
 
-                    assertEquals(value, t3.getLeafValue());
+                    assertEquals(value, t3.getNodeValue());
 
                     List<Object> keyList = t3.getKeyList();
                     assertEquals(x.get(0), keyList.get(0));
@@ -252,7 +252,7 @@ public class MultiMapTest {
     public void shouldReplaceTree() {
         Tree<Object,String> changedTreeMap = TREE.cloneReplacingValues(s -> s + "-changed");
         changedTreeMap.visitLeaves(t -> {
-            if (!t.getLeafValue().endsWith("-changed")) {
+            if (!t.getNodeValue().endsWith("-changed")) {
                 throw new AssertionError();
             }
         });
@@ -284,7 +284,7 @@ public class MultiMapTest {
             m1.forEach((b, m2) -> {
                 m2.forEach((c, v) -> {
                     String value = "" + a.get(0) + ":" + b.get(0) + ":" + c.get(0);
-                    assertEquals(value, v.getLeafValue());
+                    assertEquals(value, v.getNodeValue());
                 });
             });
         });
@@ -299,7 +299,7 @@ public class MultiMapTest {
             m1.forEach((b, m2) -> {
                 m2.forEach((c, v) -> {
                     String value = "" + a.get(0) + ":" + b + ":" + c;
-                    assertEquals(value, v.getLeafValue());
+                    assertEquals(value, v.getNodeValue());
                 });
             });
         });
@@ -314,7 +314,7 @@ public class MultiMapTest {
             m12.forEach((c, v) -> {
                 List<?> kl = (List<?>) keyList;
                 String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + c.get(0);
-                assertEquals(value, v.getLeafValue());
+                assertEquals(value, v.getNodeValue());
             });
         });
     }
@@ -326,7 +326,7 @@ public class MultiMapTest {
         flatMap1.forEach((kl, m12) -> {
             m12.forEach((c, v) -> {
                 String value = "" + kl.get(0) + ":" + c.get(0) + ":" + c.get(1);
-                assertEquals(value, v.getLeafValue());
+                assertEquals(value, v.getNodeValue());
             });
         });
     }
@@ -340,7 +340,7 @@ public class MultiMapTest {
         flatMap2.forEach((keyList, v) -> {
             List<?> kl = (List<?>) keyList;
             String value = "" + kl.get(0) + ":" + kl.get(1) + ":" + kl.get(2);
-                assertEquals(value, v.getLeafValue());
+                assertEquals(value, v.getNodeValue());
         });
     }
 

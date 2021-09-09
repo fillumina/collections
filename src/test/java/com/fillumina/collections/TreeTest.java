@@ -50,12 +50,12 @@ public class TreeTest {
     @Test
     public void testGetLeafValue() {
         Tree<String,String> tree = new Tree<>("key", "value");
-        assertEquals("value", tree.getLeafValue());
+        assertEquals("value", tree.getNodeValue());
 
-        assertEquals(VALUE_CHILD, CHILD.getLeafValue());
-        assertEquals(VALUE_ROOT, ROOT.getLeafValue());
-        assertEquals(VALUE_NEPHEW_1, NEPHEW1.getLeafValue());
-        assertEquals(VALUE_NEPHEW_2, NEPHEW2.getLeafValue());
+        assertEquals(VALUE_CHILD, CHILD.getNodeValue());
+        assertEquals(VALUE_ROOT, ROOT.getNodeValue());
+        assertEquals(VALUE_NEPHEW_1, NEPHEW1.getNodeValue());
+        assertEquals(VALUE_NEPHEW_2, NEPHEW2.getNodeValue());
     }
 
     @Test
