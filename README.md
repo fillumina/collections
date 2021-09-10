@@ -1,6 +1,6 @@
 # Collection of Java containers
 
-In general JDK collections are very well done and optimized but they have made some choices to well suit most of the common needs. In particular their preference towards entries which force every mapping to use a dedicated object. Java is fast to create a manipulate objects but nonetheless using arrays (i.e. interleaving keys and values) might offer some advantages in performances (because of locality) and cloning (copying an array is very fast).
+In general JDK collections are very well done and optimized but they have made some choices that might have left some interesting corner cases apart. In particular their preference towards entries (enforced by the `Map` API) which forces every mapping to use a dedicated object. Java is fast to create and manipulate objects but nonetheless using arrays (i.e. interleaving keys and values) might offer some advantages in performances (because of locality) and cloning (copying an array is very fast). One other thing is that JDK's are usually slow to clone and immutable instances are not declared as such. For this reason defensive (slow) cloning/copying must be repeated over and over. Probably they relied on passing them as parameters rather than as returning values but this isn't always practical or convenient.
 
 ### Optimized for size efficiency
 
