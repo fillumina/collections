@@ -24,7 +24,7 @@ public class MultiMapTest {
     @SuppressWarnings("unchecked")
     public void usageExample() {
         // can be initialized without any argument (i.e. no size required)
-        MultiMap<Double> mmap = new MultiMap<>();
+        MultiMap<Object,Double> mmap = new MultiMap<>();
 
         // *******************************************
         // load un-normalized data into the mmap
@@ -86,7 +86,7 @@ public class MultiMapTest {
     private static final Set<Integer> B_SET = Utils.setOf(1, 2, 3);
     private static final Set<Character> C_SET = Utils.setOf('a', 'b');
 
-    private static MultiMap<String> MMAP;
+    private static MultiMap<Object,String> MMAP;
     private static Tree<Object,String> TREE;
 
     public static void main(String[] args) {
@@ -117,7 +117,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldAddValues() {
-        MultiMap<Integer> mmap = new MultiMap<>();
+        MultiMap<Object,Integer> mmap = new MultiMap<>();
 
         mmap.add(1, "alpha", 12);
         mmap.add(2, "alpha", 13);
@@ -355,7 +355,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldDifferentKeysPointToSameValue() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("one", 'a', 2);
@@ -372,7 +372,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetFromPartialKey() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("two", 'a', 2);
@@ -401,7 +401,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldDifferentiate() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("one", 'a', 2);
@@ -421,7 +421,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldConsiderKeyOrder() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("two", 1, 'a');
@@ -434,7 +434,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldReturnOnlySavedValues() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
 
         mmap.add("one", 'a', 1);
         mmap.add("two", 'a', 2);
@@ -452,7 +452,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetAny() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 0, 1, 3);
         mmap.add("gamma", 0, 4, 3);
@@ -468,7 +468,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetAll() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 0, 1, 3);
         mmap.add("gamma", 0, 4, 3);
@@ -494,7 +494,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetMapAtIndex() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 1, 1, 3);
         mmap.add("gamma", 0, 4, 3);
@@ -523,7 +523,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGetSetAtIndex() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 1, 1, 3);
         mmap.add("gamma", 0, 4, 3);
@@ -540,7 +540,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldGet() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 0, 1, 3);
         mmap.add("gamma", 0, 4, 3);
@@ -552,7 +552,7 @@ public class MultiMapTest {
 
     @Test
     public void shouldClear() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 0, 1, 3);
         mmap.add("gamma", 0, 4, 3);
@@ -569,7 +569,7 @@ public class MultiMapTest {
     @Test
     @SuppressWarnings("unchecked")
     public void shouldGetKeysAtIndex() {
-        MultiMap<String> mmap = new MultiMap<>();
+        MultiMap<Object,String> mmap = new MultiMap<>();
         mmap.add("alpha", 0, 1, 2);
         mmap.add("beta", 0, 1, 3);
         mmap.add("gamma", 0, 4, 3);
