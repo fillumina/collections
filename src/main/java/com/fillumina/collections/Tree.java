@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 /**
  * Represents a node in a tree (recursively defining a tree). The tree is immutable.
  */
-// TODO use an interface and a factory to mask the horrible getValue() returning itself
-// TODO use Tree as a return type for flat operations (inner operation)
 public class Tree<K,V> // it's a Map AND an Entry with value as itself
         //                        K        V       E          M
         extends AbstractEntryMap<List<K>, Tree<K,V>, Tree<K,V>, Tree<K,V>>
