@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 /**
  * It's a multi value map backed by a 2-dimensional array. It is possible to
- * retrieve the value of a cell by using coordinates or by indicating its key and the row number and
+ * retrieve the value of a cell by using coordinates or by indicating its key and the row index and
  * it's possible to "translate" by rows from one column to another using column headers as keys.
  * Key access and cell access are O(1), translating is linear along the same row.
  *
@@ -41,11 +41,11 @@ public class Matrix<K, V> {
         private Immutable() {
         }
 
-        public Immutable(Collection<? extends K> keys, V[][] array) {
+        public Immutable(Set<? extends K> keys, V[][] array) {
             super(keys, array);
         }
 
-        public Immutable(Collection<? extends K> keys, int rows) {
+        public Immutable(Set<? extends K> keys, int rows) {
             super(keys, rows);
         }
 
@@ -117,7 +117,7 @@ public class Matrix<K, V> {
             if (rowLength == -1) {
                 rowLength = values.length;
             } else if (rowLength != values.length) {
-                throw new IllegalArgumentException("lines must all have the same element number");
+                throw new IllegalArgumentException("lines must all have the same size");
             }
             return this;
         }
@@ -186,6 +186,7 @@ public class Matrix<K, V> {
         }
     }
 
+    // Each row is basically a map
     private class RowCursor implements Iterator<Entry<K, V>>, Entry<K, V> {
 
         private final int row;
@@ -259,6 +260,9 @@ public class Matrix<K, V> {
     // using T[][] interferes with Kryo
     private Object[][] matrix;
 
+    /**
+     * Creates an empty matrix. It can grow as elements are put in.
+     */
     public Matrix() {
         keys = null;
         matrix = null;
@@ -275,36 +279,44 @@ public class Matrix<K, V> {
         matrix = (V[][]) new Object[keys.length][rows];
     }
 
-    protected Matrix(Collection<? extends K> keys, V[][] array) {
+    protected Matrix(Set<? extends K> keys, V[][] array) {
         this.keys = keys == null ? null : createKeys(keys);
         this.matrix = array;
     }
 
+    /**
+     *
+     * @param keys a set of keys
+     * @param rowSize the size of each row
+     */
     @SuppressWarnings("unchecked")
-    public Matrix(Collection<? extends K> keys, int rows) {
+    public Matrix(Set<? extends K> keys, int rowSize) {
         this.keys = keys == null ? null : createKeys(keys);
-        matrix = (V[][]) new Object[keys.size()][rows];
+        matrix = (V[][]) new Object[keys.size()][rowSize];
     }
 
-    private static <K> BiMap<K,Integer> createKeys(Collection<? extends K> collection) {
-        BiMap<K,Integer> bimap = new BiMap<>(collection.size());
+    private static <K> BiMap<K,Integer> createKeys(Collection<? extends K> keys) {
+        BiMap<K,Integer> bimap = new BiMap<>(keys.size());
         int index = 0;
-        for (K k : collection) {
-            if (!bimap.containsKey(k)) {
-                bimap.put(k, index);
-                index++;
+        for (K k : keys) {
+            if (bimap.containsKey(k)) {
+                throw new IllegalArgumentException("key " + k + " is not unique in " + keys);
             }
+            bimap.put(k, index++);
         }
         return bimap;
     }
 
     /**
-     * Sizes the array with predefined length
+     * Sizes the array with predefined length (it can still grows if needed).
+     *
+     * @param rowSize the number of items on each row
+     * @param colSize the number of items on each column
      */
     @SuppressWarnings("unchecked")
-    public Matrix(int rows, int cols) {
+    public Matrix(int rowSize, int colSize) {
         keys = null;
-        matrix = (V[][]) new Object[cols][rows];
+        matrix = (V[][]) new Object[colSize][rowSize];
     }
 
     /**
@@ -317,6 +329,11 @@ public class Matrix<K, V> {
         matrix[0] = map.values().toArray();
     }
 
+    /**
+     * Clone constructor.
+     *
+     * @param copy the matrix to clone
+     */
     @SuppressWarnings("unchecked")
     public Matrix(Matrix<? extends K, ? extends V> copy) {
         this.keys = copy.keys == null ? null : (BiMap<K, Integer>) copy.keys.clone();
@@ -346,9 +363,9 @@ public class Matrix<K, V> {
     }
 
     /**
-     * Substitutes the passed keys to the ones present in copy.
+     * Transforms the keys according to the given transformation function.
      *
-     * @param transformer
+     * @param transformer function to transform the keys (unicity must be maintained)
      * @return a new Matrix with transformed keys
      */
     public <T> Matrix<T,V> changeKeys(Function<K,T> transformer) {
@@ -360,12 +377,12 @@ public class Matrix<K, V> {
         return new Matrix<T,V>(biMap, m);
     }
 
-    /** Override */
+    /** Override to provide immutability */
     protected void resizeCheck() {
         // do nothing
     }
 
-    /** Override */
+    /** Override to provide immutability */
     protected void readOnlyCheck() {
         // do nothing
     }
