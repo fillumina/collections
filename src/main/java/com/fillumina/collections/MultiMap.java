@@ -25,19 +25,10 @@ public class MultiMap<K,V>
     // The List items are the indexes of key sets mapping to values:
     // each index have a set of keys each of which point to a set of values.
     //            index    key      set of values
+    // TODO Entry<List<K>,..> could be avoidable?
     private final List<Map<K, Set<Entry<List<K>, V>>>> mapList = new ArrayList<>();
 
     private int keySize = -1;
-
-    /** helper to be able to easily change internal set type */
-    protected Set<Entry<List<K>, V>> createNewSet() {
-        return new HashSet<>();
-    }
-
-    /** helper to be able to easily change internal set type */
-    protected Set<Entry<List<K>, V>> createNewSet(Collection<Entry<List<K>, V>> coll) {
-        return new HashSet<>(coll);
-    }
 
     public MultiMap() {
         super();
@@ -57,6 +48,16 @@ public class MultiMap<K,V>
         return new MultiMap<>(size);
     }
 
+    /** helper to be able to easily change internal set type */
+    protected Set<Entry<List<K>, V>> createNewSet() {
+        return new HashSet<>();
+    }
+
+    /** helper to be able to easily change internal set type */
+    protected Set<Entry<List<K>, V>> createNewSet(Collection<Entry<List<K>, V>> coll) {
+        return new HashSet<>(coll);
+    }
+
     @Override
     public void clear() {
         super.clear();
@@ -67,8 +68,8 @@ public class MultiMap<K,V>
     /**
      * Gets the set of values pointed by the key in the index.
      *
-     * @param index
-     * @param key
+     * @param index the position of the index
+     * @param key   the requested key
      * @return the set of values pointed by the given key in the given index
      */
     @SuppressWarnings("unchecked")
@@ -106,10 +107,6 @@ public class MultiMap<K,V>
 
     private Map<K, Set<Entry<List<K>, V>>> getEntryMapAtIndex(int index) throws
             IndexOutOfBoundsException {
-        if (mapList == null || mapList.isEmpty() || index >= mapList.size() || index < 0) {
-            throw new IndexOutOfBoundsException("index= " + index + ", multiMap size= " +
-                    ((mapList == null) ? 0 : mapList.size()));
-        }
         final Map<K, Set<Entry<List<K>, V>>> map = mapList.get(index);
         return map;
     }
@@ -118,7 +115,7 @@ public class MultiMap<K,V>
      * @param keys the keys ordered by index (order is important)
      * @return a value associated to all passed keys.
      */
-    public V getAny(Collection<K> keys) {
+    public V getAny(List<K> keys) {
         Set<V> set = getAll(keys);
         if (set == null || set.isEmpty()) {
             return null;
@@ -130,7 +127,7 @@ public class MultiMap<K,V>
      * @param keys the keys ordered by index (order is important)
      * @return the values associated to all the passed keys.
      */
-    public Set<V> getAll(Collection<K> keys) {
+    public Set<V> getAll(List<K> keys) {
         return getAll(keys.toArray());
     }
 
@@ -154,10 +151,10 @@ public class MultiMap<K,V>
      */
     public Set<V> getAll(Object... keys) {
         Set<Entry<List<K>, V>> result = null;
-        for (int i = 0, l = keys.length; i < l; i++) {
-            Object k = keys[i];
-            if (k != null) {
-                Set<Entry<List<K>, V>> set = getEntrySetAtIndex(i, k);
+        for (int index = 0, l = keys.length; index < l; index++) {
+            Object key = keys[index];
+            if (key != null) {
+                Set<Entry<List<K>, V>> set = getEntrySetAtIndex(index, key);
                 if (set != null) {
                     if (result == null) {
                         result = createNewSet(set);
@@ -172,6 +169,14 @@ public class MultiMap<K,V>
         return result == null
                 ? null
                 : result.stream().map(s -> s.getValue()).collect(Collectors.toSet());
+    }
+
+    @Override
+    public V put(List<K> keys, V value) {
+        @SuppressWarnings("unchecked")
+        final K[] arrayKey = (K[]) keys.toArray();
+        add(value, arrayKey);
+        return null; // changes many associations each in a different way
     }
 
     /**
@@ -198,33 +203,37 @@ public class MultiMap<K,V>
     @SuppressWarnings("unchecked")
     public boolean add(V value, K... keys) {
         List<K> keylist = Arrays.asList(keys);
+
+        // TODO these 2 methods can be merged
+        // TODO no need to add keys later? or yes? yes!
+        // TODO concurrent map for index keys? is it concurrent?
+        checkKeySize(keylist);
+        checkIndexesAndAddIfNeeded(keys.length);
+
+        Entry<List<K>, V> entry = createEntry(keylist, value);
+        Entry<List<K>, V> old = super.putEntry(entry);
+        if (old != null) {
+            throw new RuntimeException("expected null, was: " + old);
+        }
+
+        boolean added = false;
+        for (int index = 0, l = keys.length; index < l; index++) {
+            K key = keys[index];
+            Set<Entry<List<K>, V>> set = mapList
+                    .get(index)
+                    .computeIfAbsent(key, k -> createNewSet());
+            added |= set.add(entry);
+        }
+        return added;
+    }
+
+    private void checkKeySize(List<K> keylist) throws IllegalArgumentException {
         if (keySize == -1) {
             keySize = keylist.size();
         } else if (keySize != keylist.size()) {
             throw new IllegalArgumentException(
                     "expected key of size " + keySize + ", was " + keylist.size());
         }
-        Entry<List<K>, V> entry = createEntry(keylist, value);
-        super.putEntry(entry);
-
-        checkIndexesAndAddIfNeeded(keys.length);
-        boolean added = false;
-        for (int i = 0, l = keys.length; i < l; i++) {
-            K k = keys[i];
-            Set<Entry<List<K>, V>> set = mapList
-                    .get(i)
-                    .computeIfAbsent(k, key -> createNewSet());
-            added |= set.add(entry);
-        }
-        return added;
-    }
-
-    @Override
-    public V put(List<K> keys, V value) {
-        @SuppressWarnings("unchecked")
-        final K[] arrayKey = (K[]) keys.toArray();
-        add(value, arrayKey);
-        return null; // changes many associations each in a different way
     }
 
     /**
@@ -302,13 +311,15 @@ public class MultiMap<K,V>
 
             } else {
                 // creates children trees
-                Tree<Object, V> tree = new Tree<>(key); // cannot use TreeMap
+                Tree<Object, V> tree = new Tree<>(key);
                 final int indexPosition = pos + 1;
-                keySet.stream().forEach(k -> {
+                keySet.forEach(k -> {
                     final Tree<Object,V> t = createTree(
                             k, indexes, indexPosition, currentSelection);
-                    synchronized (tree) {
-                        tree.addTree(t);
+                    if (t != null) {
+                        synchronized (tree) {
+                            tree.addTree(t);
+                        }
                     }
                 });
                 return tree;
@@ -322,27 +333,6 @@ public class MultiMap<K,V>
             }
             return new Tree<>(key, value);
         }
-    }
-
-    private static <K> List<K> addKeyToKeys(List<K> keys, K key) {
-        List<K> keyList;
-        if (key != null) {
-            if (keys == null) {
-                keyList = Collections.singletonList(key);
-            } else {
-                keyList = addItemToList(keys, key);
-            }
-        } else {
-            keyList = keys;
-        }
-        return keyList;
-    }
-
-    private static <K> List<K> addItemToList(List<K> list, K item) {
-        List<K> l = new ArrayList<>(list.size() + 1);
-        l.addAll(list);
-        l.add(item);
-        return l;
     }
 
     private Set<Entry<List<K>, V>> createCurrentSelection(
