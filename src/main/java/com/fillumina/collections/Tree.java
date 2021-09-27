@@ -186,8 +186,6 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         m.forEach((k,v) -> put(k, v));
     }
 
-
-
     /** Adds the passed tree to the new one, if it is already part of another tree it's cloned. */
     @Override
     protected Tree<K, V> putEntry(Tree<K, V> entry) {
@@ -197,8 +195,6 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         Tree<K,V> clone = entry.clone();
         return super.putEntry(clone.withParent(this));
     }
-
-
 
     @Override
     public List<K> getKey() {
@@ -474,11 +470,6 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         return true;
     }
 
-    /** Avoid IDE Debugger default map representations. */
-    public String toActualString(int tab) {
-        return toString();
-    }
-
     @Override
     public String toString() {
         return toString(0);
@@ -488,11 +479,11 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
         String tabs = createTabs(tab);
         StringBuilder buf = new StringBuilder();
         buf.append(tabs).append(getKey());
-        if (isLeaf()) {
-            buf.append(" => ").append(getNodeValue()).append("\n");
+        if (getNodeValue() != null) {
+            buf.append(" => ").append(getNodeValue());
         }
+        buf.append("\n");
         if (!isEmpty()) {
-            buf.append('\n');
             forEach((k,v) -> buf.append(v.toString(tab + 1)));
         }
         return buf.toString();

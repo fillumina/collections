@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -70,6 +72,8 @@ public class MultiMapTest {
 
         // uses the reverse order to create the tree: first race, then runner
         Tree<Object,Double> byRace = mmap.createTreeFromIndexes(1, 0);
+
+        //System.out.println(byRace);
 
         assertEquals(new HashSet<>(Arrays.asList("100 mt", "200 mt", "400 mt")),
                 byRace.keySet().stream().flatMap(s -> s.stream()).collect(Collectors.toSet()));
@@ -145,12 +149,14 @@ public class MultiMapTest {
     @Test
     public void shouldCreateTreeWithDifferentIndexOrder() {
         Tree<Object,String> otherTree = MMAP.createTreeFromIndexes(1, 2, 0);
+        //System.out.println(otherTree);
         checkTree(otherTree, 1, 2, 0);
     }
 
     @Test
     public void shouldCreateTreeWithAnotherDifferentIndexOrder() {
         Tree<Object,String> otherTree = MMAP.createTreeFromIndexes(2, 0, 1);
+        //System.out.println(otherTree);
         checkTree(otherTree, 2, 0, 1);
     }
 
@@ -408,7 +414,7 @@ public class MultiMapTest {
         mmap.add("one", 'b', 3);
 
         assertEquals(3, mmap.size());
-        assertEquals(1, new HashSet<>(mmap.values()).size());
+        assertEquals(1, new HashSet<>(mmap.valueSet()).size());
 
         assertEquals(mmap.getAll('a', 2), mmap.getAll('a', 1));
 
@@ -448,6 +454,14 @@ public class MultiMapTest {
 
         assertNull(mmap.getAll('a', 3));
         assertNull(mmap.getAll('b', 1));
+    }
+
+    @Test
+    public void shouldThrowExceptionIfOverwritingAnEntry() {
+        MultiMap<Object,String> mmap = new MultiMap<>();
+
+        mmap.add("one", 'a', 1);
+        assertThrows(IllegalStateException.class, () -> mmap.add("two", 'a', 1));
     }
 
     @Test
@@ -499,21 +513,21 @@ public class MultiMapTest {
         mmap.add("beta", 1, 1, 3);
         mmap.add("gamma", 0, 4, 3);
 
-        Map<Object, Set<String>> map0 = mmap.getMapAtIndex(0);
+        Map<Object, Set<String>> map0 = mmap.mapAtIndex(0);
         assertContains(map0.get(0), "alpha", "gamma");
         assertContains(map0.get(1), "beta");
         assertNull(map0.get(2));
         assertNull(map0.get(3));
         assertNull(map0.get(4));
 
-        Map<Object, Set<String>> map1 = mmap.getMapAtIndex(1);
+        Map<Object, Set<String>> map1 = mmap.mapAtIndex(1);
         assertContains(map1.get(1), "alpha", "beta");
         assertContains(map1.get(4), "gamma");
         assertNull(map1.get(2));
         assertNull(map1.get(3));
         assertNull(map1.get(0));
 
-        Map<Object, Set<String>> map2 = mmap.getMapAtIndex(2);
+        Map<Object, Set<String>> map2 = mmap.mapAtIndex(2);
         assertContains(map2.get(3), "gamma", "beta");
         assertContains(map2.get(2), "alpha");
         assertNull(map2.get(0));
@@ -528,14 +542,14 @@ public class MultiMapTest {
         mmap.add("beta", 1, 1, 3);
         mmap.add("gamma", 0, 4, 3);
 
-        assertContains(mmap.getSetAtIndex(0, 0), "alpha", "gamma");
-        assertContains(mmap.getSetAtIndex(0, 1), "beta");
+        assertContains(mmap.setAtIndex(0, 0), "alpha", "gamma");
+        assertContains(mmap.setAtIndex(0, 1), "beta");
 
-        assertContains(mmap.getSetAtIndex(1, 1), "alpha", "beta");
-        assertContains(mmap.getSetAtIndex(1, 4), "gamma");
+        assertContains(mmap.setAtIndex(1, 1), "alpha", "beta");
+        assertContains(mmap.setAtIndex(1, 4), "gamma");
 
-        assertContains(mmap.getSetAtIndex(2, 3), "gamma", "beta");
-        assertContains(mmap.getSetAtIndex(2, 2), "alpha");
+        assertContains(mmap.setAtIndex(2, 3), "gamma", "beta");
+        assertContains(mmap.setAtIndex(2, 2), "alpha");
     }
 
     @Test
@@ -545,9 +559,90 @@ public class MultiMapTest {
         mmap.add("beta", 0, 1, 3);
         mmap.add("gamma", 0, 4, 3);
 
-        assertEquals("alpha", mmap.get(Arrays.asList(0, 1, 2)));
-        assertEquals("beta", mmap.get(Arrays.asList(0, 1, 3)));
-        assertEquals("gamma", mmap.get(Arrays.asList(0, 4, 3)));
+        assertEquals("alpha", mmap.getAny(Arrays.asList(0, 1, 2)));
+        assertEquals("beta", mmap.getAny(Arrays.asList(0, 1, 3)));
+        assertEquals("gamma", mmap.getAny(Arrays.asList(0, 4, 3)));
+    }
+
+    @Test
+    public void shouldCreateAsymmetricMultiMap() {
+        MultiMap<Integer,String> mmap = new MultiMap<>();
+        mmap.add("0-value", 0);
+        mmap.add("0-1-value", 0, 1);
+        mmap.add("0-2-3-value", 0, 2, 3);
+
+        assertEquals("0-value", mmap.getAny(0));
+        assertEquals("0-1-value", mmap.getAny(0, 1));
+        assertEquals("0-2-3-value", mmap.getAny(0, 2, 3));
+        assertEquals("0-2-3-value", mmap.getAny(0, 2));
+    }
+
+    @Test
+    public void shouldCreateAsymmetricTree() {
+        MultiMap<Integer,String> mmap = new MultiMap<>();
+        mmap.add("0-value", 0);
+        mmap.add("0-1-value", 0, 1);
+        mmap.add("0-2-3-value", 0, 2, 3);
+
+        Tree<Integer,String> tree = mmap.createTree();
+        //System.out.println("TREE: " + tree);
+
+        // root is always null,null
+        assertEquals(null, tree.getKey().get(0));
+        assertEquals(null, tree.getNodeValue());
+
+        Tree<Integer,String> l1Tree = tree.get(0);
+        assertEquals(0, l1Tree.getKey().get(0));
+        assertEquals("0-value", l1Tree.getNodeValue());
+
+        Tree<Integer,String> l2Tree1 = l1Tree.get(1);
+        assertEquals(1, l2Tree1.getKey().get(0));
+        assertEquals("0-1-value", l2Tree1.getNodeValue());
+
+        Tree<Integer,String> l2Tree2 = l1Tree.get(2);
+        assertEquals(2, l2Tree2.getKey().get(0));
+        assertEquals(null, l2Tree2.getNodeValue());
+
+        Tree<Integer,String> l3Tree3 = l2Tree2.get(3);
+        assertEquals(3, l3Tree3.getKey().get(0));
+        assertEquals("0-2-3-value", l3Tree3.getNodeValue());
+    }
+
+    @Test
+    public void shouldCreateAsymmetricTreeWithIndexes() {
+        MultiMap<Integer,String> mmap = new MultiMap<>();
+        mmap.add("0-value", 0);
+        mmap.add("0-1-value", 0, 1);
+        mmap.add("0-2-3-value", 0, 2, 3);
+
+        Tree<Integer,String> tree = mmap.createTreeFromIndexes(1, 0, 2);
+        //System.out.println("TREE: " + tree);
+
+        // root is always null,null
+        assertEquals(null, tree.getKey().get(0));
+        assertEquals(null, tree.getNodeValue());
+
+        // nodes will have different values b/c values are assigned to paths and not nodes in mmap!
+
+        Tree<Integer,String> tree1 = tree.get(1);
+        assertEquals(1, tree1.getKey().get(0));
+        assertEquals(null, tree1.getNodeValue());
+
+        Tree<Integer,String> tree10 = tree1.get(0);
+        assertEquals(0, tree10.getKey().get(0));
+        assertEquals("0-1-value", tree10.getNodeValue());
+
+        Tree<Integer,String> tree2 = tree.get(2);
+        assertEquals(2, tree2.getKey().get(0));
+        assertEquals(null, tree2.getNodeValue());
+
+        Tree<Integer,String> tree20 = tree2.get(0);
+        assertEquals(0, tree20.getKey().get(0));
+        assertEquals(null, tree20.getNodeValue());
+
+        Tree<Integer,String> tree203 = tree20.get(3);
+        assertEquals(3, tree203.getKey().get(0));
+        assertEquals("0-2-3-value", tree203.getNodeValue());
     }
 
     @Test
@@ -577,6 +672,39 @@ public class MultiMapTest {
         assertContains(mmap.getKeySetAtIndex(0), 0);
         assertContains(mmap.getKeySetAtIndex(1), 1, 4);
         assertContains(mmap.getKeySetAtIndex(2), 2, 3);
+    }
+
+    @Test
+    public void testValueSet() {
+        Set<String> values = MMAP.valueSet();
+
+        assertEquals(18, values.size());
+
+        for (String a : A_SET) {
+            for (Integer b : B_SET) {
+                for (Character c : C_SET) {
+                    String value = "" + a + ":" + b + ":" + c;
+                    assertTrue(values.contains(value));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testEntrySet() {
+        Set<Entry<List<Object>,String>> entries = MMAP.entrySet();
+        assertEquals(18, entries.size());
+
+        for (String a : A_SET) {
+            for (Integer b : B_SET) {
+                for (Character c : C_SET) {
+                    List<Object> key = Arrays.asList(a, b, c);
+                    String value = "" + a + ":" + b + ":" + c;
+                    Entry<List<Object>,String> entry = new ImmutableMapEntry<>(key, value);
+                    assertTrue(entries.contains(entry));
+                }
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

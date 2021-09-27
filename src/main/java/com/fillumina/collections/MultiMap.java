@@ -16,26 +16,28 @@ import java.util.stream.Collectors;
  * Stores data in an non normalized way by indexing each value with multiple keys (position is
  * important). The data can then be queried by selecting the keys of interest in the right index.
  *
- * @param V the <i>value</i> type (keys are always objects)
+ * @param K the <i>key</i> type
+ * @param V the <i>value</i> type
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class MultiMap<K,V>
         extends AbstractEntryMap<List<K>, V, Entry<List<K>, V>, MultiMap<K,V>> {
 
-    // The List items are the indexes of key sets mapping to values:
-    // each index have a set of keys each of which point to a set of values.
-    //            index    key      set of values
-    // TODO Entry<List<K>,..> could be avoidable?
-    private final List<Map<K, Set<Entry<List<K>, V>>>> mapList = new ArrayList<>();
-
-    private int keySize = -1;
+    // The List items are the indexes of key sets mapping to valueSet:
+    // each index have a set of keys each of which point to a set of valueSet.
+    // The entry is needed because in the selection it is important to know which keys
+    // points to a specific value.
+    //            index    key      set of valueSet
+    private final List<Map<K, Set<Entry<List<K>, V>>>> mapList;
 
     public MultiMap() {
         super();
+        this.mapList = new ArrayList<>();
     }
 
     public MultiMap(int initialSize) {
         super(initialSize);
+        this.mapList = new ArrayList<>(initialSize);
     }
 
     @Override
@@ -66,14 +68,14 @@ public class MultiMap<K,V>
     }
 
     /**
-     * Gets the set of values pointed by the key in the index.
+     * Gets the set of valueSet pointed by the key in the index.
      *
      * @param index the position of the index
      * @param key   the requested key
-     * @return the set of values pointed by the given key in the given index
+     * @return the set of valueSet pointed by the given key in the given index or null
      */
     @SuppressWarnings("unchecked")
-    public Set<V> getSetAtIndex(int index, K key) {
+    public Set<V> setAtIndex(int index, K key) {
         Set<Entry<List<K>, V>> set = getEntrySetAtIndex(index, key);
         if (set == null) {
             return Collections.<V>emptySet();
@@ -81,20 +83,23 @@ public class MultiMap<K,V>
         return set.stream().map(e -> e.getValue()).collect(Collectors.toSet());
     }
 
-    private Set<Entry<List<K>, V>> getEntrySetAtIndex(int index, Object key)
-            throws IndexOutOfBoundsException {
-        Map<K, Set<Entry<List<K>, V>>> map = getEntryMapAtIndex(index);
-        return map == null ? null : map.get(key);
+    private Set<Entry<List<K>, V>> getEntrySetAtIndex(int index, Object key) {
+        try {
+            Map<K, Set<Entry<List<K>, V>>> map = mapList.get(index);
+            return map == null ? null : map.get(key);
+        } catch (IndexOutOfBoundsException ex) {
+            return null;
+        }
     }
 
     /**
-     * Gets the map between keys and values in the index.
+     * Gets the map between keys and valueSet in the index.
      *
      * @param index
      * @return the map of (key,value) from the given index
      */
-    public Map<K, Set<V>> getMapAtIndex(int index) {
-        Map<K, Set<Entry<List<K>, V>>> map = getEntryMapAtIndex(index);
+    public Map<K, Set<V>> mapAtIndex(int index) {
+        Map<K, Set<Entry<List<K>, V>>> map = mapList.get(index);
         if (map == null) {
             return Collections.<K, Set<V>>emptyMap();
         }
@@ -102,13 +107,24 @@ public class MultiMap<K,V>
                 .collect(Collectors.toMap(
                         e -> e.getKey(),
                         e -> e.getValue().stream()
-                                .map(n -> n.getValue()).collect(Collectors.toSet())));
+                                .map(s -> s.getValue()).collect(Collectors.toSet())));
     }
 
-    private Map<K, Set<Entry<List<K>, V>>> getEntryMapAtIndex(int index) throws
-            IndexOutOfBoundsException {
-        final Map<K, Set<Entry<List<K>, V>>> map = mapList.get(index);
-        return map;
+    /** @return a new independent set (not a view!) of all the entries in the multi map. */
+    public Set<Entry<List<K>,V>> entrySet() {
+        return mapList.stream()
+                .flatMap(m -> m.values().stream())
+                .flatMap(s -> s.stream())
+                .collect(Collectors.toSet());
+    }
+
+    /** @return a new independent set (not a view!) of all the values in the multi map. */
+    public Set<V> valueSet() {
+        return mapList.stream()
+                .flatMap(m -> m.values().stream())
+                .flatMap(s -> s.stream())
+                .map(e -> e.getValue())
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -125,7 +141,7 @@ public class MultiMap<K,V>
 
     /**
      * @param keys the keys ordered by index (order is important)
-     * @return the values associated to all the passed keys.
+     * @return the valueSet associated to all the passed keys.
      */
     public Set<V> getAll(List<K> keys) {
         return getAll(keys.toArray());
@@ -147,7 +163,7 @@ public class MultiMap<K,V>
      * Get the value associated to the passed keys. A null key means all the values in that index.
      *
      * @param keys the keys ordered by index (order is important)
-     * @return the values associated to all passed keys.
+     * @return the valueSet associated to all passed keys.
      */
     public Set<V> getAll(Object... keys) {
         Set<Entry<List<K>, V>> result = null;
@@ -166,8 +182,7 @@ public class MultiMap<K,V>
                 }
             }
         }
-        return result == null
-                ? null
+        return result == null ? null
                 : result.stream().map(s -> s.getValue()).collect(Collectors.toSet());
     }
 
@@ -195,25 +210,22 @@ public class MultiMap<K,V>
 
     /**
      * Adds a value associated with keys. The position of the key represents the index.
+     * Overwriting a previous entry is forbidden and results in an exception.
      *
      * @param value the value to add
      * @param keys the keys ordered by index (order is important)
      * @return the old value
+     * @throws IllegalStateException if a value has been overwritten
      */
     @SuppressWarnings("unchecked")
     public boolean add(V value, K... keys) {
-        List<K> keylist = Arrays.asList(keys);
-
-        // TODO these 2 methods can be merged
-        // TODO no need to add keys later? or yes? yes!
-        // TODO concurrent map for index keys? is it concurrent?
-        checkKeySize(keylist);
         checkIndexesAndAddIfNeeded(keys.length);
 
+        List<K> keylist = Arrays.asList(keys);
         Entry<List<K>, V> entry = createEntry(keylist, value);
         Entry<List<K>, V> old = super.putEntry(entry);
         if (old != null) {
-            throw new RuntimeException("expected null, was: " + old);
+            throw new IllegalStateException("cannot overwrite: " + old + " with value: " + value);
         }
 
         boolean added = false;
@@ -225,15 +237,6 @@ public class MultiMap<K,V>
             added |= set.add(entry);
         }
         return added;
-    }
-
-    private void checkKeySize(List<K> keylist) throws IllegalArgumentException {
-        if (keySize == -1) {
-            keySize = keylist.size();
-        } else if (keySize != keylist.size()) {
-            throw new IllegalArgumentException(
-                    "expected key of size " + keySize + ", was " + keylist.size());
-        }
     }
 
     /**
@@ -257,22 +260,6 @@ public class MultiMap<K,V>
     }
 
     /**
-     * NOT SUPPORTED
-     */
-    @Override
-    public V remove(Object key) {
-        throw new UnsupportedOperationException("not supported");
-    }
-
-    /**
-     * NOT SUPPORTED
-     */
-    @Override
-    protected void removeIndex(int idx) {
-        throw new UnsupportedOperationException("not supported");
-    }
-
-    /**
      *
      * @param index
      * @return the set of keys in the given index
@@ -283,83 +270,132 @@ public class MultiMap<K,V>
     }
 
     /**
+     * Creates a {@link Tree} out of the multi-map.
+     *
+     * @return the created tree
+     */
+    public Tree<K,V> createTree() {
+        int[] indexes = new int[10];
+        for (int i=0; i<indexes.length; i++) {
+            indexes[i] = i;
+        }
+        Tree<K,V> root = createTree(null, null, indexes, 0);
+        return root;
+    }
+
+    /**
+     * Note that node values are assigned by key path in multi-map but are owned by nodes in trees
+     * so if the indexed are mixed then the tree might have different values assigned to nodes.
+     *
      * @return a tree where each level is assigned to the index in the given position.<br>
      * i.e. {@code createTreeFromIndexes(1, 0, 2)} uses the index 1 for the first level, 0 at the
      * second and 2 at the third.
      */
-    public Tree<Object,V> createTreeFromIndexes(int... indexes) {
-        Tree<Object,V> root = createTree(/*Collections.emptyList(),*/ null, indexes, 0, null);
+    public Tree<K,V> createTreeFromIndexes(int... indexes) {
+        Tree<K,V> root = createTree(null, null, indexes, 0);
         return root;
     }
 
+    /**
+     *
+     * @param key       it's the key of the child tree to create
+     * @param indexes   the index mapping
+     * @param pos       the actual position in the index mapping
+     * @param selection the values of this subtree
+     * @return
+     */
     @SuppressWarnings("unchecked")
-    private Tree<Object,V> createTree(
-            Object key,
+    private Tree<K,V> createTree(
+            Tree<K,V> parent,
+            K key,
             int[] indexes,
-            int pos,
-            Set<Entry<List<K>, V>> selection) {
+            int pos) {
 
-        final Set<Entry<List<K>, V>> currentSelection =
-                createCurrentSelection(key, indexes, pos, selection);
+        V value = null;
+        if (parent != null) {
+            value = getValueFromKeysPath(parent, key, indexes);
+        }
 
-        if (pos < indexes.length) {
-            // not a leaf so creates child trees
-            Set<K> keySet = getKeySetAtIndex(indexes[pos]);
-            if (keySet.isEmpty()) {
-                // no keys
-                return Tree.<Object,V>emptyTree();
+        Set<K> keySet;
+        try {
+            keySet = getKeySetAtIndex(indexes[pos]);
+        } catch (IndexOutOfBoundsException e) {
+            return createLeaf(key, value);
+        }
 
-            } else {
-                // creates children trees
-                Tree<Object, V> tree = new Tree<>(key);
-                final int indexPosition = pos + 1;
-                keySet.forEach(k -> {
-                    final Tree<Object,V> t = createTree(
-                            k, indexes, indexPosition, currentSelection);
-                    if (t != null) {
-                        synchronized (tree) {
-                            tree.addTree(t);
-                        }
-                    }
-                });
-                return tree;
-            }
+        if (keySet.isEmpty()) {
+            return createLeaf(key, value);
 
         } else {
-            // it's a leaf
-            V value = currentSelection.iterator().next().getValue();
-            if (currentSelection.size() > 1) {
-                throw new IllegalArgumentException("wrong number of indexes");
-            }
-            return new Tree<>(key, value);
+            final int indexPosition = pos + 1;
+            final Tree<K, V> tree = new Tree<>(key, value).withParent(parent);
+            keySet.forEach(k -> {
+                Tree<K,V> t = createTree(tree, k, indexes, indexPosition);
+                if (t != null) {
+                    tree.addTree(t);
+                }
+            });
+            return tree;
         }
     }
 
+    private V getValueFromKeysPath(Tree<K, V> parent, K key, int[] indexes) {
+        List<K> parentKeyList = parent.getKeyList();
+        List<K> list = new ArrayList<>(parentKeyList.size() + 1);
+        list.addAll(parentKeyList);
+        list.add(key);
+        @SuppressWarnings("unchecked")
+        K[] array = (K[]) new Object[list.size()];
+        for (int i=0; i<array.length; i++) {
+            try {
+                array[indexes[i]] = list.get(i);
+            } catch (IndexOutOfBoundsException e) {
+                return null;
+            }
+        }
+        return get(Arrays.asList(array));
+    }
+
+    private Tree<K, V> createLeaf(K key, V value) {
+        if (value == null) {
+            return null;
+        }
+        return new Tree<>(key, value);
+    }
+
+    /**
+     *
+     * @param key       the index key
+     * @param indexes   a mapping of indexes
+     * @param pos       the position on the mapping
+     * @param selection all the values selected up to now
+     * @return          all the values in common between the passed selection and the values
+     *                  pointed by the indexed key
+     */
     private Set<Entry<List<K>, V>> createCurrentSelection(
             Object key,
             int[] indexes,
             int pos,
             Set<Entry<List<K>, V>> selection) {
 
-        final Set<Entry<List<K>, V>> currentSelection;
         if (key != null) {
-            Set<Entry<List<K>, V>> keySelection = getEntrySetAtIndex(indexes[pos - 1], key);
+            final int index = indexes[pos - 1];
+            Set<Entry<List<K>, V>> keySelection = getEntrySetAtIndex(index, key);
             if (keySelection.isEmpty()) {
-                currentSelection = createNewSet(selection);
+                return null;
+            } else if (selection == null) {
+                return keySelection;
             } else {
                 // intersect the new keySelection with the previous one
-                currentSelection = createNewSet(keySelection);
+                Set<Entry<List<K>, V>> currentSelection = createNewSet(keySelection);
                 if (selection != null && !selection.isEmpty()) {
                     currentSelection.retainAll(selection);
                 }
-            }
-            if (currentSelection.isEmpty()) {
-                return null;
+                return currentSelection;
             }
         } else {
             return null;
         }
-        return currentSelection;
     }
 
 }

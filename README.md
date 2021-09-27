@@ -53,3 +53,5 @@ Note that all these immutable containers can be used as _viewers_ to mutable one
 ### Improvements
 
 One of the good things about having fast cloning collections is that it allows to implement a copy on write algorithm which is very efficient and fast in case of concurrent access (of course with many more readings than writings). In the future I might choose to add some implementations of this. Of course I would gladly accept suggestions and contributions.
+
+Many classes of this project should implement `Serializable` with asensible implementation.
