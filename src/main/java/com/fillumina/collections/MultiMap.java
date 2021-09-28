@@ -317,9 +317,9 @@ public class MultiMap<K,V>
         }
 
         Set<K> keySet;
-        try {
+        if (pos < indexes.length && indexes[pos] < mapList.size()) {
             keySet = getKeySetAtIndex(indexes[pos]);
-        } catch (IndexOutOfBoundsException e) {
+        } else {
             return createLeaf(key, value);
         }
 
