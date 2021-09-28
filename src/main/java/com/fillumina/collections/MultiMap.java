@@ -129,7 +129,8 @@ public class MultiMap<K,V>
 
     /**
      * @param keys the keys ordered by index (order is important)
-     * @return a value associated to all passed keys.
+     * @return a value associated to all passed keys. If multiple values are possible the one
+     * returned is randomly chosen.
      */
     public V getAny(List<K> keys) {
         Set<V> set = getAll(keys);
@@ -149,7 +150,8 @@ public class MultiMap<K,V>
 
     /**
      * @param keys the keys ordered by index (order is important)
-     * @return a value associated to all passed keys.
+     * @return a value associated to all passed keys. If multiple values are possible the one
+     * returned is randomly chosen.
      */
     public V getAny(Object... keys) {
         Set<V> set = getAll(keys);
@@ -340,16 +342,16 @@ public class MultiMap<K,V>
     }
 
     private V getValueFromKeysPath(Tree<K, V> parent, K key, int[] indexes) {
-        List<K> parentKeyList = parent.getKeyList();
-        List<K> list = new ArrayList<>(parentKeyList.size() + 1);
-        list.addAll(parentKeyList);
-        list.add(key);
+        List<K> keyList = parent.getKeyList();
+        keyList.add(key);
         @SuppressWarnings("unchecked")
-        K[] array = (K[]) new Object[list.size()];
-        for (int i=0; i<array.length; i++) {
-            try {
-                array[indexes[i]] = list.get(i);
-            } catch (IndexOutOfBoundsException e) {
+        K[] array = (K[]) new Object[keyList.size()];
+        final int length = array.length;
+        for (int i=0; i<length; i++) {
+            int idx = indexes[i];
+            if (idx < length) {
+                array[idx] = keyList.get(i);
+            } else {
                 return null;
             }
         }
@@ -361,41 +363,6 @@ public class MultiMap<K,V>
             return null;
         }
         return new Tree<>(key, value);
-    }
-
-    /**
-     *
-     * @param key       the index key
-     * @param indexes   a mapping of indexes
-     * @param pos       the position on the mapping
-     * @param selection all the values selected up to now
-     * @return          all the values in common between the passed selection and the values
-     *                  pointed by the indexed key
-     */
-    private Set<Entry<List<K>, V>> createCurrentSelection(
-            Object key,
-            int[] indexes,
-            int pos,
-            Set<Entry<List<K>, V>> selection) {
-
-        if (key != null) {
-            final int index = indexes[pos - 1];
-            Set<Entry<List<K>, V>> keySelection = getEntrySetAtIndex(index, key);
-            if (keySelection.isEmpty()) {
-                return null;
-            } else if (selection == null) {
-                return keySelection;
-            } else {
-                // intersect the new keySelection with the previous one
-                Set<Entry<List<K>, V>> currentSelection = createNewSet(keySelection);
-                if (selection != null && !selection.isEmpty()) {
-                    currentSelection.retainAll(selection);
-                }
-                return currentSelection;
-            }
-        } else {
-            return null;
-        }
     }
 
 }
