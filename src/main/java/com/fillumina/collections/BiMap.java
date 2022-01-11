@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class BiMap<K, V> extends TableMap<K, V> {
 
-    public static BiMap<?, ?> EMPTY_MAP = immutable();
+    public static BiMap<?,?> EMPTY_MAP = new BiMap<>().immutableView();
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     @SuppressWarnings("unchecked")
