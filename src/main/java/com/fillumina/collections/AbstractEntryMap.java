@@ -54,10 +54,20 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         private E[] array;
         private int size = 0;
         private int mask;
+
+        public InternalState() {}
+
+        public InternalState(InternalState<E> other) {
+            if (other.array != null) {
+                this.array = other.array.clone();
+            }
+            this.size = other.size;
+            this.mask = other.mask;
+        }
     }
 
-    private final InternalState<E> state;
-    private Set<Entry<K, V>> entrySet; // cache it only if needed
+    private volatile InternalState<E> state;
+    private volatile Set<Entry<K, V>> entrySet; // cache it only if needed
 
     public AbstractEntryMap() {
         state = new InternalState<>();
@@ -100,7 +110,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     public AbstractEntryMap(
             AbstractEntryMap<? extends K, ? extends V, ? extends E, ? extends M> map) {
         this();
-        E[] otherArray = map.state.array;
+        final InternalState<? extends E> otherState = map.state;
+        E[] otherArray = otherState.array;
         E[] array = null;
         if (otherArray != null) {
             array = (E[]) new Entry[otherArray.length];
@@ -113,8 +124,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             }
         }
         this.state.array = array;
-        this.state.mask = map.state.mask;
-        this.state.size = map.state.size;
+        this.state.mask = otherState.mask;
+        this.state.size = otherState.size;
     }
 
     /**
@@ -168,8 +179,22 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return Objects.equals(key, e.getKey());
     }
 
+    /** Get internal state */
     protected InternalState<E> getInternalState() {
         return state;
+    }
+
+    /** Get internal state clone */
+    protected InternalState<E> getInternalStateClone() {
+        return state;
+    }
+
+    /** Set modified state. */
+    protected void setInternalState(InternalState<E> otherState) {
+        final InternalState<E> internalState = getInternalState();
+        internalState.array = otherState.array;
+        internalState.mask = otherState.mask;
+        internalState.size = otherState.size;
     }
 
     protected int hash(Object key) {
@@ -229,18 +254,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         return this;
     }
 
-    private void saveState(InternalState<E> otherState) {
-        this.state.array = otherState.array;
-        this.state.mask = otherState.mask;
-        this.state.size = otherState.size;
-    }
-
     @Override
     public void clear() {
         readOnlyCheck();
-        state.array = null;
-        state.mask = 0;
-        state.size = 0;
+        setInternalState(new InternalState<>());
     }
 
     @Override
@@ -255,7 +272,6 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     protected E putEntry(E entry) {
         readOnlyCheck();
-        resizeCheck();
         return innerPutEntry(entry);
     }
 
@@ -263,19 +279,31 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * Inserts a new entry. Substitutes the existing entry with the same key if exists.
      */
     protected E innerPutEntry(E entry) {
+        final InternalState<E> internalState = getInternalStateClone();
+        resizeCheck(internalState);
+        E result = innerPutEntry(entry, internalState);
+        setInternalState(internalState);
+        return result;
+    }
+
+    /**
+     * Inserts a new entry. Substitutes the existing entry with the same key if exists.
+     */
+    protected E innerPutEntry(E entry, InternalState<E> internalState) {
         // risizeCheck() must have been called already
         K key = entry.getKey();
-        int idx = hash(key) & state.mask;
+        int idx = hash(key) & internalState.mask;
         E e;
-        while ((e = state.array[idx]) != null) {
+        while ((e = internalState.array[idx]) != null) {
             if (isKeyEqualsToEntry(key, e)) {
-                state.array[idx] = entry;
+                internalState.array[idx] = entry;
+                setInternalState(internalState);
                 return e;
             }
-            idx = (idx + 1) & state.mask;
+            idx = (idx + 1) & internalState.mask;
         }
-        state.array[idx] = entry;
-        state.size++;
+        internalState.array[idx] = entry;
+        internalState.size++;
         return null;
     }
 
@@ -290,42 +318,48 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * operation bypass {@link #readOnlyCheck()} check.
      */
     protected V innerPut(K key, V value) {
-        resizeCheck();
-        int idx = hash(key) & state.mask;
+        final InternalState<E> internalState = getInternalStateClone();
+        resizeCheck(internalState);
+        int idx = hash(key) & internalState.mask;
         E e;
-        while ((e = state.array[idx]) != null) {
+        while ((e = internalState.array[idx]) != null) {
             if (isKeyEqualsToEntry(key, e)) {
                 V old = e.getValue();
                 try {
                     e.setValue(value);
                 } catch (UnsupportedOperationException ex) {
                     // some Entry implementations doesn't allow setting values, creates a new entry
-                    state.array[idx] = createEntry(key, value);
+                    internalState.array[idx] = createEntry(key, value);
                 }
+                setInternalState(internalState);
                 return old;
             }
-            idx = (idx + 1) & state.mask;
+            idx = (idx + 1) & internalState.mask;
         }
-        state.array[idx] = createEntry(key, value);
-        state.size++;
+        internalState.array[idx] = createEntry(key, value);
+        internalState.size++;
+        setInternalState(internalState);
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    private void resizeCheck() {
-        if (state.array == null || state.array.length == 0) {
-            state.array = (E[]) new Entry[INITIAL_SIZE];
-            state.mask = state.array.length - 1;
-        } else if (state.size > (state.array.length >> 1)) {
+    private void resizeCheck(InternalState<E> internalState) {
+        if (internalState.array == null || internalState.array.length == 0) {
+            internalState.array = (E[]) new Entry[INITIAL_SIZE];
+            internalState.mask = internalState.array.length - 1;
+        } else if (internalState.size > (internalState.array.length >> 1)) {
             // for performance reason always keep half the array empty
-            resize(state.array.length << 1);
+            resize(internalState.array.length << 1, internalState);
         }
     }
 
-    protected void resize(int newSize) {
+    private void resize(int newSize, InternalState<E> internalState) {
         AbstractEntryMap<K, V, E, M> map = createMap(nextPowerOf2(newSize) >> 1);
-        forEach(e -> map.innerPutEntry(e));
-        saveState(map.state);
+        forEach(e -> map.putEntry(e));
+        InternalState<E> mapState = map.getInternalState();
+        internalState.array = mapState.array;
+        internalState.size = mapState.size;
+        internalState.mask = mapState.mask;
     }
 
     @Override
@@ -352,20 +386,21 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     public E getEntry(Object key) {
-        if (state.array == null || state.array.length == 0 || key == null) {
+        final InternalState<E> internalState = getInternalState();
+        if (internalState.array == null || internalState.array.length == 0 || key == null) {
             return null;
         }
         int hc = hash(key);
-        int idx = hc & state.mask;
+        int idx = hc & internalState.mask;
         do {
-            E e = state.array[idx];
+            E e = internalState.array[idx];
             if (e == null) {
                 return null; //createEntry(null, null);
             }
             if (hc == hash(e.getKey()) && isKeyEqualsToEntry(key, e)) {
                 return e;
             }
-            idx = (idx + 1) & state.mask;
+            idx = (idx + 1) & internalState.mask;
         } while (true);
     }
 
@@ -382,13 +417,24 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     @Override
     public V remove(Object key) {
         readOnlyCheck();
-        if (state.array == null || key == null) {
+        final InternalState<E> internalState = getInternalStateClone();
+        final Holder<Boolean> modified = new Holder<>(Boolean.FALSE);
+        V oldValue = innerRemove(key, internalState, modified);
+        if (modified.get()) {
+            setInternalState(internalState);
+        }
+        return oldValue;
+    }
+
+    protected V innerRemove(Object key, InternalState<E> internalState, Holder<Boolean> modified) {
+        readOnlyCheck();
+        if (internalState.array == null || key == null) {
             return null;
         }
         int hc = hash(key);
-        int idx = hc & state.mask;
+        int idx = hc & internalState.mask;
         do {
-            E e = state.array[idx];
+            E e = internalState.array[idx];
             if (e == null) {
                 return null;
             }
@@ -396,47 +442,55 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
             if (hc == hash(ekey)) {
                 if (Objects.equals(ekey, key)) {
                     V result = e.getValue();
-                    removeIndex(idx);
+                    removeIndex(idx, internalState);
+                    modified.set(Boolean.TRUE);
                     return result;
                 }
             }
-            idx = (idx + 1) & state.mask;
+            idx = (idx + 1) & internalState.mask;
         } while (true);
     }
 
     // used by BiMap
     @SuppressWarnings("unckecked")
     protected Entry<K, V> getEntryAtIndex(int idx) {
-        return (Entry<K, V>) (state.array == null ? null : state.array[idx]);
+        final InternalState<E> internalState = getInternalState();
+        return (Entry<K, V>) (internalState.array == null ? null : internalState.array[idx]);
     }
 
-    protected void removeIndex(int idx) {
-        state.array[idx] = null;
+    protected void removeIndex(int idx, InternalState<E> internalState) {
+        internalState.array[idx] = null;
         // relocate following entries until null
         do {
-            idx = (idx + 1) & state.mask;
-            E e = state.array[idx];
+            idx = (idx + 1) & internalState.mask;
+            E e = internalState.array[idx];
             if (e == null) {
                 break;
             }
-            state.array[idx] = null;
-            relocateEntry(e);
+            internalState.array[idx] = null;
+            relocateEntry(e, internalState);
         } while (true);
-        state.size--;
+        internalState.size--;
     }
 
-    private void relocateEntry(E entry) {
-        int idx = hash(entry.getKey()) & state.mask;
-        while (state.array[idx] != null) {
-            idx = (idx + 1) & state.mask;
+    private void relocateEntry(E entry, InternalState<E> internalState) {
+        int idx = hash(entry.getKey()) & internalState.mask;
+        while (internalState.array[idx] != null) {
+            idx = (idx + 1) & internalState.mask;
         }
-        state.array[idx] = entry;
+        internalState.array[idx] = entry;
     }
 
     public boolean removeAll(Collection<K> coll) {
+        final InternalState<E> internalState = getInternalState();
         boolean removed = false;
         for (K k : coll) {
-            removed |= (remove(k) != null);
+            final Holder<Boolean> modified = new Holder<>(Boolean.FALSE);
+            innerRemove(k, internalState, modified);
+            removed |= modified.get();
+        }
+        if (removed) {
+            setInternalState(internalState);
         }
         return removed;
     }
@@ -449,7 +503,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
                 tmap.putEntry(e);
             }
         }
-        saveState(tmap.state);
+        setInternalState(tmap.state);
         return !tmap.isEmpty();
     }
 
@@ -457,7 +511,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         if (isEmpty()) {
             return;
         }
-        for (E e : state.array) {
+        final E[] internalStateArray = getInternalState().array;
+        for (E e : internalStateArray) {
             if (e != null) {
                 consumer.accept(e);
             }
@@ -502,31 +557,35 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
             @Override
             public Iterator<Entry<K, V>> iterator() {
-                if (state.size == 0) {
+                final InternalState<E> internalState = getInternalState();
+                if (internalState.size == 0) {
                     return EmptyIterator.empty();
                 }
                 int i = 0;
-                while (state.array[i] == null) {
-                    i++;
-                };
+                for (; i<internalState.array.length; i++) {
+                    if (internalState.array[i] != null) {
+                        break;
+                    }
+                }
                 final int firstNonNullItem = i;
                 return new Iterator<Entry<K, V>>() {
+                    InternalState<E> istate = internalState;
                     int idx = firstNonNullItem;
                     int currentIdx = firstNonNullItem;
                     Entry<K, V> current;
 
                     @Override
                     public boolean hasNext() {
-                        return idx < state.array.length &&
-                                state.array[idx] != null;
+                        return idx < istate.array.length &&
+                                istate.array[idx] != null;
                     }
 
                     @Override
                     public Entry<K, V> next() {
-                        if (idx == state.array.length) {
+                        if (idx == istate.array.length) {
                             throw new NoSuchElementException();
                         }
-                        current = state.array[idx];
+                        current = istate.array[idx];
                         currentIdx = idx;
                         goToNextNonNullItem();
                         return current;
@@ -538,6 +597,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
                         // a little slower but plays nicer with extending classes
                         Entry<K, V> entry = getEntryAtIndex(currentIdx);
                         AbstractEntryMap.this.remove(entry.getKey());
+                        istate = getInternalState();
                         //AbstractEntryMap.this.removeIndex(currentIdx);
                         idx = Math.max(0, currentIdx - 1);
                         goToNextNonNullItem();
@@ -546,8 +606,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
                     private void goToNextNonNullItem() {
                         do {
                             idx++;
-                        } while (idx < state.array.length &&
-                                state.array[idx] == null);
+                        } while (idx < istate.array.length &&
+                                istate.array[idx] == null);
                     }
                 };
 
@@ -568,18 +628,19 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      * @throws NullPointerException {@inheritDoc}
      */
     public boolean containsValue(Object value) {
-        if (state.array == null) {
+        final InternalState<E> internalState = getInternalState();
+        if (internalState.array == null) {
             return false;
         }
         Iterator<Entry<K, V>> i = entrySet().iterator();
         if (value == null) {
-            for (E e : state.array) {
+            for (E e : internalState.array) {
                 if (e != null && e.getValue() == null) {
                     return true;
                 }
             }
         } else {
-            for (E e : state.array) {
+            for (E e : internalState.array) {
                 if (e != null && Objects.equals(value, e.getValue())) {
                     return true;
                 }
@@ -789,11 +850,12 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
      */
     @Override
     public int hashCode() {
-        if (state.array == null || state.array.length == 0) {
+        final InternalState<E> internalState = getInternalState();
+        if (internalState.array == null || internalState.array.length == 0) {
             return 0;
         }
         int h = 0;
-        for (E e : state.array) {
+        for (E e : internalState.array) {
             if (e != null) {
                 h += e.hashCode();
             }

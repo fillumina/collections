@@ -24,6 +24,7 @@ JDK maps aren't very friendly towards extension, these maps offer a lot of exten
 * **`AbstractEntryMap`** is a very _extendable_, _compliant_, `Map` implementation based on hash table with performances of O(1).
 * **`TableMap`** is an `AbstractEntryMap` implementation.
 * **`VieweableMap`** is `AbstractEntryMap` implementation where `Entry` cannot set values. It provides an _unmodifiable view_ that share its internal data.
+* **`CopyOnWriteMap`** a concurrent `VieweableMap` that allows fast access for frequent readings with an efficient use of space.
 
 ### Immutable containers
 
@@ -84,7 +85,5 @@ Is a composition of maps where each node is a `Map` implementation and can also 
 * **`Counter`** contains a counter that can be used inside non concurrent lambdas (use `AtomicInteger` in concurrent lambdas).
 
 ### Improvements
-
- - One of the good things about having fast cloning collection is that it allows to implement a copy on write algorithm which is very efficient and fast in case of concurrent access (with many more readings than writings). In the future I might choose to add some implementations of this. Of course I would gladly accept suggestions and contributions.
 
  - Many classes of this project should implement `Serializable` with a sensible implementation.
