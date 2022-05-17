@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +33,7 @@ public class CopyOnWriteMapTest extends GenericMapTest {
     public void shouldReadAndWriteSymultaneously() {
         CopyOnWriteMap<Integer,String> map = new CopyOnWriteMap<>();
 
-        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ExecutorService executor = Executors.newCachedThreadPool();
         long time = 5 * 1_000;
 
         // writer even
@@ -79,6 +80,35 @@ public class CopyOnWriteMapTest extends GenericMapTest {
             do {
                 for (int i=0; i<100; i++) {
                     map.get(i);
+                }
+            } while(System.currentTimeMillis() < end);
+        });
+
+        // cleaner
+        executor.execute(() -> {
+            final long start = System.currentTimeMillis();
+            final long end = start + time;
+            do {
+                map.clear();
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException ex) {
+                }
+            } while(System.currentTimeMillis() < end);
+        });
+
+        // iterator
+        executor.execute(() -> {
+            final long start = System.currentTimeMillis();
+            final long end = start + time;
+            do {
+                int accumulator = 0;
+                Iterator<Integer> it = map.keySet().iterator();
+                while (it.hasNext()) {
+                    accumulator += it.next();
+                }
+                if (accumulator == -1) {
+                    throw new AssertionError("cannot happen");
                 }
             } while(System.currentTimeMillis() < end);
         });

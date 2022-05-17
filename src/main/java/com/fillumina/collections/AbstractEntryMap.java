@@ -58,11 +58,13 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         public InternalState() {}
 
         public InternalState(InternalState<E> other) {
-            if (other.array != null) {
-                this.array = other.array.clone();
+            if (other != null) {
+                if (other.array != null) {
+                    this.array = other.array.clone();
+                }
+                this.size = other.size;
+                this.mask = other.mask;
             }
-            this.size = other.size;
-            this.mask = other.mask;
         }
     }
 
@@ -191,10 +193,8 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     /** Set modified state. */
     protected void setInternalState(InternalState<E> otherState) {
-        final InternalState<E> internalState = getInternalState();
-        internalState.array = otherState.array;
-        internalState.mask = otherState.mask;
-        internalState.size = otherState.size;
+        Objects.requireNonNull(otherState, "state must be not null");
+        this.state = otherState;
     }
 
     protected int hash(Object key) {
@@ -304,6 +304,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         }
         internalState.array[idx] = entry;
         internalState.size++;
+        setInternalState(internalState);
         return null;
     }
 
@@ -387,7 +388,10 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
     public E getEntry(Object key) {
         final InternalState<E> internalState = getInternalState();
-        if (internalState.array == null || internalState.array.length == 0 || key == null) {
+        if (key == null ||
+                internalState.size == 0 ||
+                internalState.array == null ||
+                internalState.array.length == 0) {
             return null;
         }
         int hc = hash(key);
@@ -482,7 +486,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     public boolean removeAll(Collection<K> coll) {
-        final InternalState<E> internalState = getInternalState();
+        final InternalState<E> internalState = getInternalStateClone();
         boolean removed = false;
         for (K k : coll) {
             final Holder<Boolean> modified = new Holder<>(Boolean.FALSE);
@@ -508,10 +512,11 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
     }
 
     public void forEach(Consumer<E> consumer) {
-        if (isEmpty()) {
+        final InternalState<E> internalState = getInternalState();
+        if (internalState.size == 0 || internalState.array == null) {
             return;
         }
-        final E[] internalStateArray = getInternalState().array;
+        final E[] internalStateArray = internalState.array;
         for (E e : internalStateArray) {
             if (e != null) {
                 consumer.accept(e);
@@ -557,7 +562,7 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
 
             @Override
             public Iterator<Entry<K, V>> iterator() {
-                final InternalState<E> internalState = getInternalState();
+                final InternalState<E> internalState = getInternalStateClone();
                 if (internalState.size == 0) {
                     return EmptyIterator.empty();
                 }
@@ -955,22 +960,25 @@ public abstract class AbstractEntryMap<K, V, E extends Entry<K, V>, M extends Ma
         @Override
         public Iterator<K> iterator() {
             return new Iterator<K>() {
-                private final Iterator<Entry<K, V>> i = entrySet().iterator();
+                private final Iterator<Entry<K, V>> it = entrySet().iterator();
 
                 @Override
                 public boolean hasNext() {
-                    return i.hasNext();
+                    return it.hasNext();
                 }
 
                 @Override
                 public K next() {
-                    final Entry<K, V> next = i.next();
-                    return next.getKey();
+                    final Entry<K, V> next = it.next();
+                    if (next != null) {
+                        return next.getKey();
+                    }
+                    return null;
                 }
 
                 @Override
                 public void remove() {
-                    i.remove();
+                    it.remove();
                 }
             };
         }

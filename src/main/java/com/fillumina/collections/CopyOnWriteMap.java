@@ -12,7 +12,7 @@ import java.util.Map;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class CopyOnWriteMap<K,V>
-        extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
+        extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, CopyOnWriteMap<K, V>> {
 
     public CopyOnWriteMap() {
         super();
@@ -53,7 +53,7 @@ public class CopyOnWriteMap<K,V>
     }
 
     @Override
-    protected AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, VieweableMap<K, V>> createMap(
+    protected AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, CopyOnWriteMap<K, V>> createMap(
             int size) {
         return new CopyOnWriteMap<>(size);
     }
@@ -61,9 +61,7 @@ public class CopyOnWriteMap<K,V>
     @Override
     protected synchronized void setInternalState(
             InternalState<AbstractMap.SimpleImmutableEntry<K, V>> otherState) {
-        @SuppressWarnings("unchecked")
-        InternalState<AbstractMap.SimpleImmutableEntry<K, V>> is = new InternalState<>(otherState);
-        super.setInternalState(is);
+        super.setInternalState(otherState);
     }
 
     @Override
