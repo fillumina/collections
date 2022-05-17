@@ -587,12 +587,25 @@ public class MatrixTest {
 
     // that's the main purpose!!
     @Test
-    public void shouldGetTranslations() {
+    public void shouldGetTranslationsByRow() {
         Matrix<String, String> mtx = Matrix.<String, String>rowBuilder()
                 .keys("IT", "EN", "FR")
                 .row("uno", "one", "une")
                 .row("due", "two", "deux")
                 .row("tre", "three", "trois")
+                .buildImmutable();
+
+        assertEquals("une", mtx.getRelationValue("IT", "FR", "uno"));
+        assertEquals("two", mtx.getRelationValue("IT", "EN", "due"));
+        assertEquals("trois", mtx.getRelationValue("EN", "FR", "three"));
+    }
+
+    @Test
+    public void shouldGetTranslationsByColumn() {
+        Matrix<String, String> mtx = Matrix.<String, String>columnBuilder()
+                .col("IT", "uno", "due", "tre")
+                .col("EN", "one", "two", "three")
+                .col("FR", "une", "deux", "trois")
                 .buildImmutable();
 
         assertEquals("une", mtx.getRelationValue("IT", "FR", "uno"));
