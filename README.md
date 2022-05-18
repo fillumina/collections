@@ -42,8 +42,8 @@ Note that all these immutable containers can be used as _viewers_ to mutable one
 
 ### Concurrent Containers
 
- - **`CopyOnWriteMap`** practical and fast when readings are much more frequent than writings. Copy the internal state when a new element is inserted. Writings are sequenced.
- - **`CopyOnWriteCache`**  a fixed size map that removes the least accessed entry on reaching its maximum allowed size. Quite space efficient and fast if readings are much more frequent than writings.
+ - **`CopyOnWriteMap`** practical and fast when readings are much more frequent than writings. Copies the internal state when a new element is inserted. Writings are sequenced.
+ - **`CopyOnWriteCache`**  a fixed size map that removes the least accessed entry on reaching its maximum allowed size when a new element is inserted. Quite space efficient and fast if readings are much more frequent than writings.
 
 
 ### Different kind of containers
