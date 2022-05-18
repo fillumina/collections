@@ -69,9 +69,4 @@ public class CopyOnWriteMap<K,V>
         return new InternalState<>(getInternalState());
     }
 
-    @Override
-    protected synchronized InternalState<AbstractMap.SimpleImmutableEntry<K, V>> getInternalState() {
-        return super.getInternalState();
-    }
-
 }
