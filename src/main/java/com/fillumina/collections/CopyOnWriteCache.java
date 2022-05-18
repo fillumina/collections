@@ -225,6 +225,7 @@ public class CopyOnWriteCache<K,V>
                     @Override
                     public LinkedEntry<K, V> previous() {
                         current = current.head;
+                        index--;
                         return current;
                     }
 
