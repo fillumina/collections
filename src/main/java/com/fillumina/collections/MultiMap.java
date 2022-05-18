@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.AbstractEntryMap.InternalState;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class MultiMap<K,V>
-        extends AbstractEntryMap<List<K>, V, Entry<List<K>, V>, MultiMap<K,V>> {
+        extends AbstractEntryMap<List<K>, V, Entry<List<K>, V>, MultiMap<K,V>, InternalState<Entry<List<K>,V>> > {
 
     // The List items are the indexes of key sets mapping to valueSet:
     // each index have a set of keys each of which point to a set of valueSet.
@@ -41,7 +42,7 @@ public class MultiMap<K,V>
     }
 
     @Override
-    protected Entry<List<K>, V> createEntry(List<K> k, V v) {
+    protected Entry<List<K>, V> createEntry(List<K> k, V v, InternalState<Entry<List<K>, V>> internalState) {
         return new ImmutableMapEntry<>(k, v);
     }
 
@@ -224,7 +225,7 @@ public class MultiMap<K,V>
         checkIndexesAndAddIfNeeded(keys.length);
 
         List<K> keylist = Arrays.asList(keys);
-        Entry<List<K>, V> entry = createEntry(keylist, value);
+        Entry<List<K>, V> entry = createEntry(keylist, value, null);
         Entry<List<K>, V> old = super.putEntry(entry);
         if (old != null) {
             throw new IllegalStateException("cannot overwrite: " + old + " with value: " + value);

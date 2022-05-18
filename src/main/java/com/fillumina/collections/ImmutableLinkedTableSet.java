@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.AbstractEntryMap.InternalState;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -51,7 +52,7 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
     }
 
     private static class LinkedEntryMap<K>
-            extends AbstractEntryMap<K, Integer, LinkedEntry<K>, VieweableMap<K, Integer>> {
+            extends AbstractEntryMap<K, Integer, LinkedEntry<K>, VieweableMap<K, Integer>, InternalState<LinkedEntry<K>> > {
 
         private LinkedEntry<K> head;
 
@@ -82,7 +83,8 @@ public final class ImmutableLinkedTableSet<T> implements Set<T> {
         }
 
         @Override
-        protected LinkedEntry<K> createEntry(K k, Integer v) {
+        protected LinkedEntry<K> createEntry(K k, Integer v,
+                InternalState<LinkedEntry<K>> internalState) {
             throw new UnsupportedOperationException("not used");
         }
 

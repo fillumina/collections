@@ -42,6 +42,10 @@ public class Holder<T> {
         return value == null;
     }
 
+    public boolean isPresent() {
+        return !isEmpty();
+    }
+
     public T get() {
         if (isEmpty()) {
             return null;

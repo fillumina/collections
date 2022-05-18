@@ -53,7 +53,7 @@ public final class ImmutableTableMap<K, V> extends UnmodifiableTableMap<K, V> {
      * copy constructor.
      */
     public ImmutableTableMap(AbstractEntryMap<? extends K, ? extends V,
-            AbstractMap.SimpleImmutableEntry<? extends K, ? extends V>, ?> map) {
+            AbstractMap.SimpleImmutableEntry<? extends K, ? extends V>, ?, ?> map) {
         super(map);
     }
 

@@ -1,12 +1,14 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.AbstractEntryMap.InternalState;
 import java.util.AbstractMap;
 import java.util.Map;
 
 /**
  * Full {@link java.util.Map} conform implementation of {@link AbstractEntryMap}.
  */
-public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, TableMap<K, V>> {
+public class TableMap<K, V>
+        extends AbstractEntryMap<K, V, Map.Entry<K, V>, TableMap<K, V>, InternalState<Map.Entry<K,V>>> {
 
     public TableMap() {
         super();
@@ -27,7 +29,7 @@ public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, Tabl
      * Homologous copy constructor.
      */
     public TableMap(AbstractEntryMap<? extends K, ? extends V,
-            Entry<? extends K, ? extends V>, TableMap<? extends K, ? extends V>> map) {
+            Entry<? extends K, ? extends V>, TableMap<? extends K, ? extends V>, InternalState<Entry<? extends K, ? extends V>> > map) {
         super(map);
     }
 
@@ -40,7 +42,7 @@ public class TableMap<K, V> extends AbstractEntryMap<K, V, Map.Entry<K, V>, Tabl
 
     @Override
     @SuppressWarnings("unchecked")
-    protected Entry<K, V> createEntry(K k, V v) {
+    protected Entry<K, V> createEntry(K k, V v, InternalState<Entry<K, V>> internalState) {
         if (k == null && v == null) {
             return (Entry<K, V>) AbstractEntryMap.NULL_ENTRY;
         }

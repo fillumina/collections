@@ -1,5 +1,6 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.AbstractEntryMap.InternalState;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
  * Represents a node in a tree (recursively defining a tree). The tree is immutable.
  */
 public class Tree<K,V> // it's a Map AND an Entry with value as itself
-        //                        K        V       E          M
-        extends AbstractEntryMap<List<K>, Tree<K,V>, Tree<K,V>, Tree<K,V>>
+        //                        K        V       E          M            S
+        extends AbstractEntryMap<List<K>, Tree<K,V>, Tree<K,V>, Tree<K,V>, InternalState<Tree<K,V>>>
         implements Map.Entry<List<K>,Tree<K,V>> {
 
     @SuppressWarnings("unchecked")
@@ -142,9 +143,10 @@ public class Tree<K,V> // it's a Map AND an Entry with value as itself
     }
 
     @Override
-    protected Tree<K,V> createEntry(List<K> key, Tree<K,V> value) {
+    protected Tree<K, V> createEntry(List<K> key, Tree<K, V> value,
+            InternalState<Tree<K, V>> internalState) {
         final Tree<K, V> tree = new Tree<>(key, value.nodeValue, value.size());
-        value.forEach((k,v) -> tree.putEntry(createEntry(k,v).withParent(tree)));
+        value.forEach((k,v) -> tree.putEntry(createEntry(k,v, null).withParent(tree)));
         return tree;
     }
 

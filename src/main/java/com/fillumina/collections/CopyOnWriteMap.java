@@ -1,6 +1,8 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.AbstractEntryMap.InternalState;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +14,8 @@ import java.util.Map;
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
 public class CopyOnWriteMap<K,V>
-        extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, CopyOnWriteMap<K, V>> {
+        extends AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, CopyOnWriteMap<K, V>,
+                                    InternalState<AbstractMap.SimpleImmutableEntry<K, V>> > {
 
     public CopyOnWriteMap() {
         super();
@@ -27,11 +30,16 @@ public class CopyOnWriteMap<K,V>
     }
 
     public CopyOnWriteMap(
-            AbstractEntryMap<? extends K, ? extends V, ? extends AbstractMap.SimpleImmutableEntry<K, V>, ? extends VieweableMap<K, V>> map) {
+            AbstractEntryMap<
+                    ? extends K,
+                    ? extends V,
+                    ? extends SimpleImmutableEntry<K, V>,
+                    ? extends CopyOnWriteMap<K, V>,
+                    ? extends InternalState<SimpleImmutableEntry<K, V>>> map) {
         super(map);
     }
 
-    public CopyOnWriteMap(InternalState<AbstractMap.SimpleImmutableEntry<K, V>> internalState) {
+    public CopyOnWriteMap(InternalState<SimpleImmutableEntry<K, V>> internalState) {
         super(internalState);
     }
 
@@ -45,27 +53,29 @@ public class CopyOnWriteMap<K,V>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected AbstractMap.SimpleImmutableEntry<K, V> createEntry(K k, V v) {
+    protected SimpleImmutableEntry<K, V> createEntry(
+            K k, V v, InternalState<SimpleImmutableEntry<K, V>> internalState) {
         if (k == null && v == null) {
-            return (AbstractMap.SimpleImmutableEntry<K, V>) AbstractEntryMap.NULL_ENTRY;
+            return (SimpleImmutableEntry<K, V>) AbstractEntryMap.NULL_ENTRY;
         }
-        return new AbstractMap.SimpleImmutableEntry<>(k, v);
+        return new SimpleImmutableEntry<>(k, v);
     }
 
     @Override
-    protected AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, CopyOnWriteMap<K, V>> createMap(
+    protected AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, CopyOnWriteMap<K, V>,
+        InternalState<SimpleImmutableEntry<K, V>>> createMap(
             int size) {
         return new CopyOnWriteMap<>(size);
     }
 
     @Override
     protected synchronized void setInternalState(
-            InternalState<AbstractMap.SimpleImmutableEntry<K, V>> otherState) {
+            InternalState<SimpleImmutableEntry<K, V>> otherState) {
         super.setInternalState(otherState);
     }
 
     @Override
-    protected InternalState<AbstractMap.SimpleImmutableEntry<K, V>> getInternalStateClone() {
+    protected InternalState<SimpleImmutableEntry<K, V>> getInternalStateClone() {
         return new InternalState<>(getInternalState());
     }
 

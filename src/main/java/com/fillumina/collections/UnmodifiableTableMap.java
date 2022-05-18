@@ -28,7 +28,7 @@ public class UnmodifiableTableMap<K, V> extends VieweableMap<K, V> {
      * copy constructor.
      */
     protected UnmodifiableTableMap(AbstractEntryMap<? extends K, ? extends V,
-            AbstractMap.SimpleImmutableEntry<? extends K, ? extends V>, ?> map) {
+            AbstractMap.SimpleImmutableEntry<? extends K, ? extends V>, ?, ?> map) {
         super(map);
     }
 

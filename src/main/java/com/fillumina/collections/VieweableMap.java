@@ -1,6 +1,8 @@
 package com.fillumina.collections;
 
+import com.fillumina.collections.AbstractEntryMap.InternalState;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +14,8 @@ import java.util.Map;
  * @param <V>
  */
 public class VieweableMap<K, V>
-        extends AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, VieweableMap<K, V>> {
+        extends AbstractEntryMap<K, V, SimpleImmutableEntry<K, V>, VieweableMap<K, V>,
+        InternalState<SimpleImmutableEntry<K,V>>> {
 
     // cache the view
     private transient UnmodifiableTableMap<K, V> readOnlyView;
@@ -30,7 +33,7 @@ public class VieweableMap<K, V>
     }
 
     /** Copy constructor. */
-    public VieweableMap(AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, ?> map) {
+    public VieweableMap(AbstractEntryMap<K, V, AbstractMap.SimpleImmutableEntry<K, V>, ?, ?> map) {
         super(map);
     }
 
@@ -49,7 +52,8 @@ public class VieweableMap<K, V>
 
     @Override
     @SuppressWarnings("unchecked")
-    protected AbstractMap.SimpleImmutableEntry<K, V> createEntry(K k, V v) {
+    protected AbstractMap.SimpleImmutableEntry<K, V> createEntry(K k, V v,
+            InternalState<AbstractMap.SimpleImmutableEntry<K, V>> internalState) {
         if (k == null && v == null) {
             return (AbstractMap.SimpleImmutableEntry<K, V>) AbstractEntryMap.NULL_ENTRY;
         }

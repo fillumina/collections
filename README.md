@@ -24,7 +24,6 @@ JDK maps aren't very friendly towards extension, these maps offer a lot of exten
 * **`AbstractEntryMap`** is a very _extendable_, _compliant_, `Map` implementation based on hash table with performances of O(1).
 * **`TableMap`** is an `AbstractEntryMap` implementation.
 * **`VieweableMap`** is `AbstractEntryMap` implementation where `Entry` cannot set values. It provides an _unmodifiable view_ that share its internal data.
-* **`CopyOnWriteMap`** a concurrent `VieweableMap` that allows fast access for frequent readings with an efficient use of space.
 
 ### Immutable containers
 
@@ -40,6 +39,12 @@ The JDK library uses defensive object copying extensively to avoid having an obj
 * **`ImmutableSmallList`** is the immutable version of `SmallList`.
 
 Note that all these immutable containers can be used as _viewers_ to mutable ones by calling `immutable()` (they share the same internal state but only the mutable instance can change it).
+
+### Concurrent Containers
+
+ - **`CopyOnWriteMap`** practical and fast when readings are much more frequent than writings. Copy the internal state when a new element is inserted. Writings are sequenced.
+ - **`CopyOnWriteCache`**  a fixed size map that removes the least accessed entry on reaching its maximum allowed size. Quite space efficient and fast if readings are much more frequent than writings.
+
 
 ### Different kind of containers
 
