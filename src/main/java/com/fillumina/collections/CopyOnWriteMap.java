@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * It's a concurrent map that copy its internal state on modification. It's pretty fast if
  * readings are much more frequent than writings and more space efficient than JDK
- * {@link java.util.concurrent.ConcurrentHashMap}.
+ * {@link java.util.concurrent.ConcurrentHashMap} which is faster in case of frequent writings.
  *
  * @author Francesco Illuminati <fillumina@gmail.com>
  */
