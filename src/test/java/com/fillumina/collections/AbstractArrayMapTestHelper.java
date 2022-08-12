@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
  */
 public abstract class AbstractArrayMapTestHelper {
 
-    abstract <T extends BaseArrayMap<Integer,String>> T create(Object... o);
+    abstract BaseArrayMap<Integer,String> create(Object... o);
 
     @Test
     public void shouldInitWithArray() {
